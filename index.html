@@ -685,6 +685,190 @@ footer {
 .fade-up { opacity: 0; transform: translateY(24px); transition: opacity .55s ease, transform .55s ease; }
 .fade-up.visible { opacity: 1; transform: translateY(0); }
 
+/* ---------- STAGGERED CHILDREN ---------- */
+.fade-up.visible > .feat-card:nth-child(1),
+.fade-up.visible > .safe-card:nth-child(1),
+.fade-up.visible > .sk-card:nth-child(1),
+.fade-up.visible > .testi-card:nth-child(1),
+.fade-up.visible > .model-card:nth-child(1) { animation: cardReveal .5s ease both; }
+.fade-up.visible > .feat-card:nth-child(2),
+.fade-up.visible > .safe-card:nth-child(2),
+.fade-up.visible > .sk-card:nth-child(2),
+.fade-up.visible > .testi-card:nth-child(2),
+.fade-up.visible > .model-card:nth-child(2) { animation: cardReveal .5s .08s ease both; }
+.fade-up.visible > .feat-card:nth-child(3),
+.fade-up.visible > .safe-card:nth-child(3),
+.fade-up.visible > .sk-card:nth-child(3),
+.fade-up.visible > .testi-card:nth-child(3),
+.fade-up.visible > .model-card:nth-child(3) { animation: cardReveal .5s .16s ease both; }
+.fade-up.visible > .feat-card:nth-child(4),
+.fade-up.visible > .safe-card:nth-child(4),
+.fade-up.visible > .sk-card:nth-child(4),
+.fade-up.visible > .testi-card:nth-child(4),
+.fade-up.visible > .model-card:nth-child(4) { animation: cardReveal .5s .24s ease both; }
+.fade-up.visible > .model-card:nth-child(5)  { animation: cardReveal .5s .32s ease both; }
+.fade-up.visible > .model-card:nth-child(6)  { animation: cardReveal .5s .40s ease both; }
+.fade-up.visible > .model-card:nth-child(7)  { animation: cardReveal .5s .48s ease both; }
+.fade-up.visible > .model-card:nth-child(8)  { animation: cardReveal .5s .56s ease both; }
+.fade-up.visible > .model-card:nth-child(n+9){ animation: cardReveal .5s .64s ease both; }
+@keyframes cardReveal {
+  from { opacity: 0; transform: translateY(18px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+/* ---------- STEPS STAGGER ---------- */
+.steps.visible-steps .step:nth-child(1) { animation: stepIn .5s .0s ease both; }
+.steps.visible-steps .step:nth-child(2) { animation: stepIn .5s .14s ease both; }
+.steps.visible-steps .step:nth-child(3) { animation: stepIn .5s .28s ease both; }
+@keyframes stepIn {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- BODY TRANSITION (THEME SWITCH) ---------- */
+body { transition: background .35s ease, color .35s ease; }
+
+/* ---------- NAV LINK UNDERLINE SLIDE ---------- */
+.nav-links a { position: relative; }
+.nav-links a::after {
+  content: ''; position: absolute; left: 0; bottom: -3px;
+  width: 0; height: 2px; border-radius: 2px;
+  background: var(--accent); transition: width .25s ease;
+}
+.nav-links a:hover::after { width: 100%; }
+
+/* ---------- CARD GLOW ON HOVER ---------- */
+.feat-card::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit;
+  background: radial-gradient(ellipse 70% 50% at 50% 110%, rgba(59,130,246,0.12) 0%, transparent 70%);
+  opacity: 0; transition: opacity .35s ease; pointer-events: none;
+}
+.feat-card:hover::after { opacity: 1; }
+
+.sk-card::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit;
+  background: radial-gradient(ellipse 60% 45% at 50% 110%, rgba(99,102,241,0.13) 0%, transparent 70%);
+  opacity: 0; transition: opacity .35s ease; pointer-events: none; z-index: 0;
+}
+.sk-card:hover::before { opacity: 1; }
+.sk-card > * { position: relative; z-index: 1; }
+
+/* ---------- SAFE-ICON HOVER SPIN + GLOW ---------- */
+.safe-card { transition: all .3s, transform .3s; }
+.safe-card:hover { transform: translateY(-3px); }
+.safe-icon { transition: transform .4s cubic-bezier(.34,1.56,.64,1), box-shadow .3s; }
+.safe-card:hover .safe-icon {
+  transform: rotate(12deg) scale(1.12);
+  box-shadow: 0 0 16px rgba(34,197,94,0.22);
+}
+
+/* ---------- KEYWORD TAG BOUNCE ---------- */
+.kw { transition: transform .2s cubic-bezier(.34,1.56,.64,1), background .2s, border-color .2s, color .2s; }
+.kw:hover {
+  transform: scale(1.1) translateY(-2px);
+  background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.45); color: var(--text);
+}
+
+/* ---------- STAT CARD GLOW ON HOVER ---------- */
+.stat-card { transition: background .25s, transform .25s; }
+.stat-card:hover { transform: translateY(-3px); }
+.stat-num { transition: filter .25s; }
+.stat-card:hover .stat-num { filter: drop-shadow(0 0 10px rgba(59,130,246,0.4)); }
+
+/* ---------- TESTI CARD HOVER ---------- */
+.testi-card { transition: all .3s; }
+.testi-card:hover {
+  border-color: rgba(59,130,246,0.25);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 36px rgba(0,0,0,0.18);
+}
+
+/* ---------- CTA ANIMATED BORDER LIGHT ---------- */
+@keyframes borderFlow {
+  0%   { background-position: 0%   50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0%   50%; }
+}
+.cta-box {
+  background: var(--bg3);
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  position: relative;
+}
+.cta-box::after {
+  content: ''; position: absolute; inset: -1px; border-radius: 21px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3), var(--purple), var(--accent));
+  background-size: 300% 300%;
+  animation: borderFlow 6s ease infinite;
+  z-index: -1; opacity: .5;
+}
+
+/* ---------- HERO ENTRANCE STAGGER ---------- */
+.hero-icon-wrap   { animation: heroIn .7s .05s ease both; }
+.hero-badge       { animation: heroIn .6s .1s  ease both; }
+.hero h1          { animation: heroIn .6s .2s  ease both; }
+.hero-sub         { animation: heroIn .6s .3s  ease both; }
+.hero-btns        { animation: heroIn .6s .38s ease both; }
+.terminal-wrap    { animation: heroIn .7s .45s ease both; }
+.trust-strip      { animation: heroIn .6s .55s ease both; }
+@keyframes heroIn {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- LOGO DOT EXTRA GLOW PULSE ---------- */
+.logo-dot {
+  animation: pulse 2.4s infinite, dotGlow 2.4s infinite;
+}
+@keyframes dotGlow {
+  0%,100% { box-shadow: 0 0 14px var(--accent), 0 0 30px rgba(59,130,246,0.35); }
+  50%      { box-shadow: 0 0 22px var(--accent), 0 0 50px rgba(59,130,246,0.55); }
+}
+
+/* ---------- SCROLL PROGRESS GLOW ---------- */
+#scroll-progress {
+  filter: drop-shadow(0 0 4px rgba(59,130,246,0.5));
+}
+
+/* ---------- FAQ ITEM HOVER LIFT ---------- */
+.qa-item { transition: border-color .25s, transform .25s, box-shadow .25s; }
+.qa-item:hover {
+  transform: translateX(3px);
+  box-shadow: -3px 0 0 var(--accent);
+  border-color: rgba(59,130,246,0.25);
+}
+
+/* ---------- INSTALL CARD SHIMMER ---------- */
+.install-card { overflow: hidden; }
+.install-card::after {
+  content: ''; position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
+  background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%);
+  transition: left .45s ease; pointer-events: none;
+}
+.install-card:hover::after { left: 140%; }
+
+/* ---------- MODEL CARD GLOW ON HOVER ---------- */
+.model-card::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit;
+  background: radial-gradient(ellipse 80% 60% at 50% 120%, rgba(59,130,246,0.1) 0%, transparent 70%);
+  opacity: 0; transition: opacity .3s; pointer-events: none;
+}
+.model-card:hover::before { opacity: 1; }
+
+/* ---------- WHY CARD HOVER LIGHT ---------- */
+.why-card::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit;
+  background: radial-gradient(ellipse 70% 50% at 50% 110%, rgba(59,130,246,0.07) 0%, transparent 70%);
+  opacity: 0; transition: opacity .35s; pointer-events: none;
+}
+.why-card.pain::before {
+  background: radial-gradient(ellipse 70% 50% at 50% 110%, rgba(248,113,113,0.07) 0%, transparent 70%);
+}
+.why-card.value::before {
+  background: radial-gradient(ellipse 70% 50% at 50% 110%, rgba(34,197,94,0.07) 0%, transparent 70%);
+}
+.why-card:hover::before { opacity: 1; }
+
 /* ============================================================ RESPONSIVE */
 @media (max-width: 900px) {
   nav { padding: 0 20px; }
@@ -1430,6 +1614,20 @@ footer {
   var fades = document.querySelectorAll('.fade-up');
   for (var i = 0; i < fades.length; i++) { io.observe(fades[i]); }
 
+  // ======================================================== STEPS STAGGER OBSERVER
+  var stepsEl = document.querySelector('.steps');
+  if (stepsEl) {
+    var stepsObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible-steps');
+          stepsObserver.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    stepsObserver.observe(stepsEl);
+  }
+
   // ======================================================== COUNT UP
   var countObserver = new IntersectionObserver(function(entries) {
     entries.forEach(function(e) {
@@ -1480,7 +1678,22 @@ footer {
       var group = this.getAttribute('data-tab');
       ['chat','workspace','files','ux'].forEach(function(g) {
         var el = document.getElementById('feat-' + g);
-        if (el) el.style.display = (g === group) ? '' : 'none';
+        if (!el) return;
+        if (g === group) {
+          el.style.display = '';
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(12px)';
+          requestAnimationFrame(function() {
+            el.style.transition = 'opacity .3s ease, transform .3s ease';
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+          });
+        } else {
+          el.style.display = 'none';
+          el.style.opacity = '';
+          el.style.transform = '';
+          el.style.transition = '';
+        }
       });
     });
   }
