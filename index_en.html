@@ -931,7 +931,8 @@ footer {
     <div class="feat-tabs-wrap fade-up">
       <div class="feat-tabs">
         <button class="feat-tab active" data-tab="chat">💬 Chat</button>
-        <button class="feat-tab" data-tab="files">📂 Files</button>
+        <button class="feat-tab" data-tab="workspace">📁 Workspace</button>
+        <button class="feat-tab" data-tab="files">📂 Files &amp; Tools</button>
         <button class="feat-tab" data-tab="ux">🎨 Experience</button>
       </div>
     </div>
@@ -954,6 +955,24 @@ footer {
       </div>
     </div>
 
+    <div class="feat-grid fade-up" id="feat-workspace" style="display:none;">
+      <div class="feat-card">
+        <span class="feat-icon">📁</span>
+        <div class="feat-title">Organize Chats by Project Folder</div>
+        <div class="feat-desc">Bind a local folder as a "Workspace" to keep its conversations separate. Work on multiple projects without mixing context.</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🔀</span>
+        <div class="feat-title">One-Click Workspace Switching</div>
+        <div class="feat-desc">The current workspace name shows at the top of the chat view. Click to switch instantly — each workspace shows only its own conversations.</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🛡️</span>
+        <div class="feat-title">File Access Scoped to Workspace</div>
+        <div class="feat-desc">File reads and command execution default to the workspace root path, reducing path confusion. Alerts you automatically if the workspace folder moves or disappears.</div>
+      </div>
+    </div>
+
     <div class="feat-grid fade-up" id="feat-files" style="display:none;">
       <div class="feat-card">
         <span class="feat-icon">📄</span>
@@ -962,13 +981,13 @@ footer {
       </div>
       <div class="feat-card">
         <span class="feat-icon">📥</span>
-        <div class="feat-title">Export as Markdown</div>
-        <div class="feat-desc">Export individual replies or entire conversations as .md files to your computer for archiving or reuse.</div>
+        <div class="feat-title">Export Conversations as Markdown</div>
+        <div class="feat-desc">Export individual replies or full conversations as .md files, including a tool-call audit summary. Great for archiving or reuse.</div>
       </div>
       <div class="feat-card">
-        <span class="feat-icon">🗂️</span>
-        <div class="feat-title">Custom Data Storage Location</div>
-        <div class="feat-desc">Move your database to any folder you choose — back up to a USB drive or sync folder easily.</div>
+        <span class="feat-icon">⚡</span>
+        <div class="feat-title">Command Runner (Advanced)</div>
+        <div class="feat-desc">Let AI run local commands inside your authorized workspace folder. Supports natural language triggers like "what's the Node version?" — multi-layer safety, off by default.</div>
       </div>
     </div>
 
@@ -1110,6 +1129,13 @@ footer {
           <p>The "Command Execution" feature is off by default. You must turn it on in settings and specify which folders are allowed. Every command requires confirmation before execution, and dangerous operations (like file deletion) are blocked automatically.</p>
         </div>
       </div>
+      <div class="safe-card">
+        <div class="safe-icon">🕵️</div>
+        <div class="safe-body">
+          <h4>Automatic Sensitive Data Redaction</h4>
+          <p>Tool logs are automatically scrubbed before being saved to your local database — API Keys, Tokens, passwords and similar secrets are replaced with <code>[REDACTED]</code>, so they are never stored in plain text.</p>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1139,6 +1165,10 @@ footer {
       <div class="model-card">
         <div class="logo-text">Kimi</div>
         <div class="tag">Moonshot</div>
+      </div>
+      <div class="model-card">
+        <div class="logo-text">Kimi Code</div>
+        <div class="tag">Coding · Moonshot</div>
       </div>
       <div class="model-card">
         <div class="logo-text">Qwen</div>
@@ -1176,6 +1206,22 @@ footer {
     </div>
 
     <div class="qa-list fade-up">
+
+      <div class="qa-item">
+        <button class="qa-q" onclick="toggleQA(this)">
+          What is a "Workspace" and why would I use it?
+          <span class="qa-icon">▼</span>
+        </button>
+        <div class="qa-a">
+          <div class="qa-a-inner">
+            A Workspace links one of your local folders to a group of AI conversations. Once set up:<br /><br />
+            · The conversation list shows only that workspace's chats — different projects stay separate<br />
+            · File reads and command execution default to that folder's path, reducing confusion<br />
+            · You can create one workspace per project and switch between them in a single click<br /><br />
+            If you just want to chat casually, you don't need a workspace at all — all conversations are saved normally without one.
+          </div>
+        </div>
+      </div>
 
       <div class="qa-item">
         <button class="qa-q" onclick="toggleQA(this)">
@@ -1431,7 +1477,7 @@ footer {
       if (active) active.classList.remove('active');
       this.classList.add('active');
       var group = this.getAttribute('data-tab');
-      ['chat','files','ux'].forEach(function(g) {
+      ['chat','workspace','files','ux'].forEach(function(g) {
         var el = document.getElementById('feat-' + g);
         if (el) el.style.display = (g === group) ? '' : 'none';
       });

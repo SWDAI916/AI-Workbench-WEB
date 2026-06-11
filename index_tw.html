@@ -930,9 +930,10 @@ footer {
 
     <div class="feat-tabs-wrap fade-up">
       <div class="feat-tabs">
-        <button class="feat-tab active" data-tab="chat">💬 对话</button>
-        <button class="feat-tab" data-tab="files">📂 文件</button>
-        <button class="feat-tab" data-tab="ux">🎨 体验</button>
+        <button class="feat-tab active" data-tab="chat">💬 對話</button>
+        <button class="feat-tab" data-tab="workspace">📁 工作區</button>
+        <button class="feat-tab" data-tab="files">📂 檔案 &amp; 工具</button>
+        <button class="feat-tab" data-tab="ux">🎨 體驗</button>
       </div>
     </div>
 
@@ -954,6 +955,24 @@ footer {
       </div>
     </div>
 
+    <div class="feat-grid fade-up" id="feat-workspace" style="display:none;">
+      <div class="feat-card">
+        <span class="feat-icon">📁</span>
+        <div class="feat-title">按項目資料夾整理對話</div>
+        <div class="feat-desc">將本地資料夾設為「工作區」，該工作區下嘅對話獨立管理。同時處理多個項目都唔會混淆上下文。</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🔀</span>
+        <div class="feat-title">一鍵切換工作區</div>
+        <div class="feat-desc">對話頁頂部顯示當前工作區名稱，點擊即可快速切換。每個工作區只展示自己嘅對話，保持上下文清晰。</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🛡️</span>
+        <div class="feat-title">檔案操作以工作區為基準</div>
+        <div class="feat-desc">讀取檔案或執行命令時預設從工作區根目錄出發，減少路徑混淆。工作區路徑失效時會自動提示。</div>
+      </div>
+    </div>
+
     <div class="feat-grid fade-up" id="feat-files" style="display:none;">
       <div class="feat-card">
         <span class="feat-icon">📄</span>
@@ -962,13 +981,13 @@ footer {
       </div>
       <div class="feat-card">
         <span class="feat-icon">📥</span>
-        <div class="feat-title">匯出為 Markdown</div>
-        <div class="feat-desc">單條 AI 回覆或者成個對話，都可以匯出做 .md 檔案儲存到你嘅電腦上，方便存檔或者二次使用。</div>
+        <div class="feat-title">匯出對話為 Markdown</div>
+        <div class="feat-desc">單條 AI 回覆或者成個對話都可以匯出做 .md 檔案，包含完整對話記錄同工具調用摘要，方便存檔或二次使用。</div>
       </div>
       <div class="feat-card">
-        <span class="feat-icon">🗂️</span>
-        <div class="feat-title">自訂數據儲存位置</div>
-        <div class="feat-desc">可以將數據庫檔案轉移到你指定嘅資料夾，方便備份到 USB 手指或雲端硬碟。</div>
+        <span class="feat-icon">⚡</span>
+        <div class="feat-title">命令執行器（進階）</div>
+        <div class="feat-desc">喺授權嘅工作區資料夾內讓 AI 執行本地命令。支援自然語言觸發（如「查吓 Node 版本」），多層安全保護預設關閉，按需開啟。</div>
       </div>
     </div>
 
@@ -1110,6 +1129,13 @@ footer {
           <p>「命令執行」功能預設係關閉嘅，需要你喺設定度手動開啟，並指定允許操作嘅資料夾。每次執行命令前仲會彈出確認視窗，危險操作（如刪除檔案）會被自動攔截。</p>
         </div>
       </div>
+      <div class="safe-card">
+        <div class="safe-icon">🕵️</div>
+        <div class="safe-body">
+          <h4>敏感資訊自動脫敏</h4>
+          <p>工具執行產生嘅日誌喺寫入本地數據庫之前，會自動將 API Key、Token、密碼等敏感資訊替換為 <code>[REDACTED]</code>，確保密鑰唔會以明文形式留存喺任何記錄入面。</p>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1139,6 +1165,10 @@ footer {
       <div class="model-card">
         <div class="logo-text">Kimi</div>
         <div class="tag">Moonshot · 国产</div>
+      </div>
+      <div class="model-card">
+        <div class="logo-text">Kimi Code</div>
+        <div class="tag">編程專屬 · 國產</div>
       </div>
       <div class="model-card">
         <div class="logo-text">通义千问</div>
@@ -1176,6 +1206,22 @@ footer {
     </div>
 
     <div class="qa-list fade-up">
+
+      <div class="qa-item">
+        <button class="qa-q" onclick="toggleQA(this)">
+          咩係「工作區」？有咩用？
+          <span class="qa-icon">▼</span>
+        </button>
+        <div class="qa-a">
+          <div class="qa-a-inner">
+            工作區就係將你電腦上嘅一個資料夾同你嘅 AI 對話綁定埋一齊。建立之後：<br /><br />
+            ・對話列表只展示該工作區嘅對話，唔同項目互不干擾<br />
+            ・讀取檔案或執行命令時預設從該資料夾出發，路徑更準確<br />
+            ・可以為每個項目單獨建立工作區，切換時一鍵搞掂<br /><br />
+            如果你只係隨手傾偈，唔綁定工作區都完全冇問題，所有對話照常儲存。
+          </div>
+        </div>
+      </div>
 
       <div class="qa-item">
         <button class="qa-q" onclick="toggleQA(this)">
@@ -1431,7 +1477,7 @@ footer {
       if (active) active.classList.remove('active');
       this.classList.add('active');
       var group = this.getAttribute('data-tab');
-      ['chat','files','ux'].forEach(function(g) {
+      ['chat','workspace','files','ux'].forEach(function(g) {
         var el = document.getElementById('feat-' + g);
         if (el) el.style.display = (g === group) ? '' : 'none';
       });

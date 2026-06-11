@@ -931,7 +931,8 @@ footer {
     <div class="feat-tabs-wrap fade-up">
       <div class="feat-tabs">
         <button class="feat-tab active" data-tab="chat">💬 对话</button>
-        <button class="feat-tab" data-tab="files">📂 文件</button>
+        <button class="feat-tab" data-tab="workspace">📁 工作区</button>
+        <button class="feat-tab" data-tab="files">📂 文件 &amp; 工具</button>
         <button class="feat-tab" data-tab="ux">🎨 体验</button>
       </div>
     </div>
@@ -954,6 +955,24 @@ footer {
       </div>
     </div>
 
+    <div class="feat-grid fade-up" id="feat-workspace" style="display:none;">
+      <div class="feat-card">
+        <span class="feat-icon">📁</span>
+        <div class="feat-title">按项目文件夹整理对话</div>
+        <div class="feat-desc">将本地文件夹设为「工作区」，该工作区下的对话独立管理。处理多个项目时再也不会混淆上下文。</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🔀</span>
+        <div class="feat-title">一键切换工作区</div>
+        <div class="feat-desc">聊天页顶部显示当前工作区名称，点击即可快速切换。每个工作区只展示自己的对话，保持上下文清晰。</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🛡️</span>
+        <div class="feat-title">文件操作以工作区为基准</div>
+        <div class="feat-desc">读取文件、执行命令时默认从工作区根路径出发，减少路径混淆。工作区路径失效时会自动提示。</div>
+      </div>
+    </div>
+
     <div class="feat-grid fade-up" id="feat-files" style="display:none;">
       <div class="feat-card">
         <span class="feat-icon">📄</span>
@@ -962,13 +981,13 @@ footer {
       </div>
       <div class="feat-card">
         <span class="feat-icon">📥</span>
-        <div class="feat-title">导出为 Markdown</div>
-        <div class="feat-desc">单条 AI 回复或整个对话，都可以导出为 .md 文件保存到你的电脑上，方便存档或二次使用。</div>
+        <div class="feat-title">导出对话为 Markdown</div>
+        <div class="feat-desc">单条 AI 回复或整个对话都可导出为 .md 文件，包含完整对话记录和工具调用摘要，方便存档或二次使用。</div>
       </div>
       <div class="feat-card">
-        <span class="feat-icon">🗂️</span>
-        <div class="feat-title">自定义数据存储位置</div>
-        <div class="feat-desc">可以把数据库文件迁移到你指定的文件夹，方便备份到 U 盘或网盘。</div>
+        <span class="feat-icon">⚡</span>
+        <div class="feat-title">命令执行器（高级）</div>
+        <div class="feat-desc">在授权的工作区文件夹内让 AI 执行本地命令。支持自然语言触发（如"查一下 Node 版本"），多层安全保护默认关闭，按需开启。</div>
       </div>
     </div>
 
@@ -1110,6 +1129,13 @@ footer {
           <p>「命令执行」功能默认是关闭的，需要你在设置里手动开启，并指定允许操作的文件夹。每次执行命令前还会弹出确认窗口，危险操作（如删除文件）会被自动拦截。</p>
         </div>
       </div>
+      <div class="safe-card">
+        <div class="safe-icon">🕵️</div>
+        <div class="safe-body">
+          <h4>敏感信息自动脱敏</h4>
+          <p>工具执行产生的日志在写入本地数据库之前，会自动将 API Key、Token、密码等敏感信息替换为 <code>[REDACTED]</code>，确保密钥不以明文形式留存在任何记录中。</p>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1139,6 +1165,10 @@ footer {
       <div class="model-card">
         <div class="logo-text">Kimi</div>
         <div class="tag">Moonshot · 国产</div>
+      </div>
+      <div class="model-card">
+        <div class="logo-text">Kimi Code</div>
+        <div class="tag">编程专属 · 国产</div>
       </div>
       <div class="model-card">
         <div class="logo-text">通义千问</div>
@@ -1176,6 +1206,22 @@ footer {
     </div>
 
     <div class="qa-list fade-up">
+
+      <div class="qa-item">
+        <button class="qa-q" onclick="toggleQA(this)">
+          什么是「工作区」？有什么用？
+          <span class="qa-icon">▼</span>
+        </button>
+        <div class="qa-a">
+          <div class="qa-a-inner">
+            工作区就是把你电脑上的一个文件夹和你的 AI 对话绑定在一起。创建后：<br /><br />
+            ・对话列表只展示该工作区的对话，不同项目互不干扰<br />
+            ・读取文件或执行命令时默认从该文件夹出发，路径更准确<br />
+            ・可以为每个项目单独创建工作区，切换时一键搞定<br /><br />
+            如果你只是随手聊，不绑定工作区也完全没问题，所有对话照常保存。
+          </div>
+        </div>
+      </div>
 
       <div class="qa-item">
         <button class="qa-q" onclick="toggleQA(this)">
@@ -1432,7 +1478,7 @@ footer {
       if (active) active.classList.remove('active');
       this.classList.add('active');
       var group = this.getAttribute('data-tab');
-      ['chat','files','ux'].forEach(function(g) {
+      ['chat','workspace','files','ux'].forEach(function(g) {
         var el = document.getElementById('feat-' + g);
         if (el) el.style.display = (g === group) ? '' : 'none';
       });
