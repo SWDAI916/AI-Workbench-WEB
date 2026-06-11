@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Workbench — 你嘅私人 AI 助手，數據喺你手上</title>
+<style>
+/* ============================================================ RESET */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:          #0e1219;
+  --bg2:         #141b26;
+  --bg3:         #1a2234;
+  --border:      rgba(255,255,255,0.08);
+  --border2:     rgba(255,255,255,0.14);
+  --text:        #eef2f8;
+  --text2:       #bcc6d4;
+  --muted:       #8a95a8;
+  --dim:         #576378;
+  --accent:      #3b82f6;
+  --accent2:     #6366f1;
+  --accent3:     #06b6d4;
+  --green:       #22c55e;
+  --amber:       #f59e0b;
+  --red:         #f87171;
+  --purple:      #a855f7;
+  --r:           14px;
+  --r-sm:        10px;
+}
+
+/* ---------- LIGHT THEME ---------- */
+body.light {
+  --bg:          #f5f6f8;
+  --bg2:         #eaecef;
+  --bg3:         #dfe2e7;
+  --nav-bg:      rgba(245,246,248,0.88);
+  --border:      rgba(0,0,0,0.08);
+  --border2:     rgba(0,0,0,0.14);
+  --text:        #1a1d26;
+  --text2:       #3d4452;
+  --muted:       #6e7684;
+  --dim:         #949dab;
+  --accent:      #1d6df0;
+  --accent2:     #4c52e0;
+  --accent3:     #0596a8;
+  --green:       #18a34a;
+  --amber:       #d97706;
+  --red:         #e04040;
+  --purple:      #8838ea;
+}
+
+/* ---------- GREEN / EYE-CARE THEME ---------- */
+body.green {
+  --bg:          #eaf6e0;
+  --bg2:         #dcedc4;
+  --bg3:         #cfe3b3;
+  --nav-bg:      rgba(234,246,224,0.88);
+  --border:      rgba(77,130,47,0.15);
+  --border2:     rgba(77,130,47,0.22);
+  --text:        #2d3a20;
+  --text2:       #485835;
+  --muted:       #6b7a55;
+  --dim:         #8a9a70;
+  --accent:      #4d822f;
+  --accent2:     #3c6b22;
+  --accent3:     #5e9a3c;
+  --green:       #3c8028;
+  --amber:       #b8860b;
+  --red:         #c64545;
+  --purple:     #6b48a8;
+}
+/* ---------- LIGHT & GREEN OVERRIDES ---------- */
+body.light .hero-glow-1, body.green .hero-glow-1 { opacity: .35; }
+body.light .hero-glow-2, body.green .hero-glow-2 { opacity: .25; }
+body.light .terminal-wrap, body.green .terminal-wrap { box-shadow: 0 2px 30px rgba(0,0,0,0.08); }
+body.light .terminal-wrap, body.green .terminal-wrap { background: rgba(17,24,39,0.92); }
+body.light .term-text, body.green .term-text { color: #e8edf5; }
+body.light .term-user, body.green .term-user { color: #3b82f6; }
+body.light .term-ai, body.green .term-ai { color: #22c55e; }
+body.light .term-title, body.green .term-title { color: #7a8ba0; }
+body.light .term-bar, body.green .term-bar { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.06); }
+body.light .btn-primary, body.light .hero-icon,
+body.green .btn-primary, body.green .hero-icon { box-shadow: 0 0 28px rgba(77,130,47,0.2); }
+body.light .btn-primary:hover, body.light .hero-icon:hover,
+body.green .btn-primary:hover, body.green .hero-icon:hover { box-shadow: 0 0 44px rgba(77,130,47,0.32); }
+body.light .nav-pill, body.green .nav-pill { background: rgba(24,163,74,0.08); }
+body.light nav.scrolled, body.green nav.scrolled { box-shadow: 0 1px 8px rgba(0,0,0,0.08); }
+body.light .hero-badge, body.green .hero-badge { background: rgba(77,130,47,0.08); border-color: rgba(77,130,47,0.18); color: var(--accent); }
+body.light #back-top, body.green #back-top { background: var(--accent); }
+body.light ::-webkit-scrollbar-thumb, body.green ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); }
+body.light ::-webkit-scrollbar-thumb:hover, body.green ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
+body.light .why-card.pain, body.green .why-card.pain { background: rgba(255,200,200,0.08); border-color: rgba(224,64,64,0.12); }
+body.light .why-card.value, body.green .why-card.value { background: rgba(60,128,40,0.08); border-color: rgba(60,128,40,0.14); }
+body.light .btn-dl, body.green .btn-dl { background: var(--bg2); border-color: var(--border); }
+body.light .btn-dl:hover, body.green .btn-dl:hover { background: var(--bg3); }
+body.light .safe-card, body.green .safe-card { background: var(--bg); }
+body.light .why-flag.pain, body.green .why-flag.pain { background: rgba(224,64,64,0.08); color: #c53030; }
+body.light .why-flag.value, body.green .why-flag.value { background: rgba(60,128,40,0.1); color: #2d6620; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+/* ============================================================ SCROLL PROGRESS */
+#scroll-progress {
+  position: fixed; top: 0; left: 0; height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+  z-index: 9999; width: 0%;
+}
+
+/* ============================================================ CANVAS PARTICLES */
+#particles {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+}
+
+/* ============================================================ NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px; height: 60px;
+  background: var(--nav-bg, rgba(14,18,25,0.88));
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border-bottom: 1px solid var(--border);
+  transition: box-shadow 0.3s;
+}
+nav.scrolled { box-shadow: 0 1px 30px rgba(0,0,0,0.4); }
+
+.logo {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 700; font-size: 16px; letter-spacing: -0.4px;
+  color: var(--text);
+}
+
+.logo-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 14px var(--accent), 0 0 30px rgba(59,130,246,0.35);
+  animation: pulse 2.4s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+
+.nav-links { display: flex; gap: 34px; list-style: none; }
+.nav-links a {
+  color: var(--muted); text-decoration: none; font-size: 14.5px; font-weight: 500;
+  transition: color .2s;
+}
+.nav-links a:hover { color: var(--text); }
+
+.nav-pill {
+  font-size: 12.5px; padding: 5px 14px; border-radius: 99px;
+  background: rgba(34,197,94,0.1); color: var(--green);
+  border: 1px solid rgba(34,197,94,0.22); font-weight: 500;
+}
+
+/* ---------- NAV DROPDOWN SELECTS ---------- */
+.nav-select {
+  background: var(--bg3); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 5px 24px 5px 10px; font-size: 12.5px; font-weight: 500;
+  font-family: inherit; cursor: pointer; outline: none; margin-left: 6px; flex-shrink: 0;
+  appearance: none; -webkit-appearance: none; -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238a95a8'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 7px center;
+  transition: border-color .2s, box-shadow .2s; line-height: 1.4;
+}
+.nav-select:hover { border-color: var(--border2); }
+.nav-select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+.nav-select option { background: var(--bg3); color: var(--text); }
+
+/* ============================================================ LAYOUT */
+main { position: relative; z-index: 1; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
+section { padding: 70px 0; }
+section.tight { padding: 40px 0; }
+section.wide-section { padding: 90px 0; }
+.divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); margin: 0; }
+
+/* ============================================================ SECTION HEADER */
+.sh { text-align: center; margin-bottom: 54px; }
+.sh-label {
+  display: inline-block; font-size: 12.5px; text-transform: uppercase;
+  letter-spacing: 2.5px; color: var(--accent); margin-bottom: 12px; font-weight: 600;
+}
+.sh-title {
+  font-size: clamp(1.8rem, 3.8vw, 2.6rem); font-weight: 700;
+  letter-spacing: -1.2px; margin-bottom: 10px;
+}
+.sh-desc { color: var(--muted); max-width: 520px; margin: 0 auto; line-height: 1.75; font-size: 16px; }
+
+/* ============================================================ HERO */
+.hero {
+  min-height: 100vh; padding-top: 100px; padding-bottom: 60px;
+  display: flex; align-items: center;
+  position: relative; overflow: hidden;
+}
+
+.hero-glow-1 {
+  position: absolute; top: -200px; left: 50%; transform: translateX(-50%);
+  width: 900px; height: 700px; pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(59,130,246,.10) 0%, transparent 65%);
+  animation: glowPulse 6s ease-in-out infinite;
+}
+@keyframes glowPulse {
+  0%,100% { opacity: .7; transform: translateX(-50%) scale(1); }
+  50% { opacity: 1; transform: translateX(-50%) scale(1.06); }
+}
+
+.hero-glow-2 {
+  position: absolute; top: 30%; right: -10%; pointer-events: none;
+  width: 550px; height: 550px;
+  background: radial-gradient(ellipse at center, rgba(99,102,241,.07) 0%, transparent 65%);
+}
+
+.hero-inner { position: relative; text-align: center; width: 100%; z-index: 2; }
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--accent);
+  background: rgba(59,130,246,0.09); border: 1px solid rgba(59,130,246,0.25);
+  padding: 6px 16px; border-radius: 99px; margin-bottom: 32px;
+  letter-spacing: .5px; font-weight: 500;
+}
+
+/* ---------- HERO ICON ---------- */
+.hero-icon-wrap {
+  margin-bottom: 36px;
+  display: flex; justify-content: center; align-items: center;
+  position: relative;
+}
+.hero-icon {
+  width: 160px; height: 160px;
+  border-radius: 32px;
+  box-shadow: 0 0 60px rgba(59,130,246,0.3), 0 0 120px rgba(59,130,246,0.12);
+  transition: transform .3s, box-shadow .3s;
+}
+.hero-icon:hover {
+  transform: scale(1.06);
+  box-shadow: 0 0 80px rgba(59,130,246,0.42), 0 0 140px rgba(59,130,246,0.2);
+}
+.hero-icon-glow {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 240px; height: 240px;
+  background: radial-gradient(circle at center, rgba(59,130,246,0.1) 0%, transparent 70%);
+  border-radius: 50%; pointer-events: none;
+  animation: iconGlow 3s ease-in-out infinite;
+}
+@keyframes iconGlow {
+  0%,100% { opacity: .6; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.12); }
+}
+.hero-badge::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green); box-shadow: 0 0 8px var(--green);
+  animation: pulse 2.4s infinite;
+}
+
+.hero h1 {
+  font-size: clamp(2.4rem, 5.5vw, 4.4rem);
+  font-weight: 800; letter-spacing: -2.5px; line-height: 1.12;
+  margin-bottom: 24px;
+}
+
+.grad {
+  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 35%, #06b6d4 70%, #8b5cf6 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientShift 5s ease-in-out infinite;
+}
+@keyframes gradientShift {
+  0%,100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.hero-sub {
+  font-size: 1.2rem; color: var(--text2);
+  max-width: 620px; margin: 0 auto 48px; line-height: 1.9;
+}
+
+.hero-btns {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  flex-wrap: wrap; margin-bottom: 56px;
+}
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 26px; border-radius: var(--r-sm);
+  font-size: 15px; font-weight: 600;
+  text-decoration: none; border: none; cursor: pointer; transition: all .25s;
+  position: relative; overflow: hidden;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #3b82f6, #6366f1); color: #fff;
+  box-shadow: 0 0 28px rgba(59,130,246,0.28);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 44px rgba(59,130,246,0.45); }
+.btn-primary::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.10) 50%, transparent 70%);
+  transform: translateX(-100%); transition: transform .6s;
+}
+.btn-primary:hover::after { transform: translateX(100%); }
+
+.btn-ghost {
+  background: transparent; color: var(--text2);
+  border: 1px solid var(--border2);
+}
+.btn-ghost:hover { color: var(--text); background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.18); }
+
+/* ---------- TERMINAL MOCKUP ---------- */
+.terminal-wrap {
+  max-width: 680px; margin: 0 auto;
+  background: rgba(17,24,39,0.9); border: 1px solid var(--border2);
+  border-radius: 14px; overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+}
+.term-bar {
+  display: flex; align-items: center; gap: 7px; padding: 11px 15px;
+  background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border);
+}
+.term-dot { width: 11px; height: 11px; border-radius: 50%; }
+.term-dot.r { background: #ff5f57; }
+.term-dot.y { background: #febc2e; }
+.term-dot.g { background: #28c840; }
+.term-title {
+  margin-left: 10px; font-size: 13px; color: var(--dim); flex: 1;
+}
+.term-body {
+  padding: 18px 22px; text-align: left;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', 'Monaco', monospace;
+  font-size: 14px; line-height: 1.9; min-height: 160px;
+}
+.term-user { color: var(--accent); }
+.term-ai { color: var(--green); }
+.term-text { color: var(--text); }
+.term-cursor {
+  display: inline-block; width: 8px; height: 16px; background: var(--accent);
+  vertical-align: text-bottom; margin-left: 2px;
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+
+/* ---------- TRUST STRIP ---------- */
+.trust-strip {
+  margin-top: 48px;
+  display: flex; align-items: center; justify-content: center; gap: 44px; flex-wrap: wrap;
+}
+.trust-item {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 14px; color: var(--muted); font-weight: 500;
+  transition: color .2s;
+}
+.trust-item:hover { color: var(--text); }
+.trust-icon { font-size: 20px; }
+
+/* ============================================================ STATS */
+#stats { padding: 0; }
+.stats-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+}
+.stat-card {
+  background: var(--bg2); padding: 34px 20px; text-align: center;
+  transition: background .25s; border-right: 1px solid var(--border);
+}
+.stat-card:last-child { border-right: none; }
+.stat-card:hover { background: var(--bg3); }
+.stat-num {
+  font-size: 2.6rem; font-weight: 800; letter-spacing: -1.5px;
+  background: linear-gradient(135deg, var(--accent), var(--accent3));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.stat-label { font-size: 14px; color: var(--muted); margin-top: 6px; font-weight: 500; }
+
+/* ============================================================ WHY */
+.why-grid { display: grid; grid-template-columns: 5fr 4fr; gap: 20px; align-items: stretch; }
+
+.why-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 38px;
+  transition: border-color .3s, transform .3s, box-shadow .3s; position: relative; overflow: hidden;
+}
+.why-card:hover { border-color: var(--border2); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+.why-card.pain { border-left: 3px solid rgba(248,113,113,0.4); }
+.why-card.value { border-left: 3px solid rgba(34,197,94,0.4); }
+
+.why-flag {
+  position: absolute; top: 14px; right: 14px;
+  font-size: 12px; padding: 3px 10px; border-radius: 99px; font-weight: 600; letter-spacing: .5px;
+}
+.why-flag.pain { background: rgba(248,113,113,0.1); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+.why-flag.value { background: rgba(34,197,94,0.1); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+
+.why-card .emoji { font-size: 36px; margin-bottom: 18px; display: block; }
+.why-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
+.why-card p { color: var(--text2); font-size: 15px; line-height: 1.8; }
+.why-card ul { margin-top: 14px; list-style: none; }
+.why-card li {
+  font-size: 14.5px; color: var(--muted); padding: 4px 0;
+  display: flex; align-items: center; gap: 8px;
+}
+.why-card li::before { content: ''; width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.why-card.pain li::before { background: var(--red); }
+.why-card.value li::before { background: var(--green); }
+
+/* ============================================================ HOW IT WORKS */
+#how, #skills, #safety, #guide { background: var(--bg2); }
+
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; position: relative; }
+.steps::before {
+  content: ''; position: absolute;
+  top: 44px; left: calc(16.67% + 22px); right: calc(16.67% + 22px);
+  height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+  opacity: .3; border-radius: 2px;
+}
+
+.step { padding: 0 26px; text-align: center; position: relative; }
+.step-num {
+  width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 26px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff; position: relative; z-index: 1;
+  box-shadow: 0 0 28px rgba(59,130,246,0.32);
+  transition: transform .25s, box-shadow .25s;
+}
+.step:hover .step-num { transform: scale(1.06); box-shadow: 0 0 44px rgba(59,130,246,0.45); }
+.step h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+.step p  { font-size: 15px; color: var(--text2); line-height: 1.75; }
+
+/* ============================================================ FEATURES TABBED */
+.feat-tabs {
+  display: inline-flex; justify-content: center; gap: 4px; margin-bottom: 36px;
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 99px;
+  padding: 4px;
+}
+.feat-tabs-wrap { text-align: center; }
+
+.feat-tab {
+  padding: 9px 22px; border-radius: 99px; border: none; cursor: pointer;
+  font-size: 14.5px; color: var(--muted); font-weight: 500;
+  background: transparent; transition: all .25s; white-space: nowrap;
+  font-family: inherit;
+}
+.feat-tab.active { background: var(--accent); color: #fff; box-shadow: 0 4px 16px rgba(59,130,246,0.3); }
+
+.feat-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+}
+
+.feat-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 28px;
+  position: relative; transition: all .3s; overflow: hidden;
+}
+.feat-card:hover {
+  border-color: rgba(59,130,246,0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 44px rgba(0,0,0,0.3);
+}
+.feat-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.feat-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent3));
+  opacity: 0; transition: opacity .3s;
+}
+.feat-card:hover::before { opacity: 1; }
+
+.feat-icon { font-size: 28px; margin-bottom: 16px; display: block; }
+.feat-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+.feat-desc { font-size: 14.5px; color: var(--text2); line-height: 1.75; }
+
+/* ============================================================ SKILLS */
+#skills { background: var(--bg2); }
+
+.skills-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 36px; }
+
+.sk-card {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 30px; transition: all .3s; position: relative; overflow: hidden;
+}
+.sk-card:hover { border-color: rgba(99,102,241,0.35); transform: translateY(-3px); box-shadow: 0 14px 44px rgba(99,102,241,0.07); }
+.sk-card::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(99,102,241,0.04) 0%, transparent 50%);
+  pointer-events: none;
+}
+.sk-emoji { font-size: 32px; margin-bottom: 14px; display: block; }
+.sk-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.sk-desc  { font-size: 14.5px; color: var(--text2); line-height: 1.7; }
+.sk-kw { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px; }
+.kw {
+  font-size: 12px; padding: 3px 10px; border-radius: 5px;
+  background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2);
+  color: var(--accent2); font-weight: 500;
+}
+
+.sk-explainer {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 32px 38px;
+}
+.sk-explainer h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+.sk-explainer ol { padding-left: 22px; }
+.sk-explainer li { font-size: 15px; color: var(--text2); line-height: 1.85; margin-bottom: 7px; }
+.sk-explainer li strong { color: var(--text); }
+
+/* ============================================================ TESTIMONIALS */
+.testi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.testi-grid .testi-card:last-child { grid-column: 1 / -1; max-width: 520px; margin: 0 auto; }
+
+.testi-card {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 28px; transition: all .3s;
+}
+.testi-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.testi-card .stars { color: var(--amber); font-size: 13px; margin-bottom: 12px; letter-spacing: 1px; }
+.testi-card .quote {
+  font-size: 15px; color: var(--text2); line-height: 1.8; margin-bottom: 18px;
+  font-style: italic; padding-left: 12px;
+  border-left: 3px solid rgba(59,130,246,0.2);
+}
+.testi-card .author { font-size: 14px; font-weight: 600; color: var(--text); }
+.testi-card .role { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+/* ============================================================ SAFETY */
+.safety-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+
+.safe-card {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 28px; display: flex; gap: 20px; align-items: flex-start;
+  transition: all .3s;
+}
+.safe-card:hover { border-color: rgba(34,197,94,0.25); box-shadow: 0 8px 28px rgba(34,197,94,0.03); }
+.safe-icon {
+  width: 46px; height: 46px; flex-shrink: 0; border-radius: 11px;
+  background: rgba(34,197,94,0.07); border: 1px solid rgba(34,197,94,0.16);
+  display: flex; align-items: center; justify-content: center; font-size: 21px;
+}
+.safe-body h4 { font-size: 15px; font-weight: 600; margin-bottom: 7px; }
+.safe-body p  { font-size: 14.5px; color: var(--text2); line-height: 1.7; }
+.safe-body code {
+  font-size: 13px; background: rgba(255,255,255,0.05); padding: 1px 6px; border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.06); color: var(--text2);
+}
+
+/* ============================================================ MODELS */
+#models { background: var(--bg); }
+
+.models-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+}
+
+.model-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r-sm); padding: 22px 16px; text-align: center;
+  transition: all .3s; position: relative; overflow: hidden;
+}
+.model-card:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: 0 10px 32px rgba(0,0,0,0.22); }
+.model-card .logo-text { font-size: 14px; font-weight: 700; margin-bottom: 5px; }
+.model-card .tag { font-size: 12.5px; color: var(--dim); font-weight: 500; }
+.model-card.local { border-color: rgba(34,197,94,0.15); }
+.model-card.local .logo-text { color: var(--green); }
+.model-card.local .tag { color: var(--green); }
+
+.model-note { margin-top: 28px; text-align: center; font-size: 14.5px; color: var(--muted); }
+
+/* ============================================================ FAQ */
+.qa-list { display: flex; flex-direction: column; gap: 9px; }
+
+.qa-item {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); overflow: hidden; transition: border-color .25s;
+}
+.qa-item:hover { border-color: var(--border2); }
+
+.qa-q {
+  width: 100%; background: transparent; border: none; cursor: pointer;
+  padding: 20px 24px; display: flex; align-items: center;
+  justify-content: space-between; gap: 16px;
+  font-size: 15px; font-weight: 600; color: var(--text);
+  text-align: left; font-family: inherit; transition: background .2s;
+}
+.qa-q:hover { background: rgba(255,255,255,0.02); }
+
+.qa-icon {
+  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+  background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2);
+  display: flex; align-items: center; justify-content: center; font-size: 12px;
+  transition: all .25s; color: var(--accent);
+}
+.qa-item.open .qa-icon { background: var(--accent); border-color: var(--accent); color: #fff; transform: rotate(180deg); }
+
+.qa-a {
+  max-height: 0; overflow: hidden; transition: max-height .35s ease;
+  padding: 0 24px; font-size: 15px; color: var(--text2); line-height: 1.85;
+}
+.qa-a-inner { padding: 0 0 20px; }
+.qa-a table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+.qa-a th, .qa-a td { padding: 8px 12px; border: 1px solid var(--border); text-align: left; }
+.qa-a th { background: rgba(255,255,255,0.02); color: var(--text); font-weight: 600; }
+.qa-a code {
+  font-size: 13px; background: rgba(255,255,255,0.05); padding: 1px 6px; border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.06); color: var(--text2);
+}
+
+/* ============================================================ CTA */
+.cta-box {
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 20px; padding: 68px; text-align: center;
+  position: relative; overflow: hidden;
+}
+.cta-box::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 65% 55% at 50% 0%, rgba(59,130,246,0.07) 0%, transparent 65%);
+}
+.cta-box h2 { font-size: 2rem; font-weight: 800; letter-spacing: -1.5px; margin-bottom: 14px; position: relative; }
+.cta-box p  { color: var(--text2); max-width: 460px; margin: 0 auto 40px; line-height: 1.8; font-size: 16px; position: relative; }
+
+.install-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; max-width: 700px; margin: 0 auto; position: relative; }
+
+.install-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 22px 16px; text-align: center;
+  transition: all .3s; text-decoration: none; color: inherit; display: block;
+}
+.install-card:hover {
+  border-color: rgba(59,130,246,0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 36px rgba(0,0,0,0.28);
+}
+.install-card .plat-icon { font-size: 30px; margin-bottom: 10px; display: block; }
+.install-card .plat-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+.install-card .plat-fmt { font-size: 13px; color: var(--muted); }
+.install-card .plat-btn {
+  display: inline-block; margin-top: 14px; font-size: 13px; font-weight: 600;
+  padding: 7px 22px; border-radius: 99px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff; transition: box-shadow .25s;
+}
+.install-card:hover .plat-btn { box-shadow: 0 6px 22px rgba(59,130,246,0.38); }
+
+/* ============================================================ FOOTER */
+footer {
+  background: var(--bg); border-top: 1px solid var(--border);
+  padding: 40px 0;
+}
+.footer-inner {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 18px;
+}
+.footer-brand { font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 9px; color: var(--text); }
+.footer-meta { font-size: 14px; color: var(--muted); display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+
+/* ============================================================ BACK TO TOP */
+#back-top {
+  position: fixed; bottom: 26px; right: 26px; z-index: 999;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--bg3); border: 1px solid var(--border2);
+  color: var(--muted); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-family: inherit;
+  opacity: 0; pointer-events: none;
+  transition: all .3s;
+}
+#back-top.visible { opacity: 1; pointer-events: auto; }
+#back-top:hover { background: var(--accent); color: #fff; border-color: var(--accent);
+  box-shadow: 0 4px 18px rgba(59,130,246,0.32); transform: translateY(-2px); }
+
+/* ============================================================ ANIMATIONS */
+.fade-up { opacity: 0; transform: translateY(24px); transition: opacity .55s ease, transform .55s ease; }
+.fade-up.visible { opacity: 1; transform: translateY(0); }
+
+/* ============================================================ RESPONSIVE */
+@media (max-width: 900px) {
+  nav { padding: 0 20px; }
+  .nav-links { display: none; }
+  .wrap { padding: 0 16px; }
+  section { padding: 64px 0; }
+  .hero { padding-top: 80px; min-height: auto; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .stat-card:nth-child(2) { border-right: none; }
+  .why-grid { grid-template-columns: 1fr; }
+  .steps { grid-template-columns: 1fr; gap: 24px; }
+  .steps::before { display: none; }
+  .step { padding: 0; text-align: left; display: flex; gap: 18px; align-items: flex-start; }
+  .step-num { flex-shrink: 0; margin: 0; width: 48px; height: 48px; font-size: 17px; }
+  .feat-grid { grid-template-columns: 1fr; }
+  .feat-card:last-child:nth-child(odd) { grid-column: auto; }
+  .feat-tabs { padding: 3px; gap: 2px; }
+  .feat-tab { padding: 7px 14px; font-size: 12.5px; }
+  .skills-row { grid-template-columns: 1fr; }
+  .testi-grid { grid-template-columns: 1fr; }
+  .safety-grid { grid-template-columns: 1fr; }
+  .models-grid { grid-template-columns: repeat(2, 1fr); }
+  .install-tabs { grid-template-columns: 1fr; }
+  .cta-box { padding: 40px 20px; }
+  .terminal-wrap { max-width: 100%; }
+  .trust-strip { gap: 24px; }
+}
+@media (max-width: 580px) {
+  .models-grid { grid-template-columns: repeat(2, 1fr); }
+  .testi-grid { grid-template-columns: 1fr; }
+  .testi-grid .testi-card:last-child { grid-column: auto; max-width: none; margin: 0; }
+  .hero-icon { width: 120px; height: 120px; border-radius: 26px; }
+  .hero-icon-glow { width: 180px; height: 180px; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .stat-num { font-size: 2rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- SCROLL PROGRESS -->
+<div id="scroll-progress"></div>
+
+<!-- CANVAS PARTICLES -->
+<canvas id="particles"></canvas>
+
+<!-- BACK TO TOP -->
+<button id="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="返到頂部">↑</button>
+
+<!-- NAV -->
+<nav id="navbar">
+  <div class="logo">
+    <span class="logo-dot"></span>
+    AI Workbench
+  </div>
+  <ul class="nav-links">
+    <li><a href="#why">痛點</a></li>
+    <li><a href="#how">上手</a></li>
+    <li><a href="#features">功能</a></li>
+    <li><a href="#testimonials">口碑</a></li>
+    <li><a href="#safety">安全</a></li>
+    <li><a href="#guide">FAQ</a></li>
+  </ul>
+  <span class="nav-pill">本地優先</span>
+  <select class="nav-select" onchange="switchLang(this.value)" aria-label="選擇語言">
+    <option value="index.html">简体中文</option>
+    <option value="index_en.html">English</option>
+    <option value="index_tw.html" selected>繁體中文</option>
+  </select>
+  <select class="nav-select" id="theme-select" onchange="switchTheme(this.value)" aria-label="選擇主題">
+    <option value="dark">🌙 暗色</option>
+    <option value="light">☀️ 亮色</option>
+    <option value="green">🌿 護眼</option>
+  </select>
+</nav>
+
+<main>
+
+<!-- ============================================================ HERO -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-glow-1"></div>
+    <div class="hero-glow-2"></div>
+    <div class="hero-inner">
+
+      <div class="hero-icon-wrap fade-up">
+        <div class="hero-icon-glow"></div>
+        <img src="icon.png" alt="AI Workbench 图标" class="hero-icon" />
+      </div>
+
+      <div class="hero-badge fade-up">你嘅 AI 對話記錄，永遠只喺你自己嘅電腦上</div>
+
+      <h1 class="fade-up">好似傾偈咁用 AI，<br /><span class="grad">數據從唔離開你嘅電腦</span></h1>
+
+      <p class="hero-sub fade-up">
+        AI Workbench 係一款安裝喺電腦上嘅 AI 助手。你用自己的 API Key 連接 DeepSeek、ChatGPT、Claude 等大模型，所有對話、設定都儲存喺本地，唔經過任何中間伺服器。
+      </p>
+
+      <div class="hero-btns fade-up">
+        <a href="#how" class="btn btn-primary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          查看使用教學
+        </a>
+        <a href="#features" class="btn btn-ghost">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          了解所有功能
+        </a>
+      </div>
+
+      <!-- TERMINAL MOCKUP -->
+      <div class="terminal-wrap fade-up">
+        <div class="term-bar">
+          <span class="term-dot r"></span>
+          <span class="term-dot y"></span>
+          <span class="term-dot g"></span>
+          <span class="term-title">AI Workbench — 新對話</span>
+        </div>
+        <div class="term-body">
+          <div><span class="term-user">▸ 你：</span><span class="term-text" id="typing-line"></span><span class="term-cursor" id="typing-cursor"></span></div>
+          <div style="margin-top:12px;display:none;" id="ai-reply-line">
+            <span class="term-ai">◇ AI：</span><span class="term-text" id="ai-text"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="trust-strip fade-up">
+        <div class="trust-item"><span class="trust-icon">🔒</span>數據 100% 本地儲存</div>
+        <div class="trust-item"><span class="trust-icon">🧩</span>支援 8+ 主流 AI 服務</div>
+        <div class="trust-item"><span class="trust-icon">💻</span>Windows / Mac / Linux</div>
+        <div class="trust-item"><span class="trust-icon">🆓</span>無訂閱費，用你自己嘅 Key</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ STATS -->
+<section id="stats" class="tight">
+  <div class="stats-grid">
+    <div class="stat-card fade-up">
+      <div class="stat-num"><span data-count="8">8</span>+</div>
+      <div class="stat-label">支持的 AI 服务</div>
+    </div>
+    <div class="stat-card fade-up">
+      <div class="stat-num"><span data-count="3">3</span></div>
+      <div class="stat-label">覆盖操作系统</div>
+    </div>
+    <div class="stat-card fade-up">
+      <div class="stat-num"><span data-count="100">100</span>%</div>
+      <div class="stat-label">数据在本地</div>
+    </div>
+    <div class="stat-card fade-up">
+      <div class="stat-num"><span data-count="5">0</span></div>
+      <div class="stat-label">層安全保護</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ WHY -->
+<section id="why" class="wide-section">
+  <div class="wrap">
+    <div class="sh fade-up">
+      <span class="sh-label">點解揀 AI Workbench</span>
+      <h2 class="sh-title">有咩唔同？</h2>
+      <p class="sh-desc">市面上 AI 工具好多，但大多數都將你嘅數據存喺佢哋嘅伺服器上。</p>
+    </div>
+
+    <div class="why-grid fade-up">
+      <div class="why-card pain">
+        <span class="why-flag pain">常見痛點</span>
+        <span class="emoji">😰</span>
+        <h3>普通 AI 網頁工具嘅問題</h3>
+        <p>你同 AI 講嘅每一句說話，都俾人儲存喺人哋嘅伺服器上。你嘅工作內容、私人想法、商業機密——都唔喺你嘅掌控之內。</p>
+        <ul>
+          <li>對話記錄存喺服務商伺服器</li>
+          <li>服務商可能查閱你嘅數據</li>
+          <li>服務關閉後對話記錄消失</li>
+          <li>加價或政策變動你冇得控制</li>
+        </ul>
+      </div>
+      <div class="why-card value">
+        <span class="why-flag value">解決方案</span>
+        <span class="emoji">😌</span>
+        <h3>AI Workbench 嘅做法</h3>
+        <p>所有對話存喺你電腦本地。AI Workbench 只係一個「中間橋樑」——佢將你嘅訊息發俾 AI 服務商，將回覆顯示俾你，全程唔儲存、唔轉發。</p>
+        <ul>
+          <li>所有對話儲存喺你嘅本地電腦</li>
+          <li>API Key 加密儲存喺本地</li>
+          <li>冇中間伺服器、冇帳號系統</li>
+          <li>你可以隨時備份到 USB 手指或雲端硬碟</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ HOW IT WORKS -->
+<section id="how">
+  <div class="wrap">
+    <div class="sh fade-up">
+      <span class="sh-label">三步上手</span>
+      <h2 class="sh-title">從安裝到第一次對話</h2>
+      <p class="sh-desc">唔需要任何技術背景，跟住步驟做就得。</p>
+    </div>
+
+    <div class="steps fade-up">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <h3>安裝應用程式</h3>
+          <p>下載對應你電腦系統嘅安裝檔——Windows 按兩下 <strong>.exe</strong> 跟住精靈安裝；macOS 打開 <strong>.dmg</strong> 拖入應用程式資料夾；Linux 直接執行 <strong>.AppImage</strong>。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <h3>設定一個 AI 模型</h3>
+          <p>點擊左側「模型設定」，揀你用嘅 AI 服務商（如 DeepSeek、ChatGPT），填入你從服務商官網申請嘅 <strong>API Key</strong>，點擊「測試連接」確認可用。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <h3>開始對話</h3>
+          <p>點擊左側「Chat」，喺底部輸入框輸入內容，撳 <strong>Enter</strong> 發送。AI 嘅回覆會好似打字咁逐字出現。點「+ 新增」可以隨時開啟新對話。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ FEATURES (Tabbed) -->
+<section id="features">
+  <div class="wrap">
+    <div class="sh fade-up">
+      <span class="sh-label">主要功能</span>
+      <h2 class="sh-title">唔只係傾偈</h2>
+      <p class="sh-desc">從日常對話到讀取檔案、生成報告，AI Workbench 都可以幫你做到。</p>
+    </div>
+
+    <div class="feat-tabs-wrap fade-up">
+      <div class="feat-tabs">
+        <button class="feat-tab active" data-tab="chat">💬 对话</button>
+        <button class="feat-tab" data-tab="files">📂 文件</button>
+        <button class="feat-tab" data-tab="ux">🎨 体验</button>
+      </div>
+    </div>
+
+    <div class="feat-grid fade-up" id="feat-chat">
+      <div class="feat-card">
+        <span class="feat-icon">⚡</span>
+        <div class="feat-title">流式即時回覆</div>
+        <div class="feat-desc">AI 嘅回答逐字顯示，唔使乾等一大段文字突然出現。生成途中隨時可以點「停止」。</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">💬</span>
+        <div class="feat-title">多對話管理</div>
+        <div class="feat-desc">可以同時保留多個對話，按日期分組顯示。支援重新命名、刪除，隨時切換返嚟繼續傾。</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">✏️</span>
+        <div class="feat-title">訊息編輯同重新生成</div>
+        <div class="feat-desc">發現問法唔啱？將游標移去訊息上點「編輯」修改後重新提交。對 AI 嘅回覆唔滿意，點「重新生成」等佢再答一次。</div>
+      </div>
+    </div>
+
+    <div class="feat-grid fade-up" id="feat-files" style="display:none;">
+      <div class="feat-card">
+        <span class="feat-icon">📄</span>
+        <div class="feat-title">讀取你嘅本地檔案</div>
+        <div class="feat-desc">喺對話時揀一個 .txt 或 .md 檔案，AI 會讀取檔案內容並據此回答你嘅問題——例如「幫我總結呢份文件」。</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">📥</span>
+        <div class="feat-title">匯出為 Markdown</div>
+        <div class="feat-desc">單條 AI 回覆或者成個對話，都可以匯出做 .md 檔案儲存到你嘅電腦上，方便存檔或者二次使用。</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🗂️</span>
+        <div class="feat-title">自訂數據儲存位置</div>
+        <div class="feat-desc">可以將數據庫檔案轉移到你指定嘅資料夾，方便備份到 USB 手指或雲端硬碟。</div>
+      </div>
+    </div>
+
+    <div class="feat-grid fade-up" id="feat-ux" style="display:none;">
+      <div class="feat-card">
+        <span class="feat-icon">🎨</span>
+        <div class="feat-title">深色 / 淺色主題</div>
+        <div class="feat-desc">支援跟隨系統、手動淺色、手動深色。望落護眼，用落舒服。</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">📊</span>
+        <div class="feat-title">Markdown 渲染</div>
+        <div class="feat-desc">AI 回覆嘅程式碼區塊、表格、列表、標題都可以正確顯示，程式碼區塊仲有一鍵複製掣。</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">⚙️</span>
+        <div class="feat-title">靈活嘅介面佈局</div>
+        <div class="feat-desc">側邊欄同對話區域都可以拖動調整闊度，完全按照你嘅習慣。闊度縮小後自動變成圖示模式。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ SKILLS -->
+<section id="skills">
+  <div class="wrap">
+    <div class="sh fade-up">
+      <span class="sh-label">技能（Skills）</span>
+      <h2 class="sh-title">等 AI 按照你想要嘅方式回答</h2>
+      <p class="sh-desc">技能係預設嘅「指令範本」，啟動後 AI 會按照特定嘅風格同格式處理你嘅輸入。</p>
+    </div>
+
+    <div class="skills-row fade-up">
+      <div class="sk-card">
+        <span class="sk-emoji">📝</span>
+        <div class="sk-title">文本總結</div>
+        <div class="sk-desc">將一段長文本或一篇文件提煉成簡潔嘅摘要，抓住核心要點。</div>
+        <div class="sk-kw">
+          <span class="kw">總結</span><span class="kw">摘要</span><span class="kw">提煉</span><span class="kw">概括</span>
+        </div>
+      </div>
+      <div class="sk-card">
+        <span class="sk-emoji">📋</span>
+        <div class="sk-title">日報生成</div>
+        <div class="sk-desc">將你零散嘅工作記錄整理成格式規範嘅日報，幾秒鐘搞掂每日嘅匯報。</div>
+        <div class="sk-kw">
+          <span class="kw">日報</span><span class="kw">工作匯報</span><span class="kw">今日工作</span>
+        </div>
+      </div>
+      <div class="sk-card">
+        <span class="sk-emoji">✍️</span>
+        <div class="sk-title">公眾號改寫</div>
+        <div class="sk-desc">將普通文字改寫成適合微信公眾號發佈嘅文章風格，語言更流暢，更有感染力。</div>
+        <div class="sk-kw">
+          <span class="kw">公眾號</span><span class="kw">改寫</span><span class="kw">推文</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sk-explainer fade-up">
+      <h3>🤔 技能點樣用？</h3>
+      <ol>
+        <li><strong>自動匹配：</strong>默认开启。你的消息里包含关键词（如"帮我写日報"），对应技能会自动激活。</li>
+        <li><strong>手動選擇：</strong>亦可以喺輸入框旁邊嘅下拉選單度手動揀某個技能，強制使用佢。</li>
+        <li><strong>單次生效：</strong>技能只影響你當前呢條訊息，發送後自動返到預設狀態，唔會影響成個對話。</li>
+        <li><strong>可以自訂：</strong>喺「Skill」頁面點擊「新增 Skill」，用自然語言寫低你想要 AI 扮演嘅角色同回答方式，就可以建立專屬技能。</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ TESTIMONIALS -->
+<section id="testimonials">
+  <div class="wrap">
+    <div class="sh fade-up">
+      <span class="sh-label">用戶口碑</span>
+      <h2 class="sh-title">佢哋都喺度用</h2>
+      <p class="sh-desc">嚟自唔同行業嘅真實用戶回饋。</p>
+    </div>
+
+    <div class="testi-grid fade-up">
+      <div class="testi-card">
+        <div class="stars">★★★★★</div>
+        <div class="quote">"以前用網頁版 AI 成日擔心客戶數據洩露，而家所有對話都喺本地，終於敢放心同 AI 討論項目方案。"</div>
+        <div class="author">張經理</div>
+        <div class="role">商務諮詢公司</div>
+      </div>
+      <div class="testi-card">
+        <div class="stars">★★★★★</div>
+        <div class="quote">"写日報是我每天最头疼的事。用了这个工具的日報 Skill，几分钟就搞定，格式统一规范，同事都说我效率变高了。"</div>
+        <div class="author">李同學</div>
+        <div class="role">應屆實習生</div>
+      </div>
+      <div class="testi-card">
+        <div class="stars">★★★★★</div>
+        <div class="quote">"Ollama 本地模型配合呢個工具簡直係絕配——完全離線執行，唔需要連線，安全感爆燈。"</div>
+        <div class="author">陳老師</div>
+        <div class="role">自由職業者</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ SAFETY -->
+<section id="safety" class="wide-section">
+  <div class="wrap">
+    <div class="sh fade-up">
+      <span class="sh-label">安全與私隱</span>
+      <h2 class="sh-title">你嘅數據，你話事</h2>
+      <p class="sh-desc">我哋將「數據安全」放喺第一位，而唔係當做附加功能。</p>
+    </div>
+
+    <div class="safety-grid fade-up">
+      <div class="safe-card">
+        <div class="safe-icon">🔐</div>
+        <div class="safe-body">
+          <h4>API Key 加密儲存</h4>
+          <p>你填入嘅 API Key 喺儲存前會經過加密處理，以密文形式儲存喺本地。應用程式介面顯示嘅係 <code>sk-****xxxx</code> 格式嘅掩碼，你自己都睇唔到原文，人哋更加睇唔到。</p>
+        </div>
+      </div>
+      <div class="safe-card">
+        <div class="safe-icon">💾</div>
+        <div class="safe-body">
+          <h4>對話記錄只喺本地</h4>
+          <p>所有對話都儲存喺你電腦上嘅數據庫檔案（app.db）入面。AI Workbench 唔會將你嘅對話內容上載到任何伺服器，亦冇帳號系統——根本就用唔著。</p>
+        </div>
+      </div>
+      <div class="safe-card">
+        <div class="safe-icon">📂</div>
+        <div class="safe-body">
+          <h4>檔案讀取需要你主動授權</h4>
+          <p>AI 唔可以自動讀取你電腦上嘅任何檔案。只有你喺對話頁面點擊「選擇檔案」掣、主動揀咗某個檔案，AI 先可以讀取佢。應用程式亦唔會儲存檔案嘅完整內容，只儲存簡短預覽。</p>
+        </div>
+      </div>
+      <div class="safe-card">
+        <div class="safe-icon">⚠️</div>
+        <div class="safe-body">
+          <h4>命令執行有五層保護</h4>
+          <p>「命令執行」功能預設係關閉嘅，需要你喺設定度手動開啟，並指定允許操作嘅資料夾。每次執行命令前仲會彈出確認視窗，危險操作（如刪除檔案）會被自動攔截。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ MODELS -->
+<section id="models">
+  <div class="wrap">
+    <div class="sh fade-up">
+      <span class="sh-label">支持的 AI 服务</span>
+      <h2 class="sh-title">帶住你自己嘅 AI Key 嚟</h2>
+      <p class="sh-desc">你已經有邊間 AI 服務嘅帳號，直接填入 Key 就可以用。亦可以連接自己電腦上本地執行嘅模型。</p>
+    </div>
+
+    <div class="models-grid fade-up">
+      <div class="model-card">
+        <div class="logo-text">DeepSeek</div>
+        <div class="tag">國產強模型</div>
+      </div>
+      <div class="model-card">
+        <div class="logo-text">ChatGPT</div>
+        <div class="tag">OpenAI</div>
+      </div>
+      <div class="model-card">
+        <div class="logo-text">Claude</div>
+        <div class="tag">Anthropic</div>
+      </div>
+      <div class="model-card">
+        <div class="logo-text">Kimi</div>
+        <div class="tag">Moonshot · 国产</div>
+      </div>
+      <div class="model-card">
+        <div class="logo-text">通义千问</div>
+        <div class="tag">阿里云 · 国产</div>
+      </div>
+      <div class="model-card local">
+        <div class="logo-text">Ollama</div>
+        <div class="tag">本地模型執行</div>
+      </div>
+      <div class="model-card local">
+        <div class="logo-text">LM Studio</div>
+        <div class="tag">本地模型執行</div>
+      </div>
+      <div class="model-card">
+        <div class="logo-text">自訂</div>
+        <div class="tag">任意兼容介面</div>
+      </div>
+    </div>
+
+    <p class="model-note fade-up">
+      🟢 綠色標註嘅係支援本地執行嘅模型——安裝對應嘅本地服務後即可使用，數據 100% 留喺本地。
+    </p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ FAQ -->
+<section id="guide">
+  <div class="wrap">
+    <div class="sh fade-up">
+      <span class="sh-label">常見問題</span>
+      <h2 class="sh-title">遇到問題？呢度有答案</h2>
+      <p class="sh-desc">點擊問題可以展開詳細解答。</p>
+    </div>
+
+    <div class="qa-list fade-up">
+
+      <div class="qa-item">
+        <button class="qa-q" onclick="toggleQA(this)">
+          我冇 API Key，點樣開始？
+          <span class="qa-icon">▼</span>
+        </button>
+        <div class="qa-a">
+          <div class="qa-a-inner">
+            需要先去 AI 服務商官網註冊帳號並申請 API Key。常見服務商獲取地址：
+            <table>
+              <tr><th>服務商</th><th>獲取地址</th><th>備註</th></tr>
+              <tr><td>DeepSeek</td><td>platform.deepseek.com</td><td>國內註冊，需充值</td></tr>
+              <tr><td>Kimi</td><td>platform.moonshot.cn</td><td>國內註冊</td></tr>
+              <tr><td>通义千问</td><td>dashscope.aliyun.com</td><td>需阿里雲帳號</td></tr>
+              <tr><td>ChatGPT</td><td>platform.openai.com</td><td>需海外支付方式</td></tr>
+            </table>
+            <br />如果想喺本地執行模型，可以試下 Ollama，去 ollama.com 下載安裝後，喺 AI Workbench 揀「Ollama」供應商即可，無需 API Key。
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <button class="qa-q" onclick="toggleQA(this)">
+          「測試連接」失敗咗，點算？
+          <span class="qa-icon">▼</span>
+        </button>
+        <div class="qa-a">
+          <div class="qa-a-inner">
+            最常見嘅幾個原因同解決方法：
+            <table>
+              <tr><th>錯誤提示</th><th>原因</th><th>解決方法</th></tr>
+              <tr><td>401 / 403</td><td>API Key 無效或過期</td><td>重新去服務商官网获取新的 Key</td></tr>
+              <tr><td>404</td><td>請求地址填錯咗</td><td>檢查「請求地址」係咪同官方文件一致</td></tr>
+              <tr><td>超时 / fetch failed</td><td>網絡唔通</td><td>檢查網絡；如用本地模型確認服務已啟動</td></tr>
+              <tr><td>model not found</td><td>模型名稱有誤</td><td>檢查模型名稱大小寫同版本號係咪準確</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <button class="qa-q" onclick="toggleQA(this)">
+          AI 冇自動使用我想要嘅技能，點解？
+          <span class="qa-icon">▼</span>
+        </button>
+        <div class="qa-a">
+          <div class="qa-a-inner">
+            自動匹配依賴「關鍵詞」觸發。檢查以下幾點：<br /><br />
+            1. 你的消息里是否包含了触发词？（比如"日報生成"需要消息里含有「日報」）<br />
+            2. 對應嘅技能係咪已經打開（喺「Skill」頁面確認開關係開啟狀態）？<br />
+            3. 輸入框旁邊嘅選擇器係咪處於「自動匹配」模式？<br /><br />
+            如果自動匹配唔穩定，可以直接喺選擇器度手動揀技能，優先級最高。
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <button class="qa-q" onclick="toggleQA(this)">
+          我嘅對話記錄存喺邊度？會唔會唔見咗？
+          <span class="qa-icon">▼</span>
+        </button>
+        <div class="qa-a">
+          <div class="qa-a-inner">
+            預設儲存位置：<br />
+            ・Windows：<code>%APPDATA%/ai-workbench/app.db</code><br />
+            ・macOS：<code>~/Library/Application Support/ai-workbench/app.db</code><br /><br />
+            你可以喺「設定」頁面睇到具體路徑。建議定期將呢個 .db 檔案複製到 USB 手指或雲端硬碟做備份，防止電腦損壞時遺失。亦可以喺設定度更改儲存位置，直接指向你嘅雲端硬碟同步資料夾。
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <button class="qa-q" onclick="toggleQA(this)">
+          讀取檔案時提示「檔案未授權」或「讀取失敗」點算？
+          <span class="qa-icon">▼</span>
+        </button>
+        <div class="qa-a">
+          <div class="qa-a-inner">
+            檔案讀取有幾個限制：<br /><br />
+            1. 必須通過對話頁面嘅「選擇檔案」掣嚟揀檔案，唔可以手動輸入路徑。<br />
+            2. 只支援 .txt、.md、.markdown 三種格式。<br />
+            3. 檔案大小唔可以超過 5MB。<br />
+            4. 檔案授權資訊喺應用程式關閉後會清除，重新打開應用程式後需要重新揀檔案。
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <button class="qa-q" onclick="toggleQA(this)">
+          解除安裝應用程式之後，我嘅數據仲喺度嗎？
+          <span class="qa-icon">▼</span>
+        </button>
+        <div class="qa-a">
+          <div class="qa-a-inner">
+            喺 Windows 上解除安裝時，安裝程式會詢問你係咪同時刪除本地數據（對話記錄、模型設定、密鑰等）。你可以揀保留，之後重新安裝後數據依然喺度。<br /><br />
+            如果你擔心數據安全，建議解除安裝前先手動搵到 app.db 檔案備份，或者喺設定度點「清理對話歷史」先至解除安裝。
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ CTA -->
+<section class="cta-section">
+  <div class="wrap">
+    <div class="cta-box fade-up">
+      <h2>而家就開始用</h2>
+      <p>下載对应你系统的安装包，安装后配置一个 AI 服务即可開始對話。</p>
+
+      <div class="install-tabs">
+        <a href="#" class="install-card">
+          <span class="plat-icon">🪟</span>
+          <div class="plat-name">Windows</div>
+          <div class="plat-fmt">10 / 11 · .exe</div>
+          <span class="plat-btn">下載</span>
+        </a>
+        <a href="#" class="install-card">
+          <span class="plat-icon">🍎</span>
+          <div class="plat-name">macOS</div>
+          <div class="plat-fmt">11+ · .dmg</div>
+          <span class="plat-btn">下載</span>
+        </a>
+        <a href="#" class="install-card">
+          <span class="plat-icon">🐧</span>
+          <div class="plat-name">Linux</div>
+          <div class="plat-fmt">.AppImage</div>
+          <span class="plat-btn">下載</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block;box-shadow:0 0 10px var(--accent)"></span>
+        AI Workbench
+      </div>
+      <div class="footer-meta">
+        <span>本地優先 · 隐私第一</span>
+        <span>Windows · macOS · Linux</span>
+        <span style="color: var(--dim)">MIT License</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function() {
+  // ======================================================== THEME & LANGUAGE
+  var THEME_KEY = 'awb-theme';
+  var themes = ['dark', 'light', 'green'];
+  var themeSelect = document.getElementById('theme-select');
+
+  function applyTheme(name) {
+    document.body.classList.remove('light', 'green');
+    if (name === 'light') document.body.classList.add('light');
+    else if (name === 'green') document.body.classList.add('green');
+    if (themeSelect) { themeSelect.value = name; }
+  }
+
+  var saved = localStorage.getItem(THEME_KEY);
+  if (saved && themes.indexOf(saved) >= 0) { applyTheme(saved); }
+
+  window.switchTheme = function(name) {
+    applyTheme(name);
+    localStorage.setItem(THEME_KEY, name);
+  };
+
+  window.switchLang = function(url) {
+    window.location.href = url;
+  };
+
+  // ======================================================== SCROLL EFFECTS
+  const progressBar = document.getElementById('scroll-progress');
+  const navbar = document.getElementById('navbar');
+  const backTop = document.getElementById('back-top');
+
+  function onScroll() {
+    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    var pct = docHeight > 0 ? Math.min((scrollTop / docHeight) * 100, 100) : 0;
+    progressBar.style.width = pct + '%';
+    if (scrollTop > 40) { navbar.classList.add('scrolled'); } else { navbar.classList.remove('scrolled'); }
+    if (scrollTop > 600) { backTop.classList.add('visible'); } else { backTop.classList.remove('visible'); }
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // ======================================================== FADE UP OBSERVER
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) { e.target.classList.add('visible'); }
+    });
+  }, { threshold: 0.06, rootMargin: '0px 0px -30px 0px' });
+  var fades = document.querySelectorAll('.fade-up');
+  for (var i = 0; i < fades.length; i++) { io.observe(fades[i]); }
+
+  // ======================================================== COUNT UP
+  var countObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (!e.isIntersecting) return;
+      var spans = e.target.querySelectorAll('[data-count]');
+      spans.forEach(function(span) {
+        var target = parseInt(span.getAttribute('data-count'), 10);
+        if (target === 0) { span.textContent = '0'; return; }
+        var current = 0;
+        var step = Math.max(1, Math.ceil(target / 35));
+        var timer = setInterval(function() {
+          current += step;
+          if (current >= target) { current = target; clearInterval(timer); }
+          span.textContent = current;
+        }, 38);
+      });
+      countObserver.unobserve(e.target);
+    });
+  }, { threshold: 0.3 });
+  var statsEls = document.querySelectorAll('.stats-grid');
+  for (var j = 0; j < statsEls.length; j++) { countObserver.observe(statsEls[j]); }
+
+  // ======================================================== FAQ ACCORDION
+  window.toggleQA = function(btn) {
+    var item = btn.closest('.qa-item');
+    if (!item) return;
+    var isOpen = item.classList.contains('open');
+    // close all
+    var allOpen = document.querySelectorAll('.qa-item.open');
+    for (var k = 0; k < allOpen.length; k++) {
+      allOpen[k].classList.remove('open');
+      allOpen[k].querySelector('.qa-a').style.maxHeight = '0';
+    }
+    if (!isOpen) {
+      item.classList.add('open');
+      var answer = item.querySelector('.qa-a');
+      answer.style.maxHeight = answer.scrollHeight + 'px';
+    }
+  };
+
+  // ======================================================== FEATURE TABS
+  var tabs = document.querySelectorAll('.feat-tab');
+  for (var t = 0; t < tabs.length; t++) {
+    tabs[t].addEventListener('click', function() {
+      var active = document.querySelector('.feat-tab.active');
+      if (active) active.classList.remove('active');
+      this.classList.add('active');
+      var group = this.getAttribute('data-tab');
+      ['chat','files','ux'].forEach(function(g) {
+        var el = document.getElementById('feat-' + g);
+        if (el) el.style.display = (g === group) ? '' : 'none';
+      });
+    });
+  }
+
+  // ======================================================== CANVAS PARTICLES
+  var canvas = document.getElementById('particles');
+  if (canvas && canvas.getContext) {
+    var ctx = canvas.getContext('2d');
+    var particles = [];
+    var w, h;
+
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    function Particle() {
+      this.reset();
+      this.y = Math.random() * h;
+    }
+    Particle.prototype.reset = function() {
+      this.x = Math.random() * w;
+      this.y = -8;
+      this.size = Math.random() * 1.4 + 0.4;
+      this.speed = Math.random() * 0.3 + 0.15;
+      this.opacity = Math.random() * 0.4 + 0.12;
+    };
+    Particle.prototype.update = function() {
+      this.y += this.speed;
+      this.opacity -= 0.003;
+      if (this.y > h + 10 || this.opacity <= 0) {
+        this.reset();
+        this.y = -8;
+        this.opacity = Math.random() * 0.4 + 0.12;
+      }
+    };
+    Particle.prototype.draw = function() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(59,130,246,' + this.opacity + ')';
+      ctx.fill();
+    };
+
+    var PARTICLE_COUNT = 50;
+    for (var p = 0; p < PARTICLE_COUNT; p++) { particles.push(new Particle()); }
+
+    function animate() {
+      if (!canvas || !ctx) return;
+      ctx.clearRect(0, 0, w, h);
+      for (var i = 0; i < particles.length; i++) {
+        particles[i].update();
+        particles[i].draw();
+      }
+      // connections
+      for (var i = 0; i < particles.length; i++) {
+        for (var j = i + 1; j < particles.length; j++) {
+          var dx = particles[i].x - particles[j].x;
+          var dy = particles[i].y - particles[j].y;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 110) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = 'rgba(59,130,246,' + (0.035 * (1 - dist / 110)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+    animate();
+  }
+
+  // ======================================================== TYPING TERMINAL
+  var messages = [
+    { user: '帮我写一份今日工作日報', ai: '好的，以下是你今天的日報：\n\n📋 今日工作日報\n1. 完成客户需求分析报告\n2. 跟进项目A第3阶段进度\n3. 整理了本周会议纪要\n\n💡 明日计划：启动项目B方案设计。' },
+    { user: '请帮我總結这篇文章的核心要点', ai: '这篇文章的核心要点如下：\n\n1. 本地化AI是未来的趋势——用户数据隐私越来越被重视\n2. 桌面应用相比Web应用在性能和体验上更有优势\n3. 多模型支持是刚需——不同场景需要不同的AI' },
+    { user: '能帮我改寫这段文字成公眾號风格吗？', ai: '当然可以！以下是改寫后的版本：\n\n💡 你有没有想过——\n每天和AI聊天时，你说的每一句话，都可能被存在别人的服务器上？\n\n今天，我们带来了答案。一个真正属于你的AI助手，让所有对话都只留在你的电脑里👇' }
+  ];
+  var msgIndex = 0;
+  var typingLine = document.getElementById('typing-line');
+  var typingCursor = document.getElementById('typing-cursor');
+  var aiReplyLine = document.getElementById('ai-reply-line');
+  var aiText = document.getElementById('ai-text');
+
+  function typeMessage() {
+    if (!typingLine || !aiReplyLine || !aiText) return;
+    var msg = messages[msgIndex];
+    typingLine.textContent = '';
+    aiReplyLine.style.display = 'none';
+    aiText.textContent = '';
+    if (typingCursor) typingCursor.style.display = 'inline-block';
+
+    var i = 0;
+    var typeUser = setInterval(function() {
+      if (i >= msg.user.length) {
+        clearInterval(typeUser);
+        if (typingCursor) typingCursor.style.display = 'none';
+
+        setTimeout(function() {
+          aiReplyLine.style.display = 'block';
+          var j = 0;
+          var typeAI = setInterval(function() {
+            if (j >= msg.ai.length) {
+              clearInterval(typeAI);
+              msgIndex = (msgIndex + 1) % messages.length;
+              setTimeout(typeMessage, 3500);
+              return;
+            }
+            aiText.textContent += msg.ai[j];
+            j++;
+          }, 16);
+        }, 600);
+        return;
+      }
+      typingLine.textContent += msg.user[i];
+      i++;
+    }, 38);
+  }
+
+  if (typingLine) { typeMessage(); }
+})();
+</script>
+</body>
+</html>

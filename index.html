@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Workbench — 你的私人 AI 助手，数据只在你手里</title>
+<style>
+/* ============================================================ RESET */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:          #0e1219;
+  --bg2:         #141b26;
+  --bg3:         #1a2234;
+  --border:      rgba(255,255,255,0.08);
+  --border2:     rgba(255,255,255,0.14);
+  --text:        #eef2f8;
+  --text2:       #bcc6d4;
+  --muted:       #8a95a8;
+  --dim:         #576378;
+  --accent:      #3b82f6;
+  --accent2:     #6366f1;
+  --accent3:     #06b6d4;
+  --green:       #22c55e;
+  --amber:       #f59e0b;
+  --red:         #f87171;
+  --purple:      #a855f7;
+  --r:           14px;
+  --r-sm:        10px;
+}
+
+/* ---------- LIGHT THEME ---------- */
+body.light {
+  --bg:          #f5f6f8;
+  --bg2:         #eaecef;
+  --bg3:         #dfe2e7;
+  --nav-bg:      rgba(245,246,248,0.88);
+  --border:      rgba(0,0,0,0.08);
+  --border2:     rgba(0,0,0,0.14);
+  --text:        #1a1d26;
+  --text2:       #3d4452;
+  --muted:       #6e7684;
+  --dim:         #949dab;
+  --accent:      #1d6df0;
+  --accent2:     #4c52e0;
+  --accent3:     #0596a8;
+  --green:       #18a34a;
+  --amber:       #d97706;
+  --red:         #e04040;
+  --purple:      #8838ea;
+}
+
+/* ---------- GREEN / EYE-CARE THEME ---------- */
+body.green {
+  --bg:          #eaf6e0;
+  --bg2:         #dcedc4;
+  --bg3:         #cfe3b3;
+  --nav-bg:      rgba(234,246,224,0.88);
+  --border:      rgba(77,130,47,0.15);
+  --border2:     rgba(77,130,47,0.22);
+  --text:        #2d3a20;
+  --text2:       #485835;
+  --muted:       #6b7a55;
+  --dim:         #8a9a70;
+  --accent:      #4d822f;
+  --accent2:     #3c6b22;
+  --accent3:     #5e9a3c;
+  --green:       #3c8028;
+  --amber:       #b8860b;
+  --red:         #c64545;
+  --purple:     #6b48a8;
+}
+/* ---------- LIGHT & GREEN OVERRIDES ---------- */
+body.light .hero-glow-1, body.green .hero-glow-1 { opacity: .35; }
+body.light .hero-glow-2, body.green .hero-glow-2 { opacity: .25; }
+body.light .terminal-wrap, body.green .terminal-wrap { box-shadow: 0 2px 30px rgba(0,0,0,0.08); }
+body.light .terminal-wrap, body.green .terminal-wrap { background: rgba(17,24,39,0.92); }
+body.light .term-text, body.green .term-text { color: #e8edf5; }
+body.light .term-user, body.green .term-user { color: #3b82f6; }
+body.light .term-ai, body.green .term-ai { color: #22c55e; }
+body.light .term-title, body.green .term-title { color: #7a8ba0; }
+body.light .term-bar, body.green .term-bar { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.06); }
+body.light .btn-primary, body.light .hero-icon,
+body.green .btn-primary, body.green .hero-icon { box-shadow: 0 0 28px rgba(77,130,47,0.2); }
+body.light .btn-primary:hover, body.light .hero-icon:hover,
+body.green .btn-primary:hover, body.green .hero-icon:hover { box-shadow: 0 0 44px rgba(77,130,47,0.32); }
+body.light .nav-pill, body.green .nav-pill { background: rgba(24,163,74,0.08); }
+body.light nav.scrolled, body.green nav.scrolled { box-shadow: 0 1px 8px rgba(0,0,0,0.08); }
+body.light .hero-badge, body.green .hero-badge { background: rgba(77,130,47,0.08); border-color: rgba(77,130,47,0.18); color: var(--accent); }
+body.light #back-top, body.green #back-top { background: var(--accent); }
+body.light ::-webkit-scrollbar-thumb, body.green ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); }
+body.light ::-webkit-scrollbar-thumb:hover, body.green ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
+body.light .why-card.pain, body.green .why-card.pain { background: rgba(255,200,200,0.08); border-color: rgba(224,64,64,0.12); }
+body.light .why-card.value, body.green .why-card.value { background: rgba(60,128,40,0.08); border-color: rgba(60,128,40,0.14); }
+body.light .btn-dl, body.green .btn-dl { background: var(--bg2); border-color: var(--border); }
+body.light .btn-dl:hover, body.green .btn-dl:hover { background: var(--bg3); }
+body.light .safe-card, body.green .safe-card { background: var(--bg); }
+body.light .why-flag.pain, body.green .why-flag.pain { background: rgba(224,64,64,0.08); color: #c53030; }
+body.light .why-flag.value, body.green .why-flag.value { background: rgba(60,128,40,0.1); color: #2d6620; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+/* ============================================================ SCROLL PROGRESS */
+#scroll-progress {
+  position: fixed; top: 0; left: 0; height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+  z-index: 9999; width: 0%;
+}
+
+/* ============================================================ CANVAS PARTICLES */
+#particles {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+}
+
+/* ============================================================ NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px; height: 60px;
+  background: var(--nav-bg, rgba(14,18,25,0.88));
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border-bottom: 1px solid var(--border);
+  transition: box-shadow 0.3s;
+}
+nav.scrolled { box-shadow: 0 1px 30px rgba(0,0,0,0.4); }
+
+.logo {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 700; font-size: 16px; letter-spacing: -0.4px;
+  color: var(--text);
+}
+
+.logo-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 14px var(--accent), 0 0 30px rgba(59,130,246,0.35);
+  animation: pulse 2.4s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+
+.nav-links { display: flex; gap: 34px; list-style: none; }
+.nav-links a {
+  color: var(--muted); text-decoration: none; font-size: 14.5px; font-weight: 500;
+  transition: color .2s;
+}
+.nav-links a:hover { color: var(--text); }
+
+.nav-pill {
+  font-size: 12.5px; padding: 5px 14px; border-radius: 99px;
+  background: rgba(34,197,94,0.1); color: var(--green);
+  border: 1px solid rgba(34,197,94,0.22); font-weight: 500;
+}
+
+/* ---------- NAV DROPDOWN SELECTS ---------- */
+.nav-select {
+  background: var(--bg3); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 5px 24px 5px 10px; font-size: 12.5px; font-weight: 500;
+  font-family: inherit; cursor: pointer; outline: none; margin-left: 6px; flex-shrink: 0;
+  appearance: none; -webkit-appearance: none; -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238a95a8'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 7px center;
+  transition: border-color .2s, box-shadow .2s; line-height: 1.4;
+}
+.nav-select:hover { border-color: var(--border2); }
+.nav-select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+.nav-select option { background: var(--bg3); color: var(--text); }
+
+/* ============================================================ LAYOUT */
+main { position: relative; z-index: 1; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
+section { padding: 70px 0; }
+section.tight { padding: 40px 0; }
+section.wide-section { padding: 90px 0; }
+.divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); margin: 0; }
+
+/* ============================================================ SECTION HEADER */
+.sh { text-align: center; margin-bottom: 54px; }
+.sh-label {
+  display: inline-block; font-size: 12.5px; text-transform: uppercase;
+  letter-spacing: 2.5px; color: var(--accent); margin-bottom: 12px; font-weight: 600;
+}
+.sh-title {
+  font-size: clamp(1.8rem, 3.8vw, 2.6rem); font-weight: 700;
+  letter-spacing: -1.2px; margin-bottom: 10px;
+}
+.sh-desc { color: var(--muted); max-width: 520px; margin: 0 auto; line-height: 1.75; font-size: 16px; }
+
+/* ============================================================ HERO */
+.hero {
+  min-height: 100vh; padding-top: 100px; padding-bottom: 60px;
+  display: flex; align-items: center;
+  position: relative; overflow: hidden;
+}
+
+.hero-glow-1 {
+  position: absolute; top: -200px; left: 50%; transform: translateX(-50%);
+  width: 900px; height: 700px; pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(59,130,246,.10) 0%, transparent 65%);
+  animation: glowPulse 6s ease-in-out infinite;
+}
+@keyframes glowPulse {
+  0%,100% { opacity: .7; transform: translateX(-50%) scale(1); }
+  50% { opacity: 1; transform: translateX(-50%) scale(1.06); }
+}
+
+.hero-glow-2 {
+  position: absolute; top: 30%; right: -10%; pointer-events: none;
+  width: 550px; height: 550px;
+  background: radial-gradient(ellipse at center, rgba(99,102,241,.07) 0%, transparent 65%);
+}
+
+.hero-inner { position: relative; text-align: center; width: 100%; z-index: 2; }
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--accent);
+  background: rgba(59,130,246,0.09); border: 1px solid rgba(59,130,246,0.25);
+  padding: 6px 16px; border-radius: 99px; margin-bottom: 32px;
+  letter-spacing: .5px; font-weight: 500;
+}
+
+/* ---------- HERO ICON ---------- */
+.hero-icon-wrap {
+  margin-bottom: 36px;
+  display: flex; justify-content: center; align-items: center;
+  position: relative;
+}
+.hero-icon {
+  width: 160px; height: 160px;
+  border-radius: 32px;
+  box-shadow: 0 0 60px rgba(59,130,246,0.3), 0 0 120px rgba(59,130,246,0.12);
+  transition: transform .3s, box-shadow .3s;
+}
+.hero-icon:hover {
+  transform: scale(1.06);
+  box-shadow: 0 0 80px rgba(59,130,246,0.42), 0 0 140px rgba(59,130,246,0.2);
+}
+.hero-icon-glow {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 240px; height: 240px;
+  background: radial-gradient(circle at center, rgba(59,130,246,0.1) 0%, transparent 70%);
+  border-radius: 50%; pointer-events: none;
+  animation: iconGlow 3s ease-in-out infinite;
+}
+@keyframes iconGlow {
+  0%,100% { opacity: .6; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.12); }
+}
+.hero-badge::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green); box-shadow: 0 0 8px var(--green);
+  animation: pulse 2.4s infinite;
+}
+
+.hero h1 {
+  font-size: clamp(2.4rem, 5.5vw, 4.4rem);
+  font-weight: 800; letter-spacing: -2.5px; line-height: 1.12;
+  margin-bottom: 24px;
+}
+
+.grad {
+  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 35%, #06b6d4 70%, #8b5cf6 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientShift 5s ease-in-out infinite;
+}
+@keyframes gradientShift {
+  0%,100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.hero-sub {
+  font-size: 1.2rem; color: var(--text2);
+  max-width: 620px; margin: 0 auto 48px; line-height: 1.9;
+}
+
+.hero-btns {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  flex-wrap: wrap; margin-bottom: 56px;
+}
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 26px; border-radius: var(--r-sm);
+  font-size: 15px; font-weight: 600;
+  text-decoration: none; border: none; cursor: pointer; transition: all .25s;
+  position: relative; overflow: hidden;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #3b82f6, #6366f1); color: #fff;
+  box-shadow: 0 0 28px rgba(59,130,246,0.28);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 44px rgba(59,130,246,0.45); }
+.btn-primary::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.10) 50%, transparent 70%);
+  transform: translateX(-100%); transition: transform .6s;
+}
+.btn-primary:hover::after { transform: translateX(100%); }
+
+.btn-ghost {
+  background: transparent; color: var(--text2);
+  border: 1px solid var(--border2);
+}
+.btn-ghost:hover { color: var(--text); background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.18); }
+
+/* ---------- TERMINAL MOCKUP ---------- */
+.terminal-wrap {
+  max-width: 680px; margin: 0 auto;
+  background: rgba(17,24,39,0.9); border: 1px solid var(--border2);
+  border-radius: 14px; overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+}
+.term-bar {
+  display: flex; align-items: center; gap: 7px; padding: 11px 15px;
+  background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border);
+}
+.term-dot { width: 11px; height: 11px; border-radius: 50%; }
+.term-dot.r { background: #ff5f57; }
+.term-dot.y { background: #febc2e; }
+.term-dot.g { background: #28c840; }
+.term-title {
+  margin-left: 10px; font-size: 13px; color: var(--dim); flex: 1;
+}
+.term-body {
+  padding: 18px 22px; text-align: left;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', 'Monaco', monospace;
+  font-size: 14px; line-height: 1.9; min-height: 160px;
+}
+.term-user { color: var(--accent); }
+.term-ai { color: var(--green); }
+.term-text { color: var(--text); }
+.term-cursor {
+  display: inline-block; width: 8px; height: 16px; background: var(--accent);
+  vertical-align: text-bottom; margin-left: 2px;
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+
+/* ---------- TRUST STRIP ---------- */
+.trust-strip {
+  margin-top: 48px;
+  display: flex; align-items: center; justify-content: center; gap: 44px; flex-wrap: wrap;
+}
+.trust-item {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 14px; color: var(--muted); font-weight: 500;
+  transition: color .2s;
+}
+.trust-item:hover { color: var(--text); }
+.trust-icon { font-size: 20px; }
+
+/* ============================================================ STATS */
+#stats { padding: 0; }
+.stats-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+}
+.stat-card {
+  background: var(--bg2); padding: 34px 20px; text-align: center;
+  transition: background .25s; border-right: 1px solid var(--border);
+}
+.stat-card:last-child { border-right: none; }
+.stat-card:hover { background: var(--bg3); }
+.stat-num {
+  font-size: 2.6rem; font-weight: 800; letter-spacing: -1.5px;
+  background: linear-gradient(135deg, var(--accent), var(--accent3));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.stat-label { font-size: 14px; color: var(--muted); margin-top: 6px; font-weight: 500; }
+
+/* ============================================================ WHY */
+.why-grid { display: grid; grid-template-columns: 5fr 4fr; gap: 20px; align-items: stretch; }
+
+.why-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 38px;
+  transition: border-color .3s, transform .3s, box-shadow .3s; position: relative; overflow: hidden;
+}
+.why-card:hover { border-color: var(--border2); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+.why-card.pain { border-left: 3px solid rgba(248,113,113,0.4); }
+.why-card.value { border-left: 3px solid rgba(34,197,94,0.4); }
+
+.why-flag {
+  position: absolute; top: 14px; right: 14px;
+  font-size: 12px; padding: 3px 10px; border-radius: 99px; font-weight: 600; letter-spacing: .5px;
+}
+.why-flag.pain { background: rgba(248,113,113,0.1); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+.why-flag.value { background: rgba(34,197,94,0.1); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+
+.why-card .emoji { font-size: 36px; margin-bottom: 18px; display: block; }
+.why-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
+.why-card p { color: var(--text2); font-size: 15px; line-height: 1.8; }
+.why-card ul { margin-top: 14px; list-style: none; }
+.why-card li {
+  font-size: 14.5px; color: var(--muted); padding: 4px 0;
+  display: flex; align-items: center; gap: 8px;
+}
+.why-card li::before { content: ''; width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.why-card.pain li::before { background: var(--red); }
+.why-card.value li::before { background: var(--green); }
+
+/* ============================================================ HOW IT WORKS */
+#how, #skills, #safety, #guide { background: var(--bg2); }
+
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; position: relative; }
+.steps::before {
+  content: ''; position: absolute;
+  top: 44px; left: calc(16.67% + 22px); right: calc(16.67% + 22px);
+  height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+  opacity: .3; border-radius: 2px;
+}
+
+.step { padding: 0 26px; text-align: center; position: relative; }
+.step-num {
+  width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 26px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff; position: relative; z-index: 1;
+  box-shadow: 0 0 28px rgba(59,130,246,0.32);
+  transition: transform .25s, box-shadow .25s;
+}
+.step:hover .step-num { transform: scale(1.06); box-shadow: 0 0 44px rgba(59,130,246,0.45); }
+.step h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+.step p  { font-size: 15px; color: var(--text2); line-height: 1.75; }
+
+/* ============================================================ FEATURES TABBED */
+.feat-tabs {
+  display: inline-flex; justify-content: center; gap: 4px; margin-bottom: 36px;
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 99px;
+  padding: 4px;
+}
+.feat-tabs-wrap { text-align: center; }
+
+.feat-tab {
+  padding: 9px 22px; border-radius: 99px; border: none; cursor: pointer;
+  font-size: 14.5px; color: var(--muted); font-weight: 500;
+  background: transparent; transition: all .25s; white-space: nowrap;
+  font-family: inherit;
+}
+.feat-tab.active { background: var(--accent); color: #fff; box-shadow: 0 4px 16px rgba(59,130,246,0.3); }
+
+.feat-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+}
+
+.feat-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 28px;
+  position: relative; transition: all .3s; overflow: hidden;
+}
+.feat-card:hover {
+  border-color: rgba(59,130,246,0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 44px rgba(0,0,0,0.3);
+}
+.feat-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.feat-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent3));
+  opacity: 0; transition: opacity .3s;
+}
+.feat-card:hover::before { opacity: 1; }
+
+.feat-icon { font-size: 28px; margin-bottom: 16px; display: block; }
+.feat-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+.feat-desc { font-size: 14.5px; color: var(--text2); line-height: 1.75; }
+
+/* ============================================================ SKILLS */
+#skills { background: var(--bg2); }
+
+.skills-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 36px; }
+
+.sk-card {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 30px; transition: all .3s; position: relative; overflow: hidden;
+}
+.sk-card:hover { border-color: rgba(99,102,241,0.35); transform: translateY(-3px); box-shadow: 0 14px 44px rgba(99,102,241,0.07); }
+.sk-card::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(99,102,241,0.04) 0%, transparent 50%);
+  pointer-events: none;
+}
+.sk-emoji { font-size: 32px; margin-bottom: 14px; display: block; }
+.sk-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.sk-desc  { font-size: 14.5px; color: var(--text2); line-height: 1.7; }
+.sk-kw { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px; }
+.kw {
+  font-size: 12px; padding: 3px 10px; border-radius: 5px;
+  background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2);
+  color: var(--accent2); font-weight: 500;
+}
+
+.sk-explainer {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 32px 38px;
+}
+.sk-explainer h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+.sk-explainer ol { padding-left: 22px; }
+.sk-explainer li { font-size: 15px; color: var(--text2); line-height: 1.85; margin-bottom: 7px; }
+.sk-explainer li strong { color: var(--text); }
+
+/* ============================================================ TESTIMONIALS */
+.testi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.testi-grid .testi-card:last-child { grid-column: 1 / -1; max-width: 520px; margin: 0 auto; }
+
+.testi-card {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 28px; transition: all .3s;
+}
+.testi-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.testi-card .stars { color: var(--amber); font-size: 13px; margin-bottom: 12px; letter-spacing: 1px; }
+.testi-card .quote {
+  font-size: 15px; color: var(--text2); line-height: 1.8; margin-bottom: 18px;
+  font-style: italic; padding-left: 12px;
+  border-left: 3px solid rgba(59,130,246,0.2);
+}
+.testi-card .author { font-size: 14px; font-weight: 600; color: var(--text); }
+.testi-card .role { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+/* ============================================================ SAFETY */
+.safety-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+
+.safe-card {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 28px; display: flex; gap: 20px; align-items: flex-start;
+  transition: all .3s;
+}
+.safe-card:hover { border-color: rgba(34,197,94,0.25); box-shadow: 0 8px 28px rgba(34,197,94,0.03); }
+.safe-icon {
+  width: 46px; height: 46px; flex-shrink: 0; border-radius: 11px;
+  background: rgba(34,197,94,0.07); border: 1px solid rgba(34,197,94,0.16);
+  display: flex; align-items: center; justify-content: center; font-size: 21px;
+}
+.safe-body h4 { font-size: 15px; font-weight: 600; margin-bottom: 7px; }
+.safe-body p  { font-size: 14.5px; color: var(--text2); line-height: 1.7; }
+.safe-body code {
+  font-size: 13px; background: rgba(255,255,255,0.05); padding: 1px 6px; border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.06); color: var(--text2);
+}
+
+/* ============================================================ MODELS */
+#models { background: var(--bg); }
+
+.models-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+}
+
+.model-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r-sm); padding: 22px 16px; text-align: center;
+  transition: all .3s; position: relative; overflow: hidden;
+}
+.model-card:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: 0 10px 32px rgba(0,0,0,0.22); }
+.model-card .logo-text { font-size: 14px; font-weight: 700; margin-bottom: 5px; }
+.model-card .tag { font-size: 12.5px; color: var(--dim); font-weight: 500; }
+.model-card.local { border-color: rgba(34,197,94,0.15); }
+.model-card.local .logo-text { color: var(--green); }
+.model-card.local .tag { color: var(--green); }
+
+.model-note { margin-top: 28px; text-align: center; font-size: 14.5px; color: var(--muted); }
+
+/* ============================================================ FAQ */
+.qa-list { display: flex; flex-direction: column; gap: 9px; }
+
+.qa-item {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); overflow: hidden; transition: border-color .25s;
+}
+.qa-item:hover { border-color: var(--border2); }
+
+.qa-q {
+  width: 100%; background: transparent; border: none; cursor: pointer;
+  padding: 20px 24px; display: flex; align-items: center;
+  justify-content: space-between; gap: 16px;
+  font-size: 15px; font-weight: 600; color: var(--text);
+  text-align: left; font-family: inherit; transition: background .2s;
+}
+.qa-q:hover { background: rgba(255,255,255,0.02); }
+
+.qa-icon {
+  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+  background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2);
+  display: flex; align-items: center; justify-content: center; font-size: 12px;
+  transition: all .25s; color: var(--accent);
+}
+.qa-item.open .qa-icon { background: var(--accent); border-color: var(--accent); color: #fff; transform: rotate(180deg); }
+
+.qa-a {
+  max-height: 0; overflow: hidden; transition: max-height .35s ease;
+  padding: 0 24px; font-size: 15px; color: var(--text2); line-height: 1.85;
+}
+.qa-a-inner { padding: 0 0 20px; }
+.qa-a table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+.qa-a th, .qa-a td { padding: 8px 12px; border: 1px solid var(--border); text-align: left; }
+.qa-a th { background: rgba(255,255,255,0.02); color: var(--text); font-weight: 600; }
+.qa-a code {
+  font-size: 13px; background: rgba(255,255,255,0.05); padding: 1px 6px; border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.06); color: var(--text2);
+}
+
+/* ============================================================ CTA */
+.cta-box {
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 20px; padding: 68px; text-align: center;
+  position: relative; overflow: hidden;
+}
+.cta-box::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 65% 55% at 50% 0%, rgba(59,130,246,0.07) 0%, transparent 65%);
+}
+.cta-box h2 { font-size: 2rem; font-weight: 800; letter-spacing: -1.5px; margin-bottom: 14px; position: relative; }
+.cta-box p  { color: var(--text2); max-width: 460px; margin: 0 auto 40px; line-height: 1.8; font-size: 16px; position: relative; }
+
+.install-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; max-width: 700px; margin: 0 auto; position: relative; }
+
+.install-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 22px 16px; text-align: center;
+  transition: all .3s; text-decoration: none; color: inherit; display: block;
+}
+.install-card:hover {
+  border-color: rgba(59,130,246,0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 36px rgba(0,0,0,0.28);
+}
+.install-card .plat-icon { font-size: 30px; margin-bottom: 10px; display: block; }
+.install-card .plat-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+.install-card .plat-fmt { font-size: 13px; color: var(--muted); }
+.install-card .plat-btn {
+  display: inline-block; margin-top: 14px; font-size: 13px; font-weight: 600;
+  padding: 7px 22px; border-radius: 99px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff; transition: box-shadow .25s;
+}
+.install-card:hover .plat-btn { box-shadow: 0 6px 22px rgba(59,130,246,0.38); }
+
+/* ============================================================ FOOTER */
+footer {
+  background: var(--bg); border-top: 1px solid var(--border);
+  padding: 40px 0;
+}
+.footer-inner {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 18px;
+}
+.footer-brand { font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 9px; color: var(--text); }
+.footer-meta { font-size: 14px; color: var(--muted); display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+
+/* ============================================================ BACK TO TOP */
+#back-top {
+  position: fixed; bottom: 26px; right: 26px; z-index: 999;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--bg3); border: 1px solid var(--border2);
+  color: var(--muted); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-family: inherit;
+  opacity: 0; pointer-events: none;
+  transition: all .3s;
+}
+#back-top.visible { opacity: 1; pointer-events: auto; }
+#back-top:hover { background: var(--accent); color: #fff; border-color: var(--accent);
+  box-shadow: 0 4px 18px rgba(59,130,246,0.32); transform: translateY(-2px); }
+
+/* ============================================================ ANIMATIONS */
+.fade-up { opacity: 0; transform: translateY(24px); transition: opacity .55s ease, transform .55s ease; }
+.fade-up.visible { opacity: 1; transform: translateY(0); }
+
+/* ============================================================ RESPONSIVE */
+@media (max-width: 900px) {
+  nav { padding: 0 20px; }
+  .nav-links { display: none; }
+  .wrap { padding: 0 16px; }
+  section { padding: 64px 0; }
+  .hero { padding-top: 80px; min-height: auto; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .stat-card:nth-child(2) { border-right: none; }
+  .why-grid { grid-template-columns: 1fr; }
+  .steps { grid-template-columns: 1fr; gap: 24px; }
+  .steps::before { display: none; }
+  .step { padding: 0; text-align: left; display: flex; gap: 18px; align-items: flex-start; }
+  .step-num { flex-shrink: 0; margin: 0; width: 48px; height: 48px; font-size: 17px; }
+  .feat-grid { grid-template-columns: 1fr; }
+  .feat-card:last-child:nth-child(odd) { grid-column: auto; }
+  .feat-tabs { padding: 3px; gap: 2px; }
+  .feat-tab { padding: 7px 14px; font-size: 12.5px; }
+  .skills-row { grid-template-columns: 1fr; }
+  .testi-grid { grid-template-columns: 1fr; }
+  .safety-grid { grid-template-columns: 1fr; }
+  .models-grid { grid-template-columns: repeat(2, 1fr); }
+  .install-tabs { grid-template-columns: 1fr; }
+  .cta-box { padding: 40px 20px; }
+  .terminal-wrap { max-width: 100%; }
+  .trust-strip { gap: 24px; }
+}
+@media (max-width: 580px) {
+  .models-grid { grid-template-columns: repeat(2, 1fr); }
+  .testi-grid { grid-template-columns: 1fr; }
+  .testi-grid .testi-card:last-child { grid-column: auto; max-width: none; margin: 0; }
+  .hero-icon { width: 120px; height: 120px; border-radius: 26px; }
+  .hero-icon-glow { width: 180px; height: 180px; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .stat-num { font-size: 2rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- SCROLL PROGRESS -->
+<div id="scroll-progress"></div>
+
+<!-- CANVAS PARTICLES -->
+<canvas id="particles"></canvas>
+
+<!-- BACK TO TOP -->
+<button id="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="回到顶部">↑</button>
+
+<!-- NAV -->
+<nav id="navbar">
+  <div class="logo">
+    <span class="logo-dot"></span>
+    AI Workbench
+  </div>
+  <ul class="nav-links">
+    <li><a href="#why">痛点</a></li>
+    <li><a href="#how">上手</a></li>
+    <li><a href="#features">功能</a></li>
+    <li><a href="#testimonials">口碑</a></li>
+    <li><a href="#safety">安全</a></li>
+    <li><a href="#guide">FAQ</a></li>
+  </ul>
+  <span class="nav-pill">本地优先</span>
+  <select class="nav-select" onchange="switchLang(this.value)" aria-label="选择语言">
+    <option value="index.html" selected>简体中文</option>
+    <option value="index_en.html">English</option>
+    <option value="index_tw.html">繁體中文</option>
+  </select>
+  <select class="nav-select" id="theme-select" onchange="switchTheme(this.value)" aria-label="选择主题">
+    <option value="dark">🌙 暗色</option>
+    <option value="light">☀️ 亮色</option>
+    <option value="green">🌿 护眼</option>
+  </select>
+</nav>
+
+<main>
+
+<!-- ============================================================ HERO -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-glow-1"></div>
+    <div class="hero-glow-2"></div>
+    <div class="hero-inner">
+
+      <div class="hero-icon-wrap fade-up">
+        <div class="hero-icon-glow"></div>
+        <img src="icon.png" alt="AI Workbench 图标" class="hero-icon" />
+      </div>
+
+      <div class="hero-badge fade-up">你的 AI 对话记录，永远只在你自己的电脑上</div>
+
+      <h1 class="fade-up">像聊天一样使用 AI，<br /><span class="grad">数据从不离开你的电脑</span></h1>
+
+      <p class="hero-sub fade-up">
+        AI Workbench 是一款安装在电脑上的 AI 助手。你用自己的 API Key 连接 DeepSeek、ChatGPT、Claude 等大模型，所有对话、配置都保存在本地，不经过任何中间服务器。
+      </p>
+
+      <div class="hero-btns fade-up">
+        <a href="#how" class="btn btn-primary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          查看使用教程
+        </a>
+        <a href="#features" class="btn btn-ghost">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          了解所有功能
+        </a>
+      </div>
+
+      <!-- TERMINAL MOCKUP -->
+      <div class="terminal-wrap fade-up">
+        <div class="term-bar">
+          <span class="term-dot r"></span>
+          <span class="term-dot y"></span>
+          <span class="term-dot g"></span>
+          <span class="term-title">AI Workbench — 新对话</span>
+        </div>
+        <div class="term-body">
+          <div><span class="term-user">▸ 你：</span><span class="term-text" id="typing-line"></span><span class="term-cursor" id="typing-cursor"></span></div>
+          <div style="margin-top:12px;display:none;" id="ai-reply-line">
+            <span class="term-ai">◇ AI：</span><span class="term-text" id="ai-text"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="trust-strip fade-up">
+        <div class="trust-item"><span class="trust-icon">🔒</span>数据 100% 本地存储</div>
+        <div class="trust-item"><span class="trust-icon">🧩</span>支持 8+ 主流 AI 服务</div>
+        <div class="trust-item"><span class="trust-icon">💻</span>Windows / Mac / Linux</div>
+        <div class="trust-item"><span class="trust-icon">🆓</span>无订阅费，用你自己的 Key</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ STATS -->
+<section id="stats" class="tight">
+  <div class="stats-grid">
+    <div class="stat-card fade-up">
+      <div class="stat-num"><span data-count="8">8</span>+</div>
+      <div class="stat-label">支持的 AI 服务</div>
+    </div>
+    <div class="stat-card fade-up">
+      <div class="stat-num"><span data-count="3">3</span></div>
+      <div class="stat-label">覆盖操作系统</div>
+    </div>
+    <div class="stat-card fade-up">
+      <div class="stat-num"><span data-count="100">100</span>%</div>
+      <div class="stat-label">数据在本地</div>
+    </div>
+    <div class="stat-card fade-up">
+      <div class="stat-num"><span data-count="5">0</span></div>
+      <div class="stat-label">层安全保护</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ WHY -->
+<section id="why" class="wide-section">
+  <div class="wrap">
+    <div class="sh fade-up">
+      <span class="sh-label">为什么选择 AI Workbench</span>
+      <h2 class="sh-title">不一样在哪里？</h2>
+      <p class="sh-desc">市面上 AI 工具很多，但大多数都把你的数据存在他们的服务器上。</p>
+    </div>
+
+    <div class="why-grid fade-up">
+      <div class="why-card pain">
+        <span class="why-flag pain">常见痛点</span>
+        <span class="emoji">😰</span>
+        <h3>普通 AI 网页工具的问题</h3>
+        <p>你和 AI 说的每一句话，都被存储在别人的服务器上。你的工作内容、私人想法、商业机密——都不在你的掌控之内。</p>
+        <ul>
+          <li>聊天记录存在服务商服务器</li>
+          <li>服务商可能查看你的数据</li>
+          <li>服务关闭后聊天记录消失</li>
+          <li>涨价或政策变动你无法控制</li>
+        </ul>
+      </div>
+      <div class="why-card value">
+        <span class="why-flag value">解决方案</span>
+        <span class="emoji">😌</span>
+        <h3>AI Workbench 的做法</h3>
+        <p>所有对话存在你电脑本地。AI Workbench 只是一个「中间桥梁」——它把你的消息发给 AI 服务商，把回复显示给你，全程不存储、不转发。</p>
+        <ul>
+          <li>所有对话保存在你的本地电脑</li>
+          <li>API Key 加密存储在本地</li>
+          <li>没有中间服务器、没有账号系统</li>
+          <li>你可以随时备份到 U 盘或网盘</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ HOW IT WORKS -->
+<section id="how">
+  <div class="wrap">
+    <div class="sh fade-up">
+      <span class="sh-label">三步上手</span>
+      <h2 class="sh-title">从安装到第一次对话</h2>
+      <p class="sh-desc">不需要任何技术背景，按照步骤来就行。</p>
+    </div>
+
+    <div class="steps fade-up">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <h3>安装应用</h3>
+          <p>下载对应你电脑系统的安装包——Windows 双击 <strong>.exe</strong> 按向导安装；macOS 打开 <strong>.dmg</strong> 拖入应用文件夹；Linux 直接运行 <strong>.AppImage</strong>。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <h3>配置一个 AI 模型</h3>
+          <p>点击左侧「模型配置」，选择你用的 AI 服务商（如 DeepSeek、ChatGPT），填入你从服务商官网申请的 <strong>API Key</strong>，点击「测试连接」确认可用。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <h3>开始聊天</h3>
+          <p>点击左侧「Chat」，在底部输入框输入内容，按 <strong>Enter</strong> 发送。AI 的回复会像打字一样逐字出现。点「+ 新建」可以随时开启新对话。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ FEATURES (Tabbed) -->
+<section id="features">
+  <div class="wrap">
+    <div class="sh fade-up">
+      <span class="sh-label">主要功能</span>
+      <h2 class="sh-title">不只是聊天</h2>
+      <p class="sh-desc">从日常对话到读取文件、生成报告，AI Workbench 都能帮你做到。</p>
+    </div>
+
+    <div class="feat-tabs-wrap fade-up">
+      <div class="feat-tabs">
+        <button class="feat-tab active" data-tab="chat">💬 对话</button>
+        <button class="feat-tab" data-tab="files">📂 文件</button>
+        <button class="feat-tab" data-tab="ux">🎨 体验</button>
+      </div>
+    </div>
+
+    <div class="feat-grid fade-up" id="feat-chat">
+      <div class="feat-card">
+        <span class="feat-icon">⚡</span>
+        <div class="feat-title">流式实时回复</div>
+        <div class="feat-desc">AI 的回答逐字显示，不用干等一大段文字突然出现。生成中随时可以点「停止」。</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">💬</span>
+        <div class="feat-title">多对话管理</div>
+        <div class="feat-desc">可以同时保留多个对话，按日期分组显示。支持重命名、删除，随时切换回来继续聊。</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">✏️</span>
+        <div class="feat-title">消息编辑与重新生成</div>
+        <div class="feat-desc">发现问法不对？悬停在消息上点「编辑」修改后重新提交。对 AI 的回复不满意，点「重新生成」让它再答一次。</div>
+      </div>
+    </div>
+
+    <div class="feat-grid fade-up" id="feat-files" style="display:none;">
+      <div class="feat-card">
+        <span class="feat-icon">📄</span>
+        <div class="feat-title">读取你的本地文件</div>
+        <div class="feat-desc">在聊天时选择一个 .txt 或 .md 文件，AI 会读取文件内容并据此回答你的问题——比如"帮我总结这份文档"。</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">📥</span>
+        <div class="feat-title">导出为 Markdown</div>
+        <div class="feat-desc">单条 AI 回复或整个对话，都可以导出为 .md 文件保存到你的电脑上，方便存档或二次使用。</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🗂️</span>
+        <div class="feat-title">自定义数据存储位置</div>
+        <div class="feat-desc">可以把数据库文件迁移到你指定的文件夹，方便备份到 U 盘或网盘。</div>
+      </div>
+    </div>
+
+    <div class="feat-grid fade-up" id="feat-ux" style="display:none;">
+      <div class="feat-card">
+        <span class="feat-icon">🎨</span>
+        <div class="feat-title">深色 / 浅色主题</div>
+        <div class="feat-desc">支持跟随系统、手动浅色、手动深色。看起来护眼，用起来舒服。</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">📊</span>
+        <div class="feat-title">Markdown 渲染</div>
+        <div class="feat-desc">AI 回复的代码块、表格、列表、标题都能正确显示，代码块还有一键复制按钮。</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">⚙️</span>
+        <div class="feat-title">灵活的界面布局</div>
+        <div class="feat-desc">侧边栏和聊天区域都可以拖动调整宽度，完全按你的习惯来。宽度缩小后自动变成图标模式。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ SKILLS -->
+<section id="skills">
+  <div class="wrap">
+    <div class="sh fade-up">
+      <span class="sh-label">技能（Skills）</span>
+      <h2 class="sh-title">让 AI 按你想要的方式回答</h2>
+      <p class="sh-desc">技能是预设的「指令模板」，激活后 AI 会按照特定的风格和格式来处理你的输入。</p>
+    </div>
+
+    <div class="skills-row fade-up">
+      <div class="sk-card">
+        <span class="sk-emoji">📝</span>
+        <div class="sk-title">文本总结</div>
+        <div class="sk-desc">把一段长文本或一篇文档提炼成简洁的摘要，抓住核心要点。</div>
+        <div class="sk-kw">
+          <span class="kw">总结</span><span class="kw">摘要</span><span class="kw">提炼</span><span class="kw">概括</span>
+        </div>
+      </div>
+      <div class="sk-card">
+        <span class="sk-emoji">📋</span>
+        <div class="sk-title">日报生成</div>
+        <div class="sk-desc">把你零散的工作记录整理成格式规范的日报，几秒钟搞定每天的汇报。</div>
+        <div class="sk-kw">
+          <span class="kw">日报</span><span class="kw">工作汇报</span><span class="kw">今日工作</span>
+        </div>
+      </div>
+      <div class="sk-card">
+        <span class="sk-emoji">✍️</span>
+        <div class="sk-title">公众号改写</div>
+        <div class="sk-desc">把普通文字改写成适合微信公众号发布的文章风格，语言更流畅，更有感染力。</div>
+        <div class="sk-kw">
+          <span class="kw">公众号</span><span class="kw">改写</span><span class="kw">推文</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sk-explainer fade-up">
+      <h3>🤔 技能怎么用？</h3>
+      <ol>
+        <li><strong>自动匹配：</strong>默认开启。你的消息里包含关键词（如"帮我写日报"），对应技能会自动激活。</li>
+        <li><strong>手动选择：</strong>也可以在输入框旁边的下拉菜单里手动选择某个技能，强制使用它。</li>
+        <li><strong>单次生效：</strong>技能只影响你当前这条消息，发送后自动回到默认状态，不会影响整个对话。</li>
+        <li><strong>可以自定义：</strong>在「Skill」页面点击「添加 Skill」，用自然语言写下你想要 AI 扮演的角色和回答方式，就能创建专属技能。</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ TESTIMONIALS -->
+<section id="testimonials">
+  <div class="wrap">
+    <div class="sh fade-up">
+      <span class="sh-label">用户口碑</span>
+      <h2 class="sh-title">他们都在用</h2>
+      <p class="sh-desc">来自不同行业的真实用户反馈。</p>
+    </div>
+
+    <div class="testi-grid fade-up">
+      <div class="testi-card">
+        <div class="stars">★★★★★</div>
+        <div class="quote">"以前用网页版 AI 总担心客户数据泄露，现在所有对话都在本地，终于敢放心地和 AI 讨论项目方案了。"</div>
+        <div class="author">张经理</div>
+        <div class="role">商务咨询公司</div>
+      </div>
+      <div class="testi-card">
+        <div class="stars">★★★★★</div>
+        <div class="quote">"写日报是我每天最头疼的事。用了这个工具的日报 Skill，几分钟就搞定，格式统一规范，同事都说我效率变高了。"</div>
+        <div class="author">李同学</div>
+        <div class="role">应届实习生</div>
+      </div>
+      <div class="testi-card">
+        <div class="stars">★★★★★</div>
+        <div class="quote">"Ollama 本地模型配合这个工具简直是绝配——完全离线运行，不需要联网，安全感拉满。"</div>
+        <div class="author">陈老师</div>
+        <div class="role">自由职业者</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ SAFETY -->
+<section id="safety" class="wide-section">
+  <div class="wrap">
+    <div class="sh fade-up">
+      <span class="sh-label">安全与隐私</span>
+      <h2 class="sh-title">你的数据，你说了算</h2>
+      <p class="sh-desc">我们把「数据安全」放在第一位，而不是当作附加功能。</p>
+    </div>
+
+    <div class="safety-grid fade-up">
+      <div class="safe-card">
+        <div class="safe-icon">🔐</div>
+        <div class="safe-body">
+          <h4>API Key 加密保存</h4>
+          <p>你填入的 API Key 在保存前会经过加密处理，以密文形式存储在本地。应用界面显示的是 <code>sk-****xxxx</code> 格式的掩码，你自己也看不到原文，别人更看不到。</p>
+        </div>
+      </div>
+      <div class="safe-card">
+        <div class="safe-icon">💾</div>
+        <div class="safe-body">
+          <h4>聊天记录只在本地</h4>
+          <p>所有对话都保存在你电脑上的数据库文件（app.db）里。AI Workbench 不会把你的聊天内容上传到任何服务器，也没有账号系统——本来就用不到。</p>
+        </div>
+      </div>
+      <div class="safe-card">
+        <div class="safe-icon">📂</div>
+        <div class="safe-body">
+          <h4>文件读取需要你主动授权</h4>
+          <p>AI 不能自动读取你电脑上的任何文件。只有你在聊天页面点击「选择文件」按钮、主动选择了某个文件，AI 才能读取它。应用也不会保存文件的完整内容，只存简短预览。</p>
+        </div>
+      </div>
+      <div class="safe-card">
+        <div class="safe-icon">⚠️</div>
+        <div class="safe-body">
+          <h4>命令执行有五层保护</h4>
+          <p>「命令执行」功能默认是关闭的，需要你在设置里手动开启，并指定允许操作的文件夹。每次执行命令前还会弹出确认窗口，危险操作（如删除文件）会被自动拦截。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ MODELS -->
+<section id="models">
+  <div class="wrap">
+    <div class="sh fade-up">
+      <span class="sh-label">支持的 AI 服务</span>
+      <h2 class="sh-title">带着你自己的 AI Key 来</h2>
+      <p class="sh-desc">你已经有了哪家 AI 服务的账号，直接填入 Key 就能用。也可以连接自己电脑上本地运行的模型。</p>
+    </div>
+
+    <div class="models-grid fade-up">
+      <div class="model-card">
+        <div class="logo-text">DeepSeek</div>
+        <div class="tag">国产强模型</div>
+      </div>
+      <div class="model-card">
+        <div class="logo-text">ChatGPT</div>
+        <div class="tag">OpenAI</div>
+      </div>
+      <div class="model-card">
+        <div class="logo-text">Claude</div>
+        <div class="tag">Anthropic</div>
+      </div>
+      <div class="model-card">
+        <div class="logo-text">Kimi</div>
+        <div class="tag">Moonshot · 国产</div>
+      </div>
+      <div class="model-card">
+        <div class="logo-text">通义千问</div>
+        <div class="tag">阿里云 · 国产</div>
+      </div>
+      <div class="model-card local">
+        <div class="logo-text">Ollama</div>
+        <div class="tag">本地模型运行</div>
+      </div>
+      <div class="model-card local">
+        <div class="logo-text">LM Studio</div>
+        <div class="tag">本地模型运行</div>
+      </div>
+      <div class="model-card">
+        <div class="logo-text">自定义</div>
+        <div class="tag">任意兼容接口</div>
+      </div>
+    </div>
+
+    <p class="model-note fade-up">
+      🟢 绿色标注的是支持本地运行的模型——安装对应的本地服务后即可使用，数据 100% 留在本地。
+    </p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ FAQ -->
+<section id="guide">
+  <div class="wrap">
+    <div class="sh fade-up">
+      <span class="sh-label">常见问题</span>
+      <h2 class="sh-title">遇到问题？这里有答案</h2>
+      <p class="sh-desc">点击问题可以展开详细解答。</p>
+    </div>
+
+    <div class="qa-list fade-up">
+
+      <div class="qa-item">
+        <button class="qa-q" onclick="toggleQA(this)">
+          我没有 API Key，怎么开始？
+          <span class="qa-icon">▼</span>
+        </button>
+        <div class="qa-a">
+          <div class="qa-a-inner">
+            需要先去 AI 服务商官网注册账号并申请 API Key。常见服务商获取地址：
+            <table>
+              <tr><th>服务商</th><th>获取地址</th><th>备注</th></tr>
+              <tr><td>DeepSeek</td><td>platform.deepseek.com</td><td>国内注册，需充值</td></tr>
+              <tr><td>Kimi</td><td>platform.moonshot.cn</td><td>国内注册</td></tr>
+              <tr><td>通义千问</td><td>dashscope.aliyun.com</td><td>需阿里云账号</td></tr>
+              <tr><td>ChatGPT</td><td>platform.openai.com</td><td>需海外支付方式</td></tr>
+            </table>
+            <br />如果想在本地运行模型，可以试试 Ollama，去 ollama.com 下载安装后，在 AI Workbench 选择「Ollama」供应商即可，无需 API Key。
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <button class="qa-q" onclick="toggleQA(this)">
+          「测试连接」失败了，怎么办？
+          <span class="qa-icon">▼</span>
+        </button>
+        <div class="qa-a">
+          <div class="qa-a-inner">
+            最常见的几个原因和解决方法：
+            <table>
+              <tr><th>错误提示</th><th>原因</th><th>解决方法</th></tr>
+              <tr><td>401 / 403</td><td>API Key 无效或过期</td><td>重新去服务商官网获取新的 Key</td></tr>
+              <tr><td>404</td><td>请求地址填错了</td><td>检查「请求地址」是否和官方文档一致</td></tr>
+              <tr><td>超时 / fetch failed</td><td>网络不通</td><td>检查网络；如用本地模型确认服务已启动</td></tr>
+              <tr><td>model not found</td><td>模型名称有误</td><td>检查模型名称大小写和版本号是否准确</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <button class="qa-q" onclick="toggleQA(this)">
+          AI 没有自动使用我想要的技能，为什么？
+          <span class="qa-icon">▼</span>
+        </button>
+        <div class="qa-a">
+          <div class="qa-a-inner">
+            自动匹配依赖「关键词」触发。检查以下几点：<br /><br />
+            1. 你的消息里是否包含了触发词？（比如"日报生成"需要消息里含有「日报」）<br />
+            2. 对应的技能是否已经打开（在「Skill」页面确认开关是开启状态）？<br />
+            3. 输入框旁的选择器是否处于「自动匹配」模式？<br /><br />
+            如果自动匹配不稳定，可以直接在选择器里手动选技能，优先级最高。
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <button class="qa-q" onclick="toggleQA(this)">
+          我的聊天记录存在哪儿？会不会丢失？
+          <span class="qa-icon">▼</span>
+        </button>
+        <div class="qa-a">
+          <div class="qa-a-inner">
+            默认存储位置：<br />
+            ・Windows：<code>%APPDATA%/ai-workbench/app.db</code><br />
+            ・macOS：<code>~/Library/Application Support/ai-workbench/app.db</code><br /><br />
+            你可以在「设置」页面看到具体路径。建议定期把这个 .db 文件复制到 U 盘或网盘作备份，防止电脑损坏时丢失。也可以在设置里更改存储位置，直接指向你的网盘同步文件夹。
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <button class="qa-q" onclick="toggleQA(this)">
+          读取文件时提示「文件未授权」或「读取失败」怎么办？
+          <span class="qa-icon">▼</span>
+        </button>
+        <div class="qa-a">
+          <div class="qa-a-inner">
+            文件读取有几个限制：<br /><br />
+            1. 必须通过聊天页面的「选择文件」按钮来选择文件，不能手动输入路径。<br />
+            2. 只支持 .txt、.md、.markdown 三种格式。<br />
+            3. 文件大小不能超过 5MB。<br />
+            4. 文件授权信息在应用关闭后会清除，重新打开应用后需要重新选择文件。
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <button class="qa-q" onclick="toggleQA(this)">
+          卸载应用之后，我的数据还在吗？
+          <span class="qa-icon">▼</span>
+        </button>
+        <div class="qa-a">
+          <div class="qa-a-inner">
+            在 Windows 上卸载时，安装程序会询问你是否同时删除本地数据（聊天记录、模型配置、密钥等）。你可以选择保留，之后重新安装后数据依然在。<br /><br />
+            如果你担心数据安全，建议卸载前先手动找到 app.db 文件备份，或在设置里点「清理会话历史」再卸载。
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ CTA -->
+<section class="cta-section">
+  <div class="wrap">
+    <div class="cta-box fade-up">
+      <h2>现在就开始用</h2>
+      <p>下载对应你系统的安装包，安装后配置一个 AI 服务即可开始聊天。</p>
+
+      <div class="install-tabs">
+        <a href="#" class="install-card">
+          <span class="plat-icon">🪟</span>
+          <div class="plat-name">Windows</div>
+          <div class="plat-fmt">10 / 11 · .exe</div>
+          <span class="plat-btn">下载</span>
+        </a>
+        <a href="#" class="install-card">
+          <span class="plat-icon">🍎</span>
+          <div class="plat-name">macOS</div>
+          <div class="plat-fmt">11+ · .dmg</div>
+          <span class="plat-btn">下载</span>
+        </a>
+        <a href="#" class="install-card">
+          <span class="plat-icon">🐧</span>
+          <div class="plat-name">Linux</div>
+          <div class="plat-fmt">.AppImage</div>
+          <span class="plat-btn">下载</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block;box-shadow:0 0 10px var(--accent)"></span>
+        AI Workbench
+      </div>
+      <div class="footer-meta">
+        <span>本地优先 · 隐私第一</span>
+        <span>Windows · macOS · Linux</span>
+        <span style="color: var(--dim)">MIT License</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function() {
+  // ======================================================== THEME & LANGUAGE
+  var THEME_KEY = 'awb-theme';
+  var themes = ['dark', 'light', 'green'];
+  var labels = { dark: '暗色', light: '亮色', green: '护眼' };
+  var themeSelect = document.getElementById('theme-select');
+
+  function applyTheme(name) {
+    document.body.classList.remove('light', 'green');
+    if (name === 'light') document.body.classList.add('light');
+    else if (name === 'green') document.body.classList.add('green');
+    if (themeSelect) { themeSelect.value = name; }
+  }
+
+  var saved = localStorage.getItem(THEME_KEY);
+  if (saved && themes.indexOf(saved) >= 0) { applyTheme(saved); }
+
+  window.switchTheme = function(name) {
+    applyTheme(name);
+    localStorage.setItem(THEME_KEY, name);
+  };
+
+  window.switchLang = function(url) {
+    window.location.href = url;
+  };
+
+  // ======================================================== SCROLL EFFECTS
+  const progressBar = document.getElementById('scroll-progress');
+  const navbar = document.getElementById('navbar');
+  const backTop = document.getElementById('back-top');
+
+  function onScroll() {
+    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    var pct = docHeight > 0 ? Math.min((scrollTop / docHeight) * 100, 100) : 0;
+    progressBar.style.width = pct + '%';
+    if (scrollTop > 40) { navbar.classList.add('scrolled'); } else { navbar.classList.remove('scrolled'); }
+    if (scrollTop > 600) { backTop.classList.add('visible'); } else { backTop.classList.remove('visible'); }
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // ======================================================== FADE UP OBSERVER
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) { e.target.classList.add('visible'); }
+    });
+  }, { threshold: 0.06, rootMargin: '0px 0px -30px 0px' });
+  var fades = document.querySelectorAll('.fade-up');
+  for (var i = 0; i < fades.length; i++) { io.observe(fades[i]); }
+
+  // ======================================================== COUNT UP
+  var countObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (!e.isIntersecting) return;
+      var spans = e.target.querySelectorAll('[data-count]');
+      spans.forEach(function(span) {
+        var target = parseInt(span.getAttribute('data-count'), 10);
+        if (target === 0) { span.textContent = '0'; return; }
+        var current = 0;
+        var step = Math.max(1, Math.ceil(target / 35));
+        var timer = setInterval(function() {
+          current += step;
+          if (current >= target) { current = target; clearInterval(timer); }
+          span.textContent = current;
+        }, 38);
+      });
+      countObserver.unobserve(e.target);
+    });
+  }, { threshold: 0.3 });
+  var statsEls = document.querySelectorAll('.stats-grid');
+  for (var j = 0; j < statsEls.length; j++) { countObserver.observe(statsEls[j]); }
+
+  // ======================================================== FAQ ACCORDION
+  window.toggleQA = function(btn) {
+    var item = btn.closest('.qa-item');
+    if (!item) return;
+    var isOpen = item.classList.contains('open');
+    // close all
+    var allOpen = document.querySelectorAll('.qa-item.open');
+    for (var k = 0; k < allOpen.length; k++) {
+      allOpen[k].classList.remove('open');
+      allOpen[k].querySelector('.qa-a').style.maxHeight = '0';
+    }
+    if (!isOpen) {
+      item.classList.add('open');
+      var answer = item.querySelector('.qa-a');
+      answer.style.maxHeight = answer.scrollHeight + 'px';
+    }
+  };
+
+  // ======================================================== FEATURE TABS
+  var tabs = document.querySelectorAll('.feat-tab');
+  for (var t = 0; t < tabs.length; t++) {
+    tabs[t].addEventListener('click', function() {
+      var active = document.querySelector('.feat-tab.active');
+      if (active) active.classList.remove('active');
+      this.classList.add('active');
+      var group = this.getAttribute('data-tab');
+      ['chat','files','ux'].forEach(function(g) {
+        var el = document.getElementById('feat-' + g);
+        if (el) el.style.display = (g === group) ? '' : 'none';
+      });
+    });
+  }
+
+  // ======================================================== CANVAS PARTICLES
+  var canvas = document.getElementById('particles');
+  if (canvas && canvas.getContext) {
+    var ctx = canvas.getContext('2d');
+    var particles = [];
+    var w, h;
+
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    function Particle() {
+      this.reset();
+      this.y = Math.random() * h;
+    }
+    Particle.prototype.reset = function() {
+      this.x = Math.random() * w;
+      this.y = -8;
+      this.size = Math.random() * 1.4 + 0.4;
+      this.speed = Math.random() * 0.3 + 0.15;
+      this.opacity = Math.random() * 0.4 + 0.12;
+    };
+    Particle.prototype.update = function() {
+      this.y += this.speed;
+      this.opacity -= 0.003;
+      if (this.y > h + 10 || this.opacity <= 0) {
+        this.reset();
+        this.y = -8;
+        this.opacity = Math.random() * 0.4 + 0.12;
+      }
+    };
+    Particle.prototype.draw = function() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(59,130,246,' + this.opacity + ')';
+      ctx.fill();
+    };
+
+    var PARTICLE_COUNT = 50;
+    for (var p = 0; p < PARTICLE_COUNT; p++) { particles.push(new Particle()); }
+
+    function animate() {
+      if (!canvas || !ctx) return;
+      ctx.clearRect(0, 0, w, h);
+      for (var i = 0; i < particles.length; i++) {
+        particles[i].update();
+        particles[i].draw();
+      }
+      // connections
+      for (var i = 0; i < particles.length; i++) {
+        for (var j = i + 1; j < particles.length; j++) {
+          var dx = particles[i].x - particles[j].x;
+          var dy = particles[i].y - particles[j].y;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 110) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = 'rgba(59,130,246,' + (0.035 * (1 - dist / 110)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+    animate();
+  }
+
+  // ======================================================== TYPING TERMINAL
+  var messages = [
+    { user: '帮我写一份今日工作日报', ai: '好的，以下是你今天的日报：\n\n📋 今日工作日报\n1. 完成客户需求分析报告\n2. 跟进项目A第3阶段进度\n3. 整理了本周会议纪要\n\n💡 明日计划：启动项目B方案设计。' },
+    { user: '请帮我总结这篇文章的核心要点', ai: '这篇文章的核心要点如下：\n\n1. 本地化AI是未来的趋势——用户数据隐私越来越被重视\n2. 桌面应用相比Web应用在性能和体验上更有优势\n3. 多模型支持是刚需——不同场景需要不同的AI' },
+    { user: '能帮我改写这段文字成公众号风格吗？', ai: '当然可以！以下是改写后的版本：\n\n💡 你有没有想过——\n每天和AI聊天时，你说的每一句话，都可能被存在别人的服务器上？\n\n今天，我们带来了答案。一个真正属于你的AI助手，让所有对话都只留在你的电脑里👇' }
+  ];
+  var msgIndex = 0;
+  var typingLine = document.getElementById('typing-line');
+  var typingCursor = document.getElementById('typing-cursor');
+  var aiReplyLine = document.getElementById('ai-reply-line');
+  var aiText = document.getElementById('ai-text');
+
+  function typeMessage() {
+    if (!typingLine || !aiReplyLine || !aiText) return;
+    var msg = messages[msgIndex];
+    typingLine.textContent = '';
+    aiReplyLine.style.display = 'none';
+    aiText.textContent = '';
+    if (typingCursor) typingCursor.style.display = 'inline-block';
+
+    var i = 0;
+    var typeUser = setInterval(function() {
+      if (i >= msg.user.length) {
+        clearInterval(typeUser);
+        if (typingCursor) typingCursor.style.display = 'none';
+
+        setTimeout(function() {
+          aiReplyLine.style.display = 'block';
+          var j = 0;
+          var typeAI = setInterval(function() {
+            if (j >= msg.ai.length) {
+              clearInterval(typeAI);
+              msgIndex = (msgIndex + 1) % messages.length;
+              setTimeout(typeMessage, 3500);
+              return;
+            }
+            aiText.textContent += msg.ai[j];
+            j++;
+          }, 16);
+        }, 600);
+        return;
+      }
+      typingLine.textContent += msg.user[i];
+      i++;
+    }, 38);
+  }
+
+  if (typingLine) { typeMessage(); }
+})();
+</script>
+</body>
+</html>
