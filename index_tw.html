@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-HK">
+<html lang="zh-Hant">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>AI Workbench — 你嘅私人 AI 助手，數據喺你手上</title>
+<title>AI Workbench — 本地優先的 AI Agent 工作台</title>
 <style>
 /* ============================================================ RESET */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -97,6 +97,13 @@ body.light .btn-dl:hover, body.green .btn-dl:hover { background: var(--bg3); }
 body.light .safe-card, body.green .safe-card { background: var(--bg); }
 body.light .why-flag.pain, body.green .why-flag.pain { background: rgba(224,64,64,0.08); color: #c53030; }
 body.light .why-flag.value, body.green .why-flag.value { background: rgba(60,128,40,0.1); color: #2d6620; }
+body.light .risk-safe, body.green .risk-safe { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.25); color: var(--green); }
+body.light .risk-medium, body.green .risk-medium { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.25); color: var(--amber); }
+body.light .risk-high, body.green .risk-high { background: rgba(248,113,113,0.12); border-color: rgba(248,113,113,0.25); color: var(--red); }
+body.light .agent-step-line, body.green .agent-step-line { background: rgba(77,130,47,0.2); }
+body.light .agent-step-dot, body.green .agent-step-dot { background: var(--accent); }
+body.light .shield-layer, body.green .shield-layer { background: var(--bg); border-color: var(--border2); }
+body.light .mem-card, body.green .mem-card { background: var(--bg); }
 
 html { scroll-behavior: smooth; }
 
@@ -154,7 +161,7 @@ nav.scrolled { box-shadow: 0 1px 30px rgba(0,0,0,0.4); }
 }
 @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
 
-.nav-links { display: flex; gap: 34px; list-style: none; }
+.nav-links { display: flex; gap: 28px; list-style: none; }
 .nav-links a {
   color: var(--muted); text-decoration: none; font-size: 14.5px; font-weight: 500;
   transition: color .2s;
@@ -167,7 +174,6 @@ nav.scrolled { box-shadow: 0 1px 30px rgba(0,0,0,0.4); }
   border: 1px solid rgba(34,197,94,0.22); font-weight: 500;
 }
 
-/* ---------- NAV DROPDOWN SELECTS ---------- */
 .nav-select {
   background: var(--bg3); color: var(--text); border: 1px solid var(--border);
   border-radius: 6px; padding: 5px 24px 5px 10px; font-size: 12.5px; font-weight: 500;
@@ -234,8 +240,12 @@ section.wide-section { padding: 90px 0; }
   padding: 6px 16px; border-radius: 99px; margin-bottom: 32px;
   letter-spacing: .5px; font-weight: 500;
 }
+.hero-badge::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green); box-shadow: 0 0 8px var(--green);
+  animation: pulse 2.4s infinite;
+}
 
-/* ---------- HERO ICON ---------- */
 .hero-icon-wrap {
   margin-bottom: 36px;
   display: flex; justify-content: center; align-items: center;
@@ -261,11 +271,6 @@ section.wide-section { padding: 90px 0; }
 @keyframes iconGlow {
   0%,100% { opacity: .6; transform: translate(-50%, -50%) scale(1); }
   50% { opacity: 1; transform: translate(-50%, -50%) scale(1.12); }
-}
-.hero-badge::before {
-  content: ''; width: 6px; height: 6px; border-radius: 50%;
-  background: var(--green); box-shadow: 0 0 8px var(--green);
-  animation: pulse 2.4s infinite;
 }
 
 .hero h1 {
@@ -328,7 +333,21 @@ section.wide-section { padding: 90px 0; }
   background: rgba(17,24,39,0.9); border: 1px solid var(--border2);
   border-radius: 14px; overflow: hidden;
   box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+  position: relative;
 }
+.terminal-wrap::after {
+  content: ''; position: absolute; left: 0; right: 0; height: 2px;
+  background: rgba(59,130,246,0.12);
+  animation: scanLine 3.5s linear infinite;
+  pointer-events: none; z-index: 5; border-radius: 1px;
+}
+@keyframes scanLine {
+  0% { top: 0; opacity: 0; }
+  8% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
 .term-bar {
   display: flex; align-items: center; gap: 7px; padding: 11px 15px;
   background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border);
@@ -347,6 +366,7 @@ section.wide-section { padding: 90px 0; }
 }
 .term-user { color: var(--accent); }
 .term-ai { color: var(--green); }
+.term-tool { color: var(--amber); }
 .term-text { color: var(--text); }
 .term-cursor {
   display: inline-block; width: 8px; height: 16px; background: var(--accent);
@@ -376,16 +396,18 @@ section.wide-section { padding: 90px 0; }
 }
 .stat-card {
   background: var(--bg2); padding: 34px 20px; text-align: center;
-  transition: background .25s; border-right: 1px solid var(--border);
+  transition: background .25s, transform .25s; border-right: 1px solid var(--border);
 }
 .stat-card:last-child { border-right: none; }
-.stat-card:hover { background: var(--bg3); }
+.stat-card:hover { background: var(--bg3); transform: translateY(-3px); }
 .stat-num {
   font-size: 2.6rem; font-weight: 800; letter-spacing: -1.5px;
   background: linear-gradient(135deg, var(--accent), var(--accent3));
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent;
+  transition: filter .25s;
 }
+.stat-card:hover .stat-num { filter: drop-shadow(0 0 10px rgba(59,130,246,0.4)); }
 .stat-label { font-size: 14px; color: var(--muted); margin-top: 6px; font-weight: 500; }
 
 /* ============================================================ WHY */
@@ -420,7 +442,7 @@ section.wide-section { padding: 90px 0; }
 .why-card.value li::before { background: var(--green); }
 
 /* ============================================================ HOW IT WORKS */
-#how, #skills, #safety, #guide { background: var(--bg2); }
+#how, #agent, #tools, #memory, #skills, #safety, #guide { background: var(--bg2); }
 
 .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; position: relative; }
 .steps::before {
@@ -444,51 +466,191 @@ section.wide-section { padding: 90px 0; }
 .step h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
 .step p  { font-size: 15px; color: var(--text2); line-height: 1.75; }
 
-/* ============================================================ FEATURES TABBED */
-.feat-tabs {
-  display: inline-flex; justify-content: center; gap: 4px; margin-bottom: 36px;
-  background: var(--bg3); border: 1px solid var(--border); border-radius: 99px;
-  padding: 4px;
+/* ============================================================ AGENT MODE */
+.agent-flow {
+  display: flex; flex-direction: column; gap: 0;
+  position: relative; max-width: 680px; margin: 0 auto;
 }
-.feat-tabs-wrap { text-align: center; }
 
-.feat-tab {
-  padding: 9px 22px; border-radius: 99px; border: none; cursor: pointer;
-  font-size: 14.5px; color: var(--muted); font-weight: 500;
-  background: transparent; transition: all .25s; white-space: nowrap;
-  font-family: inherit;
+.agent-step {
+  display: flex; gap: 20px; align-items: flex-start;
+  padding: 18px 0; position: relative;
 }
-.feat-tab.active { background: var(--accent); color: #fff; box-shadow: 0 4px 16px rgba(59,130,246,0.3); }
 
-.feat-grid {
+.agent-step-line {
+  position: absolute; left: 23px; top: 46px; bottom: -18px;
+  width: 2px; background: rgba(59,130,246,0.15);
+}
+
+.agent-step:last-child .agent-step-line { display: none; }
+
+.agent-step-dot {
+  width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+  background: var(--bg3); border: 2px solid var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; z-index: 1;
+  box-shadow: 0 0 16px rgba(59,130,246,0.15);
+  transition: transform .3s, box-shadow .3s;
+}
+
+.agent-step:hover .agent-step-dot {
+  transform: scale(1.1);
+  box-shadow: 0 0 24px rgba(59,130,246,0.3);
+}
+
+.agent-step-body {
+  flex: 1; padding-top: 4px;
+}
+
+.agent-step-num {
+  font-size: 12px; color: var(--accent); font-weight: 600;
+  letter-spacing: 1.5px; margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.agent-step-title {
+  font-size: 16px; font-weight: 700; margin-bottom: 6px;
+}
+
+.agent-step-desc {
+  font-size: 14.5px; color: var(--text2); line-height: 1.7;
+}
+
+.agent-modes {
   display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+  margin-top: 36px;
 }
 
-.feat-card {
+.mode-card {
   background: var(--bg3); border: 1px solid var(--border);
   border-radius: var(--r); padding: 28px;
-  position: relative; transition: all .3s; overflow: hidden;
+  transition: all .3s;
+  position: relative; overflow: hidden;
 }
-.feat-card:hover {
-  border-color: rgba(59,130,246,0.3);
+.mode-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 14px 44px rgba(0,0,0,0.3);
 }
-.feat-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
-.feat-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, var(--accent), var(--accent3));
-  opacity: 0; transition: opacity .3s;
-}
-.feat-card:hover::before { opacity: 1; }
 
-.feat-icon { font-size: 28px; margin-bottom: 16px; display: block; }
-.feat-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
-.feat-desc { font-size: 14.5px; color: var(--text2); line-height: 1.75; }
+.mode-card.ask { border-top: 3px solid var(--accent3); }
+.mode-card.craft { border-top: 3px solid var(--accent); }
+
+.mode-emoji { font-size: 32px; margin-bottom: 12px; display: block; }
+.mode-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+.mode-desc { font-size: 14.5px; color: var(--text2); line-height: 1.7; }
+.mode-tag {
+  display: inline-block; margin-top: 14px;
+  font-size: 12px; padding: 4px 12px; border-radius: 99px;
+  font-weight: 600; letter-spacing: .5px;
+}
+.mode-tag.ask { background: rgba(6,182,212,0.1); color: var(--accent3); border: 1px solid rgba(6,182,212,0.2); }
+.mode-tag.craft { background: rgba(59,130,246,0.1); color: var(--accent); border: 1px solid rgba(59,130,246,0.2); }
+
+/* ============================================================ TOOLS */
+.tools-categories {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;
+}
+
+.tools-group {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 28px;
+  transition: all .3s;
+}
+.tools-group:hover {
+  border-color: var(--border2);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 44px rgba(0,0,0,0.3);
+}
+
+.tools-group-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 18px;
+}
+.tools-group-icon { font-size: 24px; }
+.tools-group-title { font-size: 17px; font-weight: 700; }
+
+.tools-list { display: flex; flex-direction: column; gap: 10px; }
+
+.tool-item {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 14px; color: var(--text2);
+  padding: 6px 0;
+  transition: color .2s;
+}
+.tool-item:hover { color: var(--text); }
+
+.tool-name {
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 13.5px; font-weight: 600; color: var(--text);
+  background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px;
+}
+
+.risk-badge {
+  font-size: 12px; padding: 2px 8px; border-radius: 4px;
+  font-weight: 600; flex-shrink: 0;
+}
+
+.risk-safe   { background: rgba(34,197,94,0.1);  border: 1px solid rgba(34,197,94,0.2);  color: var(--green); }
+.risk-medium { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); color: var(--amber); }
+.risk-high   { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.2); color: var(--red); }
+
+.tool-desc-inline { font-size: 13.5px; color: var(--muted); }
+
+.risk-explainer {
+  margin-top: 28px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 24px 28px;
+}
+.risk-explainer h4 { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+.risk-row {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 14px; color: var(--text2); padding: 5px 0;
+}
+.risk-row .risk-badge { font-size: 13px; padding: 3px 10px; }
+
+/* ============================================================ WORKSPACE MEMORY */
+.mem-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+.mem-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 28px;
+  transition: all .3s; text-align: center;
+  position: relative; overflow: hidden;
+}
+.mem-card:hover {
+  border-color: rgba(168,85,247,0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 44px rgba(0,0,0,0.3);
+}
+.mem-card::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 50% at 50% 110%, rgba(168,85,247,0.1) 0%, transparent 70%);
+  opacity: 0; transition: opacity .3s; pointer-events: none;
+}
+.mem-card:hover::after { opacity: 1; }
+
+.mem-icon { font-size: 32px; margin-bottom: 14px; display: block; }
+.mem-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.mem-desc { font-size: 14.5px; color: var(--text2); line-height: 1.7; }
+
+.mem-explainer {
+  margin-top: 28px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 28px;
+}
+.mem-explainer h4 { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+.mem-flow {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  font-size: 14px; color: var(--text2);
+}
+.mem-flow-step {
+  background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.2);
+  padding: 4px 14px; border-radius: 6px; color: var(--purple); font-weight: 600;
+  font-size: 13px;
+}
+.mem-flow-arrow { color: var(--muted); font-size: 16px; }
 
 /* ============================================================ SKILLS */
-#skills { background: var(--bg2); }
-
 .skills-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 36px; }
 
 .sk-card {
@@ -496,11 +658,14 @@ section.wide-section { padding: 90px 0; }
   padding: 30px; transition: all .3s; position: relative; overflow: hidden;
 }
 .sk-card:hover { border-color: rgba(99,102,241,0.35); transform: translateY(-3px); box-shadow: 0 14px 44px rgba(99,102,241,0.07); }
-.sk-card::after {
-  content: ''; position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(99,102,241,0.04) 0%, transparent 50%);
-  pointer-events: none;
+.sk-card::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit;
+  background: radial-gradient(ellipse 60% 45% at 50% 110%, rgba(99,102,241,0.13) 0%, transparent 70%);
+  opacity: 0; transition: opacity .35s ease; pointer-events: none; z-index: 0;
 }
+.sk-card:hover::before { opacity: 1; }
+.sk-card > * { position: relative; z-index: 1; }
+
 .sk-emoji { font-size: 32px; margin-bottom: 14px; display: block; }
 .sk-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
 .sk-desc  { font-size: 14.5px; color: var(--text2); line-height: 1.7; }
@@ -509,6 +674,11 @@ section.wide-section { padding: 90px 0; }
   font-size: 12px; padding: 3px 10px; border-radius: 5px;
   background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2);
   color: var(--accent2); font-weight: 500;
+  transition: transform .2s cubic-bezier(.34,1.56,.64,1), background .2s, border-color .2s, color .2s;
+}
+.kw:hover {
+  transform: scale(1.1) translateY(-2px);
+  background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.45); color: var(--text);
 }
 
 .sk-explainer {
@@ -520,41 +690,65 @@ section.wide-section { padding: 90px 0; }
 .sk-explainer li { font-size: 15px; color: var(--text2); line-height: 1.85; margin-bottom: 7px; }
 .sk-explainer li strong { color: var(--text); }
 
-/* ============================================================ TESTIMONIALS */
-.testi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-.testi-grid .testi-card:last-child { grid-column: 1 / -1; max-width: 520px; margin: 0 auto; }
-
-.testi-card {
-  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r);
-  padding: 28px; transition: all .3s;
+/* ============================================================ SAFETY / SHIELD */
+.shield-layers {
+  display: flex; flex-direction: column; gap: 0;
+  max-width: 580px; margin: 0 auto;
 }
-.testi-card:hover { border-color: var(--border2); transform: translateY(-2px); }
-.testi-card .stars { color: var(--amber); font-size: 13px; margin-bottom: 12px; letter-spacing: 1px; }
-.testi-card .quote {
-  font-size: 15px; color: var(--text2); line-height: 1.8; margin-bottom: 18px;
-  font-style: italic; padding-left: 12px;
-  border-left: 3px solid rgba(59,130,246,0.2);
-}
-.testi-card .author { font-size: 14px; font-weight: 600; color: var(--text); }
-.testi-card .role { font-size: 13px; color: var(--muted); margin-top: 2px; }
 
-/* ============================================================ SAFETY */
-.safety-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-
-.safe-card {
-  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r);
-  padding: 28px; display: flex; gap: 20px; align-items: flex-start;
+.shield-layer {
+  display: flex; align-items: center; gap: 18px;
+  padding: 20px 28px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r);
   transition: all .3s;
+  position: relative;
 }
-.safe-card:hover { border-color: rgba(34,197,94,0.25); box-shadow: 0 8px 28px rgba(34,197,94,0.03); }
-.safe-icon {
-  width: 46px; height: 46px; flex-shrink: 0; border-radius: 11px;
+.shield-layer:hover {
+  border-color: rgba(34,197,94,0.25);
+  box-shadow: 0 8px 28px rgba(34,197,94,0.06);
+  transform: translateX(4px);
+}
+
+.shield-layer:first-child { border-radius: var(--r) var(--r) 6px 6px; }
+.shield-layer:last-child  { border-radius: 6px 6px var(--r) var(--r); }
+.shield-layer:not(:first-child):not(:last-child) { border-radius: 6px; }
+
+.shield-num {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
   background: rgba(34,197,94,0.07); border: 1px solid rgba(34,197,94,0.16);
-  display: flex; align-items: center; justify-content: center; font-size: 21px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800; color: var(--green);
+  animation: safeBreathe 3.3s ease-in-out infinite;
 }
-.safe-body h4 { font-size: 15px; font-weight: 600; margin-bottom: 7px; }
-.safe-body p  { font-size: 14.5px; color: var(--text2); line-height: 1.7; }
-.safe-body code {
+
+.shield-text h4 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.shield-text p  { font-size: 14px; color: var(--text2); line-height: 1.65; }
+
+@keyframes safeBreathe {
+  0%,100% { transform: scale(1); box-shadow: none; }
+  50% { transform: scale(1.08); box-shadow: 0 0 12px rgba(34,197,94,0.15); }
+}
+.shield-layer:hover .shield-num {
+  animation: none;
+  transform: rotate(12deg) scale(1.12);
+  box-shadow: 0 0 16px rgba(34,197,94,0.22);
+}
+
+.desensitize-note {
+  margin-top: 28px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 24px 28px;
+  display: flex; align-items: flex-start; gap: 16px;
+}
+.desensitize-icon {
+  width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0;
+  background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.16);
+  display: flex; align-items: center; justify-content: center; font-size: 20px;
+}
+.desensitize-body h4 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.desensitize-body p { font-size: 14.5px; color: var(--text2); line-height: 1.7; }
+.desensitize-body code {
   font-size: 13px; background: rgba(255,255,255,0.05); padding: 1px 6px; border-radius: 4px;
   border: 1px solid rgba(255,255,255,0.06); color: var(--text2);
 }
@@ -621,13 +815,26 @@ section.wide-section { padding: 90px 0; }
 
 /* ============================================================ CTA */
 .cta-box {
-  background: var(--bg3); border: 1px solid var(--border2);
+  background: var(--bg3); border: 1px solid transparent;
+  background-clip: padding-box;
   border-radius: 20px; padding: 68px; text-align: center;
   position: relative; overflow: hidden;
 }
 .cta-box::before {
   content: ''; position: absolute; inset: 0; pointer-events: none;
   background: radial-gradient(ellipse 65% 55% at 50% 0%, rgba(59,130,246,0.07) 0%, transparent 65%);
+}
+.cta-box::after {
+  content: ''; position: absolute; inset: -1px; border-radius: 21px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3), var(--purple), var(--accent));
+  background-size: 300% 300%;
+  animation: borderFlow 6s ease infinite;
+  z-index: -1; opacity: .5;
+}
+@keyframes borderFlow {
+  0%   { background-position: 0%   50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0%   50%; }
 }
 .cta-box h2 { font-size: 2rem; font-weight: 800; letter-spacing: -1.5px; margin-bottom: 14px; position: relative; }
 .cta-box p  { color: var(--text2); max-width: 460px; margin: 0 auto 40px; line-height: 1.8; font-size: 16px; position: relative; }
@@ -644,7 +851,17 @@ section.wide-section { padding: 90px 0; }
   transform: translateY(-3px);
   box-shadow: 0 10px 36px rgba(0,0,0,0.28);
 }
-.install-card .plat-icon { font-size: 30px; margin-bottom: 10px; display: block; }
+.install-card .plat-icon { font-size: 30px; margin-bottom: 10px; display: inline-block; animation: platBounce 2.5s ease-in-out infinite; }
+.install-card:nth-child(1) .plat-icon { animation-delay: 0s; }
+.install-card:nth-child(2) .plat-icon { animation-delay: 0.8s; }
+.install-card:nth-child(3) .plat-icon { animation-delay: 1.6s; }
+@keyframes platBounce {
+  0%,100% { transform: translateY(0); }
+  30% { transform: translateY(-10px); }
+  50% { transform: translateY(0); }
+  70% { transform: translateY(-5px); }
+  85% { transform: translateY(0); }
+}
 .install-card .plat-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
 .install-card .plat-fmt { font-size: 13px; color: var(--muted); }
 .install-card .plat-btn {
@@ -685,35 +902,35 @@ footer {
 .fade-up { opacity: 0; transform: translateY(24px); transition: opacity .55s ease, transform .55s ease; }
 .fade-up.visible { opacity: 1; transform: translateY(0); }
 
-/* ---------- STAGGERED CHILDREN ---------- */
-.fade-up.visible > .feat-card:nth-child(1),
-.fade-up.visible > .safe-card:nth-child(1),
-.fade-up.visible > .sk-card:nth-child(1),
-.fade-up.visible > .testi-card:nth-child(1),
-.fade-up.visible > .model-card:nth-child(1) { animation: cardReveal .5s ease both; }
-.fade-up.visible > .feat-card:nth-child(2),
-.fade-up.visible > .safe-card:nth-child(2),
-.fade-up.visible > .sk-card:nth-child(2),
-.fade-up.visible > .testi-card:nth-child(2),
-.fade-up.visible > .model-card:nth-child(2) { animation: cardReveal .5s .08s ease both; }
-.fade-up.visible > .feat-card:nth-child(3),
-.fade-up.visible > .safe-card:nth-child(3),
-.fade-up.visible > .sk-card:nth-child(3),
-.fade-up.visible > .testi-card:nth-child(3),
-.fade-up.visible > .model-card:nth-child(3) { animation: cardReveal .5s .16s ease both; }
-.fade-up.visible > .feat-card:nth-child(4),
-.fade-up.visible > .safe-card:nth-child(4),
-.fade-up.visible > .sk-card:nth-child(4),
-.fade-up.visible > .testi-card:nth-child(4),
-.fade-up.visible > .model-card:nth-child(4) { animation: cardReveal .5s .24s ease both; }
-.fade-up.visible > .model-card:nth-child(5)  { animation: cardReveal .5s .32s ease both; }
-.fade-up.visible > .model-card:nth-child(6)  { animation: cardReveal .5s .40s ease both; }
-.fade-up.visible > .model-card:nth-child(7)  { animation: cardReveal .5s .48s ease both; }
-.fade-up.visible > .model-card:nth-child(8)  { animation: cardReveal .5s .56s ease both; }
-.fade-up.visible > .model-card:nth-child(n+9){ animation: cardReveal .5s .64s ease both; }
+.fade-up.visible > .stat-card:nth-child(n),
+.fade-up.visible > .why-card:nth-child(n),
+.fade-up.visible > .step:nth-child(n),
+.fade-up.visible > .agent-step:nth-child(n),
+.fade-up.visible > .mode-card:nth-child(n),
+.fade-up.visible > .tools-group:nth-child(n),
+.fade-up.visible > .mem-card:nth-child(n),
+.fade-up.visible > .sk-card:nth-child(n),
+.fade-up.visible > .shield-layer:nth-child(n),
+.fade-up.visible > .model-card:nth-child(n) { animation: cardReveal .5s ease both; }
+
+.fade-up.visible > *:nth-child(1) { animation-delay: 0s; }
+.fade-up.visible > *:nth-child(2) { animation-delay: .08s; }
+.fade-up.visible > *:nth-child(3) { animation-delay: .16s; }
+.fade-up.visible > *:nth-child(4) { animation-delay: .24s; }
+.fade-up.visible > *:nth-child(5) { animation-delay: .32s; }
+.fade-up.visible > *:nth-child(6) { animation-delay: .40s; }
+.fade-up.visible > *:nth-child(7) { animation-delay: .48s; }
+.fade-up.visible > *:nth-child(8) { animation-delay: .56s; }
+.fade-up.visible > *:nth-child(n+9) { animation-delay: .64s; }
+
 @keyframes cardReveal {
   from { opacity: 0; transform: translateY(18px) scale(0.97); }
   to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+@keyframes statSparkle {
+  0%,100% { filter: brightness(1); }
+  50% { filter: brightness(1.3) drop-shadow(0 0 6px rgba(59,130,246,0.5)); }
 }
 
 /* ---------- STEPS STAGGER ---------- */
@@ -723,84 +940,6 @@ footer {
 @keyframes stepIn {
   from { opacity: 0; transform: translateY(22px); }
   to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ---------- BODY TRANSITION (THEME SWITCH) ---------- */
-body { transition: background .35s ease, color .35s ease; }
-
-/* ---------- NAV LINK UNDERLINE SLIDE ---------- */
-.nav-links a { position: relative; }
-.nav-links a::after {
-  content: ''; position: absolute; left: 0; bottom: -3px;
-  width: 0; height: 2px; border-radius: 2px;
-  background: var(--accent); transition: width .25s ease;
-}
-.nav-links a:hover::after { width: 100%; }
-
-/* ---------- CARD GLOW ON HOVER ---------- */
-.feat-card::after {
-  content: ''; position: absolute; inset: 0; border-radius: inherit;
-  background: radial-gradient(ellipse 70% 50% at 50% 110%, rgba(59,130,246,0.12) 0%, transparent 70%);
-  opacity: 0; transition: opacity .35s ease; pointer-events: none;
-}
-.feat-card:hover::after { opacity: 1; }
-
-.sk-card::before {
-  content: ''; position: absolute; inset: 0; border-radius: inherit;
-  background: radial-gradient(ellipse 60% 45% at 50% 110%, rgba(99,102,241,0.13) 0%, transparent 70%);
-  opacity: 0; transition: opacity .35s ease; pointer-events: none; z-index: 0;
-}
-.sk-card:hover::before { opacity: 1; }
-.sk-card > * { position: relative; z-index: 1; }
-
-/* ---------- SAFE-ICON HOVER SPIN + GLOW ---------- */
-.safe-card { transition: all .3s, transform .3s; }
-.safe-card:hover { transform: translateY(-3px); }
-.safe-icon { transition: transform .4s cubic-bezier(.34,1.56,.64,1), box-shadow .3s; }
-.safe-card:hover .safe-icon {
-  transform: rotate(12deg) scale(1.12);
-  box-shadow: 0 0 16px rgba(34,197,94,0.22);
-}
-
-/* ---------- KEYWORD TAG BOUNCE ---------- */
-.kw { transition: transform .2s cubic-bezier(.34,1.56,.64,1), background .2s, border-color .2s, color .2s; }
-.kw:hover {
-  transform: scale(1.1) translateY(-2px);
-  background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.45); color: var(--text);
-}
-
-/* ---------- STAT CARD GLOW ON HOVER ---------- */
-.stat-card { transition: background .25s, transform .25s; }
-.stat-card:hover { transform: translateY(-3px); }
-.stat-num { transition: filter .25s; }
-.stat-card:hover .stat-num { filter: drop-shadow(0 0 10px rgba(59,130,246,0.4)); }
-
-/* ---------- TESTI CARD HOVER ---------- */
-.testi-card { transition: all .3s; }
-.testi-card:hover {
-  border-color: rgba(59,130,246,0.25);
-  transform: translateY(-3px);
-  box-shadow: 0 12px 36px rgba(0,0,0,0.18);
-}
-
-/* ---------- CTA ANIMATED BORDER LIGHT ---------- */
-@keyframes borderFlow {
-  0%   { background-position: 0%   50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0%   50%; }
-}
-.cta-box {
-  background: var(--bg3);
-  border: 1px solid transparent;
-  background-clip: padding-box;
-  position: relative;
-}
-.cta-box::after {
-  content: ''; position: absolute; inset: -1px; border-radius: 21px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3), var(--purple), var(--accent));
-  background-size: 300% 300%;
-  animation: borderFlow 6s ease infinite;
-  z-index: -1; opacity: .5;
 }
 
 /* ---------- HERO ENTRANCE STAGGER ---------- */
@@ -816,311 +955,17 @@ body { transition: background .35s ease, color .35s ease; }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ---------- LOGO DOT EXTRA GLOW PULSE ---------- */
-.logo-dot {
-  animation: pulse 2.4s infinite, dotGlow 2.4s infinite;
-}
-@keyframes dotGlow {
-  0%,100% { box-shadow: 0 0 14px var(--accent), 0 0 30px rgba(59,130,246,0.35); }
-  50%      { box-shadow: 0 0 22px var(--accent), 0 0 50px rgba(59,130,246,0.55); }
-}
+/* ---------- BODY TRANSITION (THEME SWITCH) ---------- */
+body { transition: background .35s ease, color .35s ease; }
 
-/* ---------- SCROLL PROGRESS GLOW ---------- */
-#scroll-progress {
-  filter: drop-shadow(0 0 4px rgba(59,130,246,0.5));
+/* ---------- NAV LINK UNDERLINE SLIDE ---------- */
+.nav-links a { position: relative; }
+.nav-links a::after {
+  content: ''; position: absolute; left: 0; bottom: -3px;
+  width: 0; height: 2px; border-radius: 2px;
+  background: var(--accent); transition: width .25s ease;
 }
-
-/* ---------- FAQ ITEM HOVER LIFT ---------- */
-.qa-item { transition: border-color .25s, transform .25s, box-shadow .25s; }
-.qa-item:hover {
-  transform: translateX(3px);
-  box-shadow: -3px 0 0 var(--accent);
-  border-color: rgba(59,130,246,0.25);
-}
-
-/* ---------- INSTALL CARD SHIMMER ---------- */
-.install-card { overflow: hidden; }
-.install-card::after {
-  content: ''; position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
-  background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%);
-  transition: left .45s ease; pointer-events: none;
-}
-.install-card:hover::after { left: 140%; }
-
-/* ---------- MODEL CARD GLOW ON HOVER ---------- */
-.model-card::before {
-  content: ''; position: absolute; inset: 0; border-radius: inherit;
-  background: radial-gradient(ellipse 80% 60% at 50% 120%, rgba(59,130,246,0.1) 0%, transparent 70%);
-  opacity: 0; transition: opacity .3s; pointer-events: none;
-}
-.model-card:hover::before { opacity: 1; }
-
-/* ---------- WHY CARD HOVER LIGHT ---------- */
-.why-card::before {
-  content: ''; position: absolute; inset: 0; border-radius: inherit;
-  background: radial-gradient(ellipse 70% 50% at 50% 110%, rgba(59,130,246,0.07) 0%, transparent 70%);
-  opacity: 0; transition: opacity .35s; pointer-events: none;
-}
-.why-card.pain::before {
-  background: radial-gradient(ellipse 70% 50% at 50% 110%, rgba(248,113,113,0.07) 0%, transparent 70%);
-}
-.why-card.value::before {
-  background: radial-gradient(ellipse 70% 50% at 50% 110%, rgba(34,197,94,0.07) 0%, transparent 70%);
-}
-.why-card:hover::before { opacity: 1; }
-
-
-/* ============================================================ NEW ANIMATIONS v2 --- AMBIENT & AUTO */
-
-/* ---------- 1. HERO FLOATING ORBS ---------- */
-.hero::before, .hero::after {
-  content: ''; position: absolute; border-radius: 50%; pointer-events: none;
-  opacity: 0.55; filter: blur(70px); z-index: 0;
-}
-.hero::before {
-  width: 300px; height: 300px;
-  background: radial-gradient(circle, rgba(99,102,241,0.22), transparent);
-  top: 10%; left: 3%;
-  animation: floatOrb1 11s ease-in-out infinite;
-}
-.hero::after {
-  width: 260px; height: 260px;
-  background: radial-gradient(circle, rgba(6,182,212,0.18), transparent);
-  bottom: 18%; right: 5%;
-  animation: floatOrb2 9s ease-in-out infinite;
-}
-@keyframes floatOrb1 {
-  0%,100% { transform: translate(0,0) scale(1); }
-  25% { transform: translate(50px,-40px) scale(1.2); }
-  50% { transform: translate(-30px,-70px) scale(0.88); }
-  75% { transform: translate(-60px,30px) scale(1.1); }
-}
-@keyframes floatOrb2 {
-  0%,100% { transform: translate(0,0) scale(1); }
-  33% { transform: translate(-40px,-50px) scale(1.25); }
-  66% { transform: translate(30px,40px) scale(0.82); }
-}
-
-/* ---------- 2. SECOND HERO GLOW DRIFT ---------- */
-.hero-glow-2 {
-  animation: glow2Drift 12s ease-in-out infinite;
-}
-@keyframes glow2Drift {
-  0%,100% { transform: translate(0,0); }
-  25% { transform: translate(40px,-30px); }
-  50% { transform: translate(-30px,40px); }
-  75% { transform: translate(-50px,-15px); }
-}
-
-/* ---------- 3. STARS TWINKLE (TESTIMONIALS) ---------- */
-.testi-card .stars {
-  animation: starTwinkle 2.2s ease-in-out infinite;
-}
-.testi-card:nth-child(1) .stars { animation-delay: 0s; }
-.testi-card:nth-child(2) .stars { animation-delay: 0.7s; }
-.testi-card:nth-child(3) .stars { animation-delay: 1.4s; }
-@keyframes starTwinkle {
-  0%,100% { opacity: 1; transform: scale(1); }
-  40% { opacity: 0.55; transform: scale(0.92); }
-  80% { opacity: 0.9; transform: scale(1.03); }
-}
-
-/* ---------- 4. SKILL EMOJI FLOAT ---------- */
-.sk-emoji {
-  animation: emojiFloat 3.8s ease-in-out infinite;
-}
-.sk-card:nth-child(1) .sk-emoji { animation-delay: 0s; }
-.sk-card:nth-child(2) .sk-emoji { animation-delay: 1.1s; }
-.sk-card:nth-child(3) .sk-emoji { animation-delay: 2.2s; }
-@keyframes emojiFloat {
-  0%,100% { transform: translateY(0); }
-  50% { transform: translateY(-9px); }
-}
-
-/* ---------- 5. MODEL CARD AUTO SHIMMER ---------- */
-.model-card { overflow: hidden; }
-.model-card::after {
-  content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-  background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.025) 45%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.025) 55%, transparent 60%);
-  animation: modelShimmer 5s linear infinite; pointer-events: none; z-index: 1;
-}
-.model-card:nth-child(even)::after { animation-delay: 2.5s; }
-@keyframes modelShimmer {
-  0% { transform: translate(-50%, -50%) rotate(0deg); }
-  100% { transform: translate(50%, 50%) rotate(360deg); }
-}
-.model-card > * { position: relative; z-index: 2; }
-.model-card::before { z-index: 1; }
-
-/* ---------- 6. CTA HEARTBEAT ---------- */
-.cta-box h2 {
-  animation: heartbeat 2.8s ease-in-out infinite;
-}
-@keyframes heartbeat {
-  0%,100% { transform: scale(1); }
-  6% { transform: scale(1.04); }
-  12% { transform: scale(1); }
-  18% { transform: scale(1.04); }
-  24% { transform: scale(1); }
-}
-
-/* ---------- 7. FAQ ICON GENTLE DRIFT ---------- */
-.qa-icon {
-  animation: qaDrift 3.5s ease-in-out infinite;
-}
-.qa-item:nth-child(odd) .qa-icon { animation-delay: 0s; }
-.qa-item:nth-child(even) .qa-icon { animation-delay: 1.7s; }
-@keyframes qaDrift {
-  0%,100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
-}
-.qa-item.open .qa-icon {
-  animation: none;
-  transform: rotate(180deg);
-}
-
-/* ---------- 8. DIVIDER GRADIENT FLOW ---------- */
-.divider {
-  background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), var(--accent3), var(--accent), transparent);
-  background-size: 300% 100%;
-  animation: dividerFlow 10s linear infinite;
-}
-@keyframes dividerFlow {
-  0% { background-position: 300% 0; }
-  100% { background-position: -300% 0; }
-}
-
-/* ---------- 9. STEP NUMBER PULSING RING ---------- */
-.step-num::after {
-  content: ''; position: absolute; inset: -7px; border-radius: 50%;
-  border: 2px solid rgba(59,130,246,0.25);
-  animation: stepRing 2.4s ease-in-out infinite;
-}
-.step:nth-child(2) .step-num::after { animation-delay: 0.8s; }
-.step:nth-child(3) .step-num::after { animation-delay: 1.6s; }
-@keyframes stepRing {
-  0%,100% { transform: scale(1); opacity: 0.4; }
-  50% { transform: scale(1.18); opacity: 0; }
-}
-
-/* ---------- 10. WHY-FLAG GENTLE PULSE ---------- */
-.why-flag {
-  animation: flagPulse 3.2s ease-in-out infinite;
-}
-.why-flag.pain { animation-delay: 0s; }
-.why-flag.value { animation-delay: 1.6s; }
-@keyframes flagPulse {
-  0%,100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-
-/* ---------- 11. BACK-TO-TOP ORBITING GLOW ---------- */
-#back-top::before {
-  content: ''; position: absolute; inset: -5px; border-radius: 50%;
-  border: 2px solid rgba(59,130,246,0.25);
-  animation: orbitSpin 4.5s linear infinite;
-  opacity: 0; transition: opacity .4s;
-}
-#back-top.visible::before { opacity: 1; }
-@keyframes orbitSpin {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(1.2); }
-  100% { transform: rotate(360deg) scale(1); }
-}
-
-/* ---------- 12. SECTION HEADER ANIMATED ACCENT LINE ---------- */
-.sh::after {
-  content: ''; display: block; width: 44px; height: 3px;
-  border-radius: 2px; margin: 18px auto 0;
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
-  transform: scaleX(0); transition: transform .7s cubic-bezier(.16,1,.3,1);
-}
-.sh.fade-up.visible::after {
-  transform: scaleX(1);
-}
-
-/* ---------- 13. FEATURE ICON GENTLE TILT ---------- */
-.feat-icon {
-  animation: iconTilt 5s ease-in-out infinite;
-  display: inline-block;
-}
-.feat-card:nth-child(1) .feat-icon { animation-delay: 0s; }
-.feat-card:nth-child(2) .feat-icon { animation-delay: 1.6s; }
-.feat-card:nth-child(3) .feat-icon { animation-delay: 3.2s; }
-@keyframes iconTilt {
-  0%,100% { transform: rotate(0); }
-  25% { transform: rotate(6deg); }
-  75% { transform: rotate(-6deg); }
-}
-
-/* ---------- 14. TRUST STRIP ITEMS WAVE ---------- */
-.trust-item {
-  animation: trustWave 5.5s ease-in-out infinite;
-}
-.trust-item:nth-child(1) { animation-delay: 0s; }
-.trust-item:nth-child(2) { animation-delay: 0.5s; }
-.trust-item:nth-child(3) { animation-delay: 1.0s; }
-.trust-item:nth-child(4) { animation-delay: 1.5s; }
-@keyframes trustWave {
-  0%,100% { transform: translateY(0); }
-  25% { transform: translateY(-6px); }
-  75% { transform: translateY(-2px); }
-}
-
-/* ---------- 15. TERMINAL SCAN LINE ---------- */
-.terminal-wrap::after {
-  content: ''; position: absolute; left: 0; right: 0; height: 2px;
-  background: rgba(59,130,246,0.12);
-  animation: scanLine 3.5s linear infinite;
-  pointer-events: none; z-index: 5; border-radius: 1px;
-}
-@keyframes scanLine {
-  0% { top: 0; opacity: 0; }
-  8% { opacity: 1; }
-  85% { opacity: 1; }
-  100% { top: 100%; opacity: 0; }
-}
-
-/* ---------- 16. STAT NUMBER SPARKLE ---------- */
-@keyframes statSparkle {
-  0%,100% { filter: brightness(1); }
-  50% { filter: brightness(1.3) drop-shadow(0 0 6px rgba(59,130,246,0.5)); }
-}
-
-/* ---------- 17. INSTALL CARD PLATFORM ICON BOUNCE ---------- */
-.install-card .plat-icon {
-  display: inline-block;
-  animation: platBounce 2.5s ease-in-out infinite;
-}
-.install-card:nth-child(1) .plat-icon { animation-delay: 0s; }
-.install-card:nth-child(2) .plat-icon { animation-delay: 0.8s; }
-.install-card:nth-child(3) .plat-icon { animation-delay: 1.6s; }
-@keyframes platBounce {
-  0%,100% { transform: translateY(0); }
-  30% { transform: translateY(-10px); }
-  50% { transform: translateY(0); }
-  70% { transform: translateY(-5px); }
-  85% { transform: translateY(0); }
-}
-
-/* ---------- 18. SAFE-ICON AUTO BREATHE ---------- */
-.safe-icon {
-  animation: safeBreathe 3.3s ease-in-out infinite;
-}
-.safe-card:nth-child(1) .safe-icon { animation-delay: 0s; }
-.safe-card:nth-child(2) .safe-icon { animation-delay: 0.6s; }
-.safe-card:nth-child(3) .safe-icon { animation-delay: 1.2s; }
-.safe-card:nth-child(4) .safe-icon { animation-delay: 1.8s; }
-.safe-card:nth-child(5) .safe-icon { animation-delay: 2.4s; }
-@keyframes safeBreathe {
-  0%,100% { transform: scale(1); box-shadow: none; }
-  50% { transform: scale(1.08); box-shadow: 0 0 12px rgba(34,197,94,0.15); }
-}
-.safe-card:hover .safe-icon {
-  animation: none;
-  transform: rotate(12deg) scale(1.12);
-  box-shadow: 0 0 16px rgba(34,197,94,0.22);
-}
+.nav-links a:hover::after { width: 100%; }
 
 /* ============================================================ RESPONSIVE */
 @media (max-width: 900px) {
@@ -1136,27 +981,23 @@ body { transition: background .35s ease, color .35s ease; }
   .steps::before { display: none; }
   .step { padding: 0; text-align: left; display: flex; gap: 18px; align-items: flex-start; }
   .step-num { flex-shrink: 0; margin: 0; width: 48px; height: 48px; font-size: 17px; }
-  .feat-grid { grid-template-columns: 1fr; }
-  .feat-card:last-child:nth-child(odd) { grid-column: auto; }
-  .feat-tabs { padding: 3px; gap: 2px; }
-  .feat-tab { padding: 7px 14px; font-size: 12.5px; }
+  .agent-modes { grid-template-columns: 1fr; }
+  .tools-categories { grid-template-columns: 1fr; }
+  .mem-grid { grid-template-columns: 1fr; }
   .skills-row { grid-template-columns: 1fr; }
-  .testi-grid { grid-template-columns: 1fr; }
-  .safety-grid { grid-template-columns: 1fr; }
   .models-grid { grid-template-columns: repeat(2, 1fr); }
   .install-tabs { grid-template-columns: 1fr; }
   .cta-box { padding: 40px 20px; }
   .terminal-wrap { max-width: 100%; }
   .trust-strip { gap: 24px; }
+  .shield-layers { max-width: 100%; }
+  .agent-flow { max-width: 100%; }
 }
 @media (max-width: 580px) {
   .models-grid { grid-template-columns: repeat(2, 1fr); }
-  .testi-grid { grid-template-columns: 1fr; }
-  .testi-grid .testi-card:last-child { grid-column: auto; max-width: none; margin: 0; }
   .hero-icon { width: 120px; height: 120px; border-radius: 26px; }
   .hero-icon-glow { width: 180px; height: 180px; }
   .stats-grid { grid-template-columns: 1fr 1fr; }
-  .stat-num { font-size: 2rem; }
 }
 </style>
 </head>
@@ -1169,7 +1010,7 @@ body { transition: background .35s ease, color .35s ease; }
 <canvas id="particles"></canvas>
 
 <!-- BACK TO TOP -->
-<button id="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="返到頂部">↑</button>
+<button id="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="返回頂部">↑</button>
 
 <!-- NAV -->
 <nav id="navbar">
@@ -1178,16 +1019,17 @@ body { transition: background .35s ease, color .35s ease; }
     AI Workbench
   </div>
   <ul class="nav-links">
-    <li><a href="#why">痛點</a></li>
+    <li><a href="#why">為什麼</a></li>
     <li><a href="#how">上手</a></li>
-    <li><a href="#features">功能</a></li>
-    <li><a href="#testimonials">口碑</a></li>
+    <li><a href="#agent">Agent</a></li>
+    <li><a href="#tools">工具</a></li>
+    <li><a href="#memory">記憶</a></li>
     <li><a href="#safety">安全</a></li>
     <li><a href="#guide">FAQ</a></li>
   </ul>
-  <span class="nav-pill">本地優先</span>
+  <span class="nav-pill">v0.1.0</span>
   <select class="nav-select" onchange="switchLang(this.value)" aria-label="選擇語言">
-    <option value="index.html">简体中文</option>
+    <option value="index.html">簡體中文</option>
     <option value="index_en.html">English</option>
     <option value="index_tw.html" selected>繁體中文</option>
   </select>
@@ -1209,15 +1051,15 @@ body { transition: background .35s ease, color .35s ease; }
 
       <div class="hero-icon-wrap fade-up">
         <div class="hero-icon-glow"></div>
-        <img src="icon.png" alt="AI Workbench 图标" class="hero-icon" />
+        <img src="icon.png" alt="AI Workbench 圖示" class="hero-icon" />
       </div>
 
-      <div class="hero-badge fade-up">你嘅 AI 對話記錄，永遠只喺你自己嘅電腦上</div>
+      <div class="hero-badge fade-up">本地優先 · 數據從不離開你嘅電腦</div>
 
-      <h1 class="fade-up">好似傾偈咁用 AI，<br /><span class="grad">數據從唔離開你嘅電腦</span></h1>
+      <h1 class="fade-up">唔只係對話，<br /><span class="grad">係你嘅 AI Agent 工作台</span></h1>
 
       <p class="hero-sub fade-up">
-        AI Workbench 係一款安裝喺電腦上嘅 AI 助手。你用自己的 API Key 連接 DeepSeek、ChatGPT、Claude 等大模型，所有對話、設定都儲存喺本地，唔經過任何中間伺服器。
+        AI Workbench 係一款本地優先嘅桌面 AI Agent 工作台。14 個內置工具畀 AI 自主瀏覽專案、搜尋程式碼、修改檔案、執行命令——所有對話同設定只會保存喺你嘅電腦。
       </p>
 
       <div class="hero-btns fade-up">
@@ -1225,9 +1067,9 @@ body { transition: background .35s ease, color .35s ease; }
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
           查看使用教學
         </a>
-        <a href="#features" class="btn btn-ghost">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-          了解所有功能
+        <a href="#agent" class="btn btn-ghost">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          了解 Agent 模式
         </a>
       </div>
 
@@ -1237,21 +1079,24 @@ body { transition: background .35s ease, color .35s ease; }
           <span class="term-dot r"></span>
           <span class="term-dot y"></span>
           <span class="term-dot g"></span>
-          <span class="term-title">AI Workbench — 新對話</span>
+          <span class="term-title">AI Workbench — Agent 模式</span>
         </div>
         <div class="term-body">
           <div><span class="term-user">▸ 你：</span><span class="term-text" id="typing-line"></span><span class="term-cursor" id="typing-cursor"></span></div>
           <div style="margin-top:12px;display:none;" id="ai-reply-line">
             <span class="term-ai">◇ AI：</span><span class="term-text" id="ai-text"></span>
           </div>
+          <div style="margin-top:8px;display:none;" id="tool-line">
+            <span class="term-tool">⟳ 工具：</span><span class="term-text" id="tool-text"></span>
+          </div>
         </div>
       </div>
 
       <div class="trust-strip fade-up">
-        <div class="trust-item"><span class="trust-icon">🔒</span>數據 100% 本地儲存</div>
-        <div class="trust-item"><span class="trust-icon">🧩</span>支援 8+ 主流 AI 服務</div>
-        <div class="trust-item"><span class="trust-icon">💻</span>Windows / Mac / Linux</div>
-        <div class="trust-item"><span class="trust-icon">🆓</span>無訂閱費，用你自己嘅 Key</div>
+        <div class="trust-item"><span class="trust-icon">🤖</span>Agent 自主執行</div>
+        <div class="trust-item"><span class="trust-icon">🧰</span>14 內置工具</div>
+        <div class="trust-item"><span class="trust-icon">🔒</span>數據 100% 本地</div>
+        <div class="trust-item"><span class="trust-icon">🆓</span>用你自己嘅 Key</div>
       </div>
     </div>
   </div>
@@ -1261,20 +1106,20 @@ body { transition: background .35s ease, color .35s ease; }
 <section id="stats" class="tight">
   <div class="stats-grid">
     <div class="stat-card fade-up">
-      <div class="stat-num"><span data-count="8">8</span>+</div>
-      <div class="stat-label">支持的 AI 服务</div>
+      <div class="stat-num"><span data-count="14">14</span></div>
+      <div class="stat-label">內置工具</div>
     </div>
     <div class="stat-card fade-up">
-      <div class="stat-num"><span data-count="3">3</span></div>
-      <div class="stat-label">覆盖操作系统</div>
+      <div class="stat-num">Agent</div>
+      <div class="stat-label">自主執行模式</div>
     </div>
     <div class="stat-card fade-up">
-      <div class="stat-num"><span data-count="100">100</span>%</div>
-      <div class="stat-label">数据在本地</div>
+      <div class="stat-num"><span data-count="5">5</span> 層</div>
+      <div class="stat-label">安全防護</div>
     </div>
     <div class="stat-card fade-up">
-      <div class="stat-num"><span data-count="5">0</span></div>
-      <div class="stat-label">層安全保護</div>
+      <div class="stat-num"><span data-count="9">9</span>+</div>
+      <div class="stat-label">AI 服務支援</div>
     </div>
   </div>
 </section>
@@ -1286,33 +1131,35 @@ body { transition: background .35s ease, color .35s ease; }
   <div class="wrap">
     <div class="sh fade-up">
       <span class="sh-label">點解揀 AI Workbench</span>
-      <h2 class="sh-title">有咩唔同？</h2>
-      <p class="sh-desc">市面上 AI 工具好多，但大多數都將你嘅數據存喺佢哋嘅伺服器上。</p>
+      <h2 class="sh-title">唔只係對話工具，係真正嘅 AI 工作台</h2>
+      <p class="sh-desc">普通 AI 只係識答問題；AI Workbench 畀 AI 自主執行任務——讀檔案、搜程式碼、改專案，全程數據留喺本地。</p>
     </div>
 
     <div class="why-grid fade-up">
       <div class="why-card pain">
         <span class="why-flag pain">常見痛點</span>
         <span class="emoji">😰</span>
-        <h3>普通 AI 網頁工具嘅問題</h3>
-        <p>你同 AI 講嘅每一句說話，都俾人儲存喺人哋嘅伺服器上。你嘅工作內容、私人想法、商業機密——都唔喺你嘅掌控之內。</p>
+        <h3>普通 AI 工具嘅問題</h3>
+        <p>大多數 AI 工具只可以一問一答，你需要手動複製貼上檔案內容，然後 AI 只可以畀建議，唔可以幫你執行。數據仲要存在人哋嘅伺服器上。</p>
         <ul>
-          <li>對話記錄存喺服務商伺服器</li>
-          <li>服務商可能查閱你嘅數據</li>
-          <li>服務關閉後對話記錄消失</li>
-          <li>加價或政策變動你冇得控制</li>
+          <li>只能一問一答，唔可以自主執行多步驟</li>
+          <li>需要手動複製檔案內容畀 AI</li>
+          <li>AI 只可以建議，唔可以幫你改程式碼</li>
+          <li>對話記錄存在服務商伺服器上</li>
+          <li>冇專案上下文，AI 反覆誤解你嘅意圖</li>
         </ul>
       </div>
       <div class="why-card value">
         <span class="why-flag value">解決方案</span>
         <span class="emoji">😌</span>
         <h3>AI Workbench 嘅做法</h3>
-        <p>所有對話存喺你電腦本地。AI Workbench 只係一個「中間橋樑」——佢將你嘅訊息發俾 AI 服務商，將回覆顯示俾你，全程唔儲存、唔轉發。</p>
+        <p>AI Agent 自主瀏覽專案、搜尋程式碼、修改檔案、執行命令——你只需要講需求，AI 從理解到執行全自動。所有數據 100% 保存喺本地。</p>
         <ul>
-          <li>所有對話儲存喺你嘅本地電腦</li>
-          <li>API Key 加密儲存喺本地</li>
-          <li>冇中間伺服器、冇帳號系統</li>
-          <li>你可以隨時備份到 USB 手指或雲端硬碟</li>
+          <li>Agent 模式自主多步驟執行任務</li>
+          <li>AI 自己瀏覽目錄、搜尋檔案，唔使手動</li>
+          <li>AI 可以直接修改程式碼並自動驗證</li>
+          <li>所有對話保存喺本地 SQLite 資料庫</li>
+          <li>工作區記憶畀 AI 跨對話記住專案約定</li>
         </ul>
       </div>
     </div>
@@ -1324,7 +1171,7 @@ body { transition: background .35s ease, color .35s ease; }
   <div class="wrap">
     <div class="sh fade-up">
       <span class="sh-label">三步上手</span>
-      <h2 class="sh-title">從安裝到第一次對話</h2>
+      <h2 class="sh-title">由安裝到 Agent 執行</h2>
       <p class="sh-desc">唔需要任何技術背景，跟住步驟做就得。</p>
     </div>
 
@@ -1332,22 +1179,22 @@ body { transition: background .35s ease, color .35s ease; }
       <div class="step">
         <div class="step-num">1</div>
         <div>
-          <h3>安裝應用程式</h3>
-          <p>下載對應你電腦系統嘅安裝檔——Windows 按兩下 <strong>.exe</strong> 跟住精靈安裝；macOS 打開 <strong>.dmg</strong> 拖入應用程式資料夾；Linux 直接執行 <strong>.AppImage</strong>。</p>
+          <h3>安裝並設定</h3>
+          <p>下載安裝檔，揀你用開嘅 AI 服務商（DeepSeek、ChatGPT、Claude 等），填入 <strong>API Key</strong>，點擊「測試連線」確認可用。</p>
         </div>
       </div>
       <div class="step">
         <div class="step-num">2</div>
         <div>
-          <h3>設定一個 AI 模型</h3>
-          <p>點擊左側「模型設定」，揀你用嘅 AI 服務商（如 DeepSeek、ChatGPT），填入你從服務商官網申請嘅 <strong>API Key</strong>，點擊「測試連接」確認可用。</p>
+          <h3>建立工作區</h3>
+          <p>將你嘅專案資料夾設為「工作區」。AI 會自動載入專案上下文——README、package.json、Git 狀態等，唔使手動說明。</p>
         </div>
       </div>
       <div class="step">
         <div class="step-num">3</div>
         <div>
-          <h3>開始對話</h3>
-          <p>點擊左側「Chat」，喺底部輸入框輸入內容，撳 <strong>Enter</strong> 發送。AI 嘅回覆會好似打字咁逐字出現。點「+ 新增」可以隨時開啟新對話。</p>
+          <h3>切換到 Craft 模式</h3>
+          <p>喺 Craft 模式下話畀 AI 知你想做咩——<strong>"修復登入頁嘅樣式 bug"</strong>。AI 自主瀏覽專案、定位問題、產生修改、自動驗證，全程透明可控。</p>
         </div>
       </div>
     </div>
@@ -1356,112 +1203,293 @@ body { transition: background .35s ease, color .35s ease; }
 
 <div class="divider"></div>
 
-<!-- ============================================================ FEATURES (Tabbed) -->
-<section id="features">
+<!-- ============================================================ AGENT MODE -->
+<section id="agent" class="wide-section">
   <div class="wrap">
     <div class="sh fade-up">
-      <span class="sh-label">主要功能</span>
-      <h2 class="sh-title">唔只係傾偈</h2>
-      <p class="sh-desc">從日常對話到讀取檔案、生成報告，AI Workbench 都可以幫你做到。</p>
+      <span class="sh-label">Agent 模式</span>
+      <h2 class="sh-title">AI 唔只係回答，仲可以自主執行</h2>
+      <p class="sh-desc">Agent 模式畀 AI 好似一位自主嘅開發者——連續調用多個工具，每步結果影響下一步決策，直到任務完成。</p>
     </div>
 
-    <div class="feat-tabs-wrap fade-up">
-      <div class="feat-tabs">
-        <button class="feat-tab active" data-tab="chat">💬 對話</button>
-        <button class="feat-tab" data-tab="workspace">📁 工作區</button>
-        <button class="feat-tab" data-tab="files">📂 檔案 &amp; 工具</button>
-        <button class="feat-tab" data-tab="ux">🎨 體驗</button>
+    <!-- Agent flow timeline -->
+    <div class="agent-flow fade-up">
+      <div class="agent-step">
+        <div class="agent-step-dot">💬</div>
+        <div class="agent-step-line"></div>
+        <div class="agent-step-body">
+          <div class="agent-step-num">Step 0</div>
+          <div class="agent-step-title">你發送需求</div>
+          <div class="agent-step-desc">喺工作區對話中話畀 AI 知你想做咩——"修復登入頁樣式 bug"。系統自動對請求分類。</div>
+        </div>
       </div>
-    </div>
-
-    <div class="feat-grid fade-up" id="feat-chat">
-      <div class="feat-card">
-        <span class="feat-icon">⚡</span>
-        <div class="feat-title">流式即時回覆</div>
-        <div class="feat-desc">AI 嘅回答逐字顯示，唔使乾等一大段文字突然出現。生成途中隨時可以點「停止」。</div>
+      <div class="agent-step">
+        <div class="agent-step-dot">📦</div>
+        <div class="agent-step-line"></div>
+        <div class="agent-step-body">
+          <div class="agent-step-num">Step 1</div>
+          <div class="agent-step-title">載入工作區上下文</div>
+          <div class="agent-step-desc">自動讀取 README.md、package.json、Git 狀態、工作區記憶，AI 即刻了解你嘅專案。</div>
+        </div>
       </div>
-      <div class="feat-card">
-        <span class="feat-icon">💬</span>
-        <div class="feat-title">多對話管理</div>
-        <div class="feat-desc">可以同時保留多個對話，按日期分組顯示。支援重新命名、刪除，隨時切換返嚟繼續傾。</div>
+      <div class="agent-step">
+        <div class="agent-step-dot">🔍</div>
+        <div class="agent-step-line"></div>
+        <div class="agent-step-body">
+          <div class="agent-step-num">Step 2</div>
+          <div class="agent-step-title">自主瀏覽與搜尋</div>
+          <div class="agent-step-desc">AI 用 list_dir、read_file、search_files 等工具自己瀏覽專案結構、定位相關檔案。</div>
+        </div>
       </div>
-      <div class="feat-card">
-        <span class="feat-icon">✏️</span>
-        <div class="feat-title">訊息編輯同重新生成</div>
-        <div class="feat-desc">發現問法唔啱？將游標移去訊息上點「編輯」修改後重新提交。對 AI 嘅回覆唔滿意，點「重新生成」等佢再答一次。</div>
+      <div class="agent-step">
+        <div class="agent-step-dot">🤔</div>
+        <div class="agent-step-line"></div>
+        <div class="agent-step-body">
+          <div class="agent-step-num">Step 3</div>
+          <div class="agent-step-title">思考並調用工具</div>
+          <div class="agent-step-desc">LLM 分析搜尋結果，決定下一步——可能讀取更多檔案、搜尋更多內容，或開始產生修改。</div>
+        </div>
       </div>
-    </div>
-
-    <div class="feat-grid fade-up" id="feat-workspace" style="display:none;">
-      <div class="feat-card">
-        <span class="feat-icon">📁</span>
-        <div class="feat-title">按項目資料夾整理對話</div>
-        <div class="feat-desc">將本地資料夾設為「工作區」，該工作區下嘅對話獨立管理。同時處理多個項目都唔會混淆上下文。</div>
+      <div class="agent-step">
+        <div class="agent-step-dot">✏️</div>
+        <div class="agent-step-line"></div>
+        <div class="agent-step-body">
+          <div class="agent-step-num">Step 4</div>
+          <div class="agent-step-title">產生修改並確認</div>
+          <div class="agent-step-desc">AI 用 apply_patch 產生 unified diff——彈出確認對話框顯示修改摘要，你點擊「允許」後先寫入。</div>
+        </div>
       </div>
-      <div class="feat-card">
-        <span class="feat-icon">🔀</span>
-        <div class="feat-title">一鍵切換工作區</div>
-        <div class="feat-desc">對話頁頂部顯示當前工作區名稱，點擊即可快速切換。每個工作區只展示自己嘅對話，保持上下文清晰。</div>
-      </div>
-      <div class="feat-card">
-        <span class="feat-icon">🛡️</span>
-        <div class="feat-title">檔案操作以工作區為基準</div>
-        <div class="feat-desc">讀取檔案或執行命令時預設從工作區根目錄出發，減少路徑混淆。工作區路徑失效時會自動提示。</div>
-      </div>
-    </div>
-
-    <div class="feat-grid fade-up" id="feat-files" style="display:none;">
-      <div class="feat-card">
-        <span class="feat-icon">📄</span>
-        <div class="feat-title">讀取你嘅本地檔案</div>
-        <div class="feat-desc">喺對話時揀一個 .txt 或 .md 檔案，AI 會讀取檔案內容並據此回答你嘅問題——例如「幫我總結呢份文件」。</div>
-      </div>
-      <div class="feat-card">
-        <span class="feat-icon">📥</span>
-        <div class="feat-title">匯出對話為 Markdown</div>
-        <div class="feat-desc">單條 AI 回覆或者成個對話都可以匯出做 .md 檔案，包含完整對話記錄同工具調用摘要，方便存檔或二次使用。</div>
-      </div>
-      <div class="feat-card">
-        <span class="feat-icon">⚡</span>
-        <div class="feat-title">命令執行器（進階）</div>
-        <div class="feat-desc">喺授權嘅工作區資料夾內讓 AI 執行本地命令。支援自然語言觸發（如「查吓 Node 版本」），多層安全保護預設關閉，按需開啟。</div>
+      <div class="agent-step">
+        <div class="agent-step-dot">✅</div>
+        <div class="agent-step-body">
+          <div class="agent-step-num">Step 5</div>
+          <div class="agent-step-title">自動驗證與報告</div>
+          <div class="agent-step-desc">寫入後自動執行 npm test / npm build 驗證。AI 最終回覆包含修改摘要、檔案列表、驗證結果。</div>
+        </div>
       </div>
     </div>
 
-    <div class="feat-grid fade-up" id="feat-ux" style="display:none;">
-      <div class="feat-card">
-        <span class="feat-icon">🎨</span>
-        <div class="feat-title">深色 / 淺色主題</div>
-        <div class="feat-desc">支援跟隨系統、手動淺色、手動深色。望落護眼，用落舒服。</div>
+    <!-- Ask vs Craft -->
+    <div class="sh fade-up" style="margin-top:48px; margin-bottom:36px;">
+      <span class="sh-label">兩種模式</span>
+      <h2 class="sh-title">Ask 詢問 · Craft 構建</h2>
+    </div>
+
+    <div class="agent-modes fade-up">
+      <div class="mode-card ask">
+        <span class="mode-emoji">💬</span>
+        <div class="mode-title">Ask 模式</div>
+        <div class="mode-desc">一問一答嘅傳統對話方式。適合簡單問答、程式碼諮詢、理解概念。AI 唔調用工具，只回答你嘅問題。</div>
+        <span class="mode-tag ask">簡單問答</span>
       </div>
-      <div class="feat-card">
-        <span class="feat-icon">📊</span>
-        <div class="feat-title">Markdown 渲染</div>
-        <div class="feat-desc">AI 回覆嘅程式碼區塊、表格、列表、標題都可以正確顯示，程式碼區塊仲有一鍵複製掣。</div>
-      </div>
-      <div class="feat-card">
-        <span class="feat-icon">⚙️</span>
-        <div class="feat-title">靈活嘅介面佈局</div>
-        <div class="feat-desc">側邊欄同對話區域都可以拖動調整闊度，完全按照你嘅習慣。闊度縮小後自動變成圖示模式。</div>
+      <div class="mode-card craft">
+        <span class="mode-emoji">🛠️</span>
+        <div class="mode-title">Craft 模式</div>
+        <div class="mode-desc">AI 自主多步驟執行。適合程式碼修改、專案分析、多步操作。AI 連續調用工具，由瀏覽到修改到驗證全自動。</div>
+        <span class="mode-tag craft">自主執行</span>
       </div>
     </div>
   </div>
 </section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ 14 BUILT-IN TOOLS -->
+<section id="tools" class="wide-section">
+  <div class="wrap">
+    <div class="sh fade-up">
+      <span class="sh-label">14 內置工具</span>
+      <h2 class="sh-title">AI 嘅「雙手」，按風險分級管控</h2>
+      <p class="sh-desc">每個工具有明確嘅風險等級同審批策略——唯讀操作冇門檻，寫入操作需你確認。</p>
+    </div>
+
+    <div class="tools-categories fade-up">
+      <!-- 唯讀瀏覽 -->
+      <div class="tools-group">
+        <div class="tools-group-header">
+          <span class="tools-group-icon">📂</span>
+          <span class="tools-group-title">唯讀瀏覽</span>
+        </div>
+        <div class="tools-list">
+          <div class="tool-item">
+            <span class="tool-name">list_dir</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">列出工作區目錄內容</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">read_file</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">讀取工作區內文字檔案</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">search_files</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">搜尋檔案路徑（ripgrep）</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">search_text</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">搜尋檔案內容（正則+glob）</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 唯讀檔案 -->
+      <div class="tools-group">
+        <div class="tools-group-header">
+          <span class="tools-group-icon">📄</span>
+          <span class="tools-group-title">唯讀檔案</span>
+        </div>
+        <div class="tools-list">
+          <div class="tool-item">
+            <span class="tool-name">txt_reader</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">讀取用戶選擇嘅 .txt 檔案</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">markdown_reader</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">讀取用戶選擇嘅 .md 檔案</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">git_status</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">查看工作區 git 狀態</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">git_diff</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">查看 git 工作區差異</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 檔案建立 & 修改 -->
+      <div class="tools-group">
+        <div class="tools-group-header">
+          <span class="tools-group-icon">✏️</span>
+          <span class="tools-group-title">檔案建立 & 修改</span>
+        </div>
+        <div class="tools-list">
+          <div class="tool-item">
+            <span class="tool-name">create_file</span>
+            <span class="risk-badge risk-medium">🟡 medium</span>
+            <span class="tool-desc-inline">建立新檔案（唔可以覆蓋已有）</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">create_directory</span>
+            <span class="risk-badge risk-medium">🟡 medium</span>
+            <span class="tool-desc-inline">建立新目錄（需確認）</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">apply_patch</span>
+            <span class="risk-badge risk-medium">🟡 medium</span>
+            <span class="tool-desc-inline">應用 unified diff 修改檔案</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 高風險操作 -->
+      <div class="tools-group">
+        <div class="tools-group-header">
+          <span class="tools-group-icon">⚡</span>
+          <span class="tools-group-title">高風險操作</span>
+        </div>
+        <div class="tools-list">
+          <div class="tool-item">
+            <span class="tool-name">command_runner</span>
+            <span class="risk-badge risk-high">🔴 high</span>
+            <span class="tool-desc-inline">執行授權目錄內嘅 shell 命令</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">update_memory</span>
+            <span class="risk-badge risk-high">🔴 high</span>
+            <span class="tool-desc-inline">更新工作區持久化記憶</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">load_skill</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">懶加載 Skill 完整 prompt</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Risk explainer -->
+    <div class="risk-explainer fade-up">
+      <h4>🛡️ 風險等級體系</h4>
+      <div class="risk-row"><span class="risk-badge risk-safe" style="font-size:13px;padding:3px 10px;">🟢 safe</span> 純唯讀操作，冇副作用——讀檔案、列目錄、搜尋、查看 git</div>
+      <div class="risk-row"><span class="risk-badge risk-medium" style="font-size:13px;padding:3px 10px;">🟡 medium</span> 寫工作區內檔案，有限副作用——建立檔案/目錄、應用 patch（含檢查點備份）</div>
+      <div class="risk-row"><span class="risk-badge risk-high" style="font-size:13px;padding:3px 10px;">🔴 high</span> 執行命令、寫入記憶——每次操作彈出原生確認對話框</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ WORKSPACE MEMORY -->
+<section id="memory">
+  <div class="wrap">
+    <div class="sh fade-up">
+      <span class="sh-label">工作區記憶</span>
+      <h2 class="sh-title">AI 跨對話記住你嘅專案</h2>
+      <p class="sh-desc">工作區記憶係持久化嘅專案知識——AI 喺一次對話中學到嘅約定同偏好，下次對話仲可以記住。</p>
+    </div>
+
+    <div class="mem-grid fade-up">
+      <div class="mem-card">
+        <span class="mem-icon">🧠</span>
+        <div class="mem-title">資料庫記憶</div>
+        <div class="mem-desc">AI 通過 update_memory 工具寫入資料庫。持續有效直到工作區被刪除。優先級最高。</div>
+      </div>
+      <div class="mem-card">
+        <span class="mem-icon">📝</span>
+        <div class="mem-title">memory.md 檔案</div>
+        <div class="mem-desc">工作區根目錄下 .ai-workbench/memory.md 檔案嘅內容。適合手動編輯或團隊共享，可提交到 git。</div>
+      </div>
+      <div class="mem-card">
+        <span class="mem-icon">🔍</span>
+        <div class="mem-title">對話中查看</div>
+        <div class="mem-desc">對話頁面頂部有「Memory」按鈕，點擊展開查看記憶來源、摘要（最多 280 字）、最後更新時間。</div>
+      </div>
+    </div>
+
+    <div class="mem-explainer fade-up">
+      <h4>🤖 AI 更新記憶嘅流程</h4>
+      <div class="mem-flow">
+        <span class="mem-flow-step">AI 判斷需要記住</span>
+        <span class="mem-flow-arrow">→</span>
+        <span class="mem-flow-step">調用 update_memory</span>
+        <span class="mem-flow-arrow">→</span>
+        <span class="mem-flow-step">彈出確認對話框</span>
+        <span class="mem-flow-arrow">→</span>
+        <span class="mem-flow-step">你點擊「允許寫入」</span>
+        <span class="mem-flow-arrow">→</span>
+        <span class="mem-flow-step">記憶寫入資料庫</span>
+      </div>
+      <p style="margin-top:14px; font-size:14.5px; color:var(--text2); line-height:1.7;">
+        <strong>安全檢查：</strong>系統自動拒絕包含 API Key、Token、密碼等敏感資訊嘅記憶，亦拒絕睇落似對話記錄嘅內容。單條記憶最多 4000 字元。
+      </p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
 
 <!-- ============================================================ SKILLS -->
 <section id="skills">
   <div class="wrap">
     <div class="sh fade-up">
       <span class="sh-label">技能（Skills）</span>
-      <h2 class="sh-title">等 AI 按照你想要嘅方式回答</h2>
-      <p class="sh-desc">技能係預設嘅「指令範本」，啟動後 AI 會按照特定嘅風格同格式處理你嘅輸入。</p>
+      <h2 class="sh-title">畀 AI 按你想要嘅方式回答</h2>
+      <p class="sh-desc">技能係預設嘅 Prompt 模板——啟動後 AI 按特定風格同格式處理你嘅輸入。支援懶加載、自訂、匯入匯出。</p>
     </div>
 
     <div class="skills-row fade-up">
       <div class="sk-card">
         <span class="sk-emoji">📝</span>
-        <div class="sk-title">文本總結</div>
-        <div class="sk-desc">將一段長文本或一篇文件提煉成簡潔嘅摘要，抓住核心要點。</div>
+        <div class="sk-title">文字總結</div>
+        <div class="sk-desc">將一段長文字或一篇文檔提煉成簡潔嘅摘要，抓住核心要點。</div>
         <div class="sk-kw">
           <span class="kw">總結</span><span class="kw">摘要</span><span class="kw">提煉</span><span class="kw">概括</span>
         </div>
@@ -1487,90 +1515,89 @@ body { transition: background .35s ease, color .35s ease; }
     <div class="sk-explainer fade-up">
       <h3>🤔 技能點樣用？</h3>
       <ol>
-        <li><strong>自動匹配：</strong>默认开启。你的消息里包含关键词（如"帮我写日報"），对应技能会自动激活。</li>
-        <li><strong>手動選擇：</strong>亦可以喺輸入框旁邊嘅下拉選單度手動揀某個技能，強制使用佢。</li>
-        <li><strong>單次生效：</strong>技能只影響你當前呢條訊息，發送後自動返到預設狀態，唔會影響成個對話。</li>
-        <li><strong>可以自訂：</strong>喺「Skill」頁面點擊「新增 Skill」，用自然語言寫低你想要 AI 扮演嘅角色同回答方式，就可以建立專屬技能。</li>
+        <li><strong>自動匹配（懶加載）：</strong>訊息裡面包含關鍵詞時，AI 先收到 Skill 概要卡片，判斷需要時再通過 load_skill 載入完整 prompt——減少唔必要嘅上下文消耗。</li>
+        <li><strong>手動選擇：</strong>輸入框旁邊嘅下拉菜單裡手動揀技能，直接使用完整 prompt，優先級最高。</li>
+        <li><strong>單次生效：</strong>技能只影響當前呢條訊息，發送後自動返到預設狀態。</li>
+        <li><strong>自訂 & 匯入：</strong>點擊「添加 Skill」建立專屬技能；亦可匯入包含 SKILL.md 嘅資料夾或 Markdown 檔案，自動解析 YAML 頭資訊。</li>
       </ol>
     </div>
   </div>
 </section>
 
-<!-- ============================================================ TESTIMONIALS -->
-<section id="testimonials">
-  <div class="wrap">
-    <div class="sh fade-up">
-      <span class="sh-label">用戶口碑</span>
-      <h2 class="sh-title">佢哋都喺度用</h2>
-      <p class="sh-desc">嚟自唔同行業嘅真實用戶回饋。</p>
-    </div>
+<div class="divider"></div>
 
-    <div class="testi-grid fade-up">
-      <div class="testi-card">
-        <div class="stars">★★★★★</div>
-        <div class="quote">"以前用網頁版 AI 成日擔心客戶數據洩露，而家所有對話都喺本地，終於敢放心同 AI 討論項目方案。"</div>
-        <div class="author">張經理</div>
-        <div class="role">商務諮詢公司</div>
-      </div>
-      <div class="testi-card">
-        <div class="stars">★★★★★</div>
-        <div class="quote">"写日報是我每天最头疼的事。用了这个工具的日報 Skill，几分钟就搞定，格式统一规范，同事都说我效率变高了。"</div>
-        <div class="author">李同學</div>
-        <div class="role">應屆實習生</div>
-      </div>
-      <div class="testi-card">
-        <div class="stars">★★★★★</div>
-        <div class="quote">"Ollama 本地模型配合呢個工具簡直係絕配——完全離線執行，唔需要連線，安全感爆燈。"</div>
-        <div class="author">陳老師</div>
-        <div class="role">自由職業者</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================ SAFETY -->
+<!-- ============================================================ SAFETY / SHIELD -->
 <section id="safety" class="wide-section">
   <div class="wrap">
     <div class="sh fade-up">
-      <span class="sh-label">安全與私隱</span>
-      <h2 class="sh-title">你嘅數據，你話事</h2>
-      <p class="sh-desc">我哋將「數據安全」放喺第一位，而唔係當做附加功能。</p>
+      <span class="sh-label">安全與隱私</span>
+      <h2 class="sh-title">Command Runner 五層防護</h2>
+      <p class="sh-desc">命令執行器係風險最高嘅工具——因此我哋為佢設計咗最嚴密嘅五層安全防護，默認關閉，按需開啟。</p>
     </div>
 
-    <div class="safety-grid fade-up">
-      <div class="safe-card">
-        <div class="safe-icon">🔐</div>
-        <div class="safe-body">
-          <h4>API Key 加密儲存</h4>
-          <p>你填入嘅 API Key 喺儲存前會經過加密處理，以密文形式儲存喺本地。應用程式介面顯示嘅係 <code>sk-****xxxx</code> 格式嘅掩碼，你自己都睇唔到原文，人哋更加睇唔到。</p>
+    <div class="shield-layers fade-up">
+      <div class="shield-layer">
+        <div class="shield-num">1</div>
+        <div class="shield-text">
+          <h4>手動啟用</h4>
+          <p>喺設定頁面手動打開 command_runner 開關——默認關閉，唔開啟就冇法執行任何命令。</p>
         </div>
       </div>
-      <div class="safe-card">
-        <div class="safe-icon">💾</div>
-        <div class="safe-body">
-          <h4>對話記錄只喺本地</h4>
-          <p>所有對話都儲存喺你電腦上嘅數據庫檔案（app.db）入面。AI Workbench 唔會將你嘅對話內容上載到任何伺服器，亦冇帳號系統——根本就用唔著。</p>
+      <div class="shield-layer">
+        <div class="shield-num">2</div>
+        <div class="shield-text">
+          <h4>授權目錄</h4>
+          <p>只能喺你明確添加嘅授權工作目錄內執行命令——其他路徑一律拒絕。</p>
         </div>
       </div>
-      <div class="safe-card">
-        <div class="safe-icon">📂</div>
-        <div class="safe-body">
-          <h4>檔案讀取需要你主動授權</h4>
-          <p>AI 唔可以自動讀取你電腦上嘅任何檔案。只有你喺對話頁面點擊「選擇檔案」掣、主動揀咗某個檔案，AI 先可以讀取佢。應用程式亦唔會儲存檔案嘅完整內容，只儲存簡短預覽。</p>
+      <div class="shield-layer">
+        <div class="shield-num">3</div>
+        <div class="shield-text">
+          <h4>危險命令攔截</h4>
+          <p>自動拒絕 14 種危險模式——rm -rf、del /s /q、sudo、format、shutdown 等，Shell 同 argv 雙模式覆蓋。</p>
         </div>
       </div>
-      <div class="safe-card">
-        <div class="safe-icon">⚠️</div>
-        <div class="safe-body">
-          <h4>命令執行有五層保護</h4>
-          <p>「命令執行」功能預設係關閉嘅，需要你喺設定度手動開啟，並指定允許操作嘅資料夾。每次執行命令前仲會彈出確認視窗，危險操作（如刪除檔案）會被自動攔截。</p>
+      <div class="shield-layer">
+        <div class="shield-num">4</div>
+        <div class="shield-text">
+          <h4>執行確認彈窗</h4>
+          <p>每次執行前彈出原生確認對話框，顯示完整命令同工作目錄——你必須點擊「允許」先執行。</p>
         </div>
       </div>
-      <div class="safe-card">
-        <div class="safe-icon">🕵️</div>
-        <div class="safe-body">
-          <h4>敏感資訊自動脫敏</h4>
-          <p>工具執行產生嘅日誌喺寫入本地數據庫之前，會自動將 API Key、Token、密碼等敏感資訊替換為 <code>[REDACTED]</code>，確保密鑰唔會以明文形式留存喺任何記錄入面。</p>
+      <div class="shield-layer">
+        <div class="shield-num">5</div>
+        <div class="shield-text">
+          <h4>超時與取消</h4>
+          <p>預設 60 秒超時（可調整到最大 300 秒），支援中途取消。輸出上限 20,000 字元。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desensitization -->
+    <div class="desensitize-note fade-up">
+      <div class="desensitize-icon">🕵️</div>
+      <div class="desensitize-body">
+        <h4>敏感資訊自動脫敏</h4>
+        <p>工具日誌喺寫入本地資料庫前，自動將 API Key（<code>sk-*</code>）、Bearer Token、密碼等敏感資訊替換為 <code>[REDACTED]</code>。密鑰唔以明文落盤。檔案讀取只保存元數據同 500 字預覽。</p>
+      </div>
+    </div>
+
+    <!-- Other safety cards -->
+    <div style="margin-top:28px;" class="fade-up">
+      <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:16px;">
+        <div style="background:var(--bg3); border:1px solid var(--border); border-radius:var(--r); padding:28px; display:flex; gap:20px; align-items:flex-start; transition:all .3s;" onmouseover="this.style.borderColor='rgba(34,197,94,0.25)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="width:46px;height:46px;flex-shrink:0;border-radius:11px;background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.16);display:flex;align-items:center;justify-content:center;font-size:21px;">🔐</div>
+          <div>
+            <h4 style="font-size:15px;font-weight:600;margin-bottom:7px;">API Key 加密保存</h4>
+            <p style="font-size:14.5px;color:var(--text2);line-height:1.7;">使用 Electron safeStorage 或 AES-256-GCM 加密。界面顯示 <code style="font-size:13px;background:rgba(255,255,255,0.05);padding:1px 6px;border-radius:4px;border:1px solid rgba(255,255,255,0.06);color:var(--text2);">sk-****xxxx</code> 格式掩碼。</p>
+          </div>
+        </div>
+        <div style="background:var(--bg3); border:1px solid var(--border); border-radius:var(--r); padding:28px; display:flex; gap:20px; align-items:flex-start; transition:all .3s;" onmouseover="this.style.borderColor='rgba(34,197,94,0.25)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="width:46px;height:46px;flex-shrink:0;border-radius:11px;background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.16);display:flex;align-items:center;justify-content:center;font-size:21px;">💾</div>
+          <div>
+            <h4 style="font-size:15px;font-weight:600;margin-bottom:7px;">數據 100% 本地</h4>
+            <p style="font-size:14.5px;color:var(--text2);line-height:1.7;">所有對話保存喺本地 SQLite 資料庫（app.db）。冇中間伺服器，冇帳號系統。API Key 加密存儲喺本地。</p>
+          </div>
         </div>
       </div>
     </div>
@@ -1581,9 +1608,9 @@ body { transition: background .35s ease, color .35s ease; }
 <section id="models">
   <div class="wrap">
     <div class="sh fade-up">
-      <span class="sh-label">支持的 AI 服务</span>
+      <span class="sh-label">支援嘅 AI 服務</span>
       <h2 class="sh-title">帶住你自己嘅 AI Key 嚟</h2>
-      <p class="sh-desc">你已經有邊間 AI 服務嘅帳號，直接填入 Key 就可以用。亦可以連接自己電腦上本地執行嘅模型。</p>
+      <p class="sh-desc">你已經有邊間 AI 服務嘅帳號，直接填入 Key 就可以用。亦可以連自己電腦上本地運行嘅模型。</p>
     </div>
 
     <div class="models-grid fade-up">
@@ -1601,32 +1628,32 @@ body { transition: background .35s ease, color .35s ease; }
       </div>
       <div class="model-card">
         <div class="logo-text">Kimi</div>
-        <div class="tag">Moonshot · 国产</div>
+        <div class="tag">Moonshot · 國產</div>
       </div>
       <div class="model-card">
         <div class="logo-text">Kimi Code</div>
         <div class="tag">編程專屬 · 國產</div>
       </div>
       <div class="model-card">
-        <div class="logo-text">通义千问</div>
-        <div class="tag">阿里云 · 国产</div>
+        <div class="logo-text">通義千問</div>
+        <div class="tag">阿里雲百煉</div>
       </div>
       <div class="model-card local">
         <div class="logo-text">Ollama</div>
-        <div class="tag">本地模型執行</div>
+        <div class="tag">本地模型運行</div>
       </div>
       <div class="model-card local">
         <div class="logo-text">LM Studio</div>
-        <div class="tag">本地模型執行</div>
+        <div class="tag">本地模型運行</div>
       </div>
       <div class="model-card">
         <div class="logo-text">自訂</div>
-        <div class="tag">任意兼容介面</div>
+        <div class="tag">任意兼容接口</div>
       </div>
     </div>
 
     <p class="model-note fade-up">
-      🟢 綠色標註嘅係支援本地執行嘅模型——安裝對應嘅本地服務後即可使用，數據 100% 留喺本地。
+      🟢 綠色標註嘅係支援本地運行嘅模型——安裝對應嘅本地服務後即可使用，數據 100% 留喺本地。
     </p>
   </div>
 </section>
@@ -1646,16 +1673,35 @@ body { transition: background .35s ease, color .35s ease; }
 
       <div class="qa-item">
         <button class="qa-q" onclick="toggleQA(this)">
+          咩係「Agent 模式」？同普通對話有咩分別？
+          <span class="qa-icon">▼</span>
+        </button>
+        <div class="qa-a">
+          <div class="qa-a-inner">
+            Agent 模式係 AI Workbench 嘅高級工作方式。普通模式一問一答，你揀檔案畀 AI，AI 回答。<br /><br />
+            Agent 模式下，AI 自主多步驟執行：自己瀏覽專案結構 → 搜尋相關檔案 → 讀取內容 → 產生修改 → 你確認 → 應用修改 → 自動驗證。<br /><br />
+            兩種子模式：<br />
+            ・<strong>Ask（詢問）</strong>：傳統一問一答，適合簡單問答<br />
+            ・<strong>Craft（構建）</strong>：完整 Agent 執行，適合程式碼修改、專案分析<br /><br />
+            Agent 模式通過環境變數 <code>AI_WORKBENCH_ENABLE_AGENT_MODE=1</code> 啟用，需重啟應用。
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <button class="qa-q" onclick="toggleQA(this)">
           咩係「工作區」？有咩用？
           <span class="qa-icon">▼</span>
         </button>
         <div class="qa-a">
           <div class="qa-a-inner">
-            工作區就係將你電腦上嘅一個資料夾同你嘅 AI 對話綁定埋一齊。建立之後：<br /><br />
-            ・對話列表只展示該工作區嘅對話，唔同項目互不干擾<br />
-            ・讀取檔案或執行命令時預設從該資料夾出發，路徑更準確<br />
-            ・可以為每個項目單獨建立工作區，切換時一鍵搞掂<br /><br />
-            如果你只係隨手傾偈，唔綁定工作區都完全冇問題，所有對話照常儲存。
+            工作區 = 一個本地資料夾 + 屬於佢嘅對話 + 專案記憶。<br /><br />
+            建立後：<br />
+            ・對話列表只展示該工作區嘅對話，唔同專案互不干擾<br />
+            ・工具操作限定喺工作區根目錄內，路徑更準確<br />
+            ・Agent 模式自動載入專案上下文（README、package.json、Git 狀態等）<br />
+            ・工作區記憶畀 AI 跨對話記住你嘅專案約定<br /><br />
+            如果你只係隨手傾，唔綁定工作區亦完全冇問題。
           </div>
         </div>
       </div>
@@ -1667,32 +1713,31 @@ body { transition: background .35s ease, color .35s ease; }
         </button>
         <div class="qa-a">
           <div class="qa-a-inner">
-            需要先去 AI 服務商官網註冊帳號並申請 API Key。常見服務商獲取地址：
+            需要先去 AI 服務商官網註冊帳號並申請 API Key：
             <table>
               <tr><th>服務商</th><th>獲取地址</th><th>備註</th></tr>
               <tr><td>DeepSeek</td><td>platform.deepseek.com</td><td>國內註冊，需充值</td></tr>
               <tr><td>Kimi</td><td>platform.moonshot.cn</td><td>國內註冊</td></tr>
-              <tr><td>通义千问</td><td>dashscope.aliyun.com</td><td>需阿里雲帳號</td></tr>
+              <tr><td>通義千問</td><td>dashscope.aliyun.com</td><td>需阿里雲帳號</td></tr>
               <tr><td>ChatGPT</td><td>platform.openai.com</td><td>需海外支付方式</td></tr>
             </table>
-            <br />如果想喺本地執行模型，可以試下 Ollama，去 ollama.com 下載安裝後，喺 AI Workbench 揀「Ollama」供應商即可，無需 API Key。
+            <br />如果想喺本地運行模型，可以試下 Ollama，去 ollama.com 下載安裝後揀「Ollama」供應商即可，無需 API Key。
           </div>
         </div>
       </div>
 
       <div class="qa-item">
         <button class="qa-q" onclick="toggleQA(this)">
-          「測試連接」失敗咗，點算？
+          「測試連線」失敗咗，點算？
           <span class="qa-icon">▼</span>
         </button>
         <div class="qa-a">
           <div class="qa-a-inner">
-            最常見嘅幾個原因同解決方法：
             <table>
               <tr><th>錯誤提示</th><th>原因</th><th>解決方法</th></tr>
-              <tr><td>401 / 403</td><td>API Key 無效或過期</td><td>重新去服務商官网获取新的 Key</td></tr>
-              <tr><td>404</td><td>請求地址填錯咗</td><td>檢查「請求地址」係咪同官方文件一致</td></tr>
-              <tr><td>超时 / fetch failed</td><td>網絡唔通</td><td>檢查網絡；如用本地模型確認服務已啟動</td></tr>
+              <tr><td>401 / 403</td><td>API Key 無效或過期</td><td>重新去服務商官網獲取新嘅 Key</td></tr>
+              <tr><td>404</td><td>請求地址填錯咗</td><td>檢查「請求地址」係咪同官方文檔一致</td></tr>
+              <tr><td>超時 / fetch failed</td><td>網絡唔通</td><td>檢查網絡；如用本地模型確認服務已啟動</td></tr>
               <tr><td>model not found</td><td>模型名稱有誤</td><td>檢查模型名稱大小寫同版本號係咪準確</td></tr>
             </table>
           </div>
@@ -1701,60 +1746,67 @@ body { transition: background .35s ease, color .35s ease; }
 
       <div class="qa-item">
         <button class="qa-q" onclick="toggleQA(this)">
-          AI 冇自動使用我想要嘅技能，點解？
+          Agent 模式有咩安全限制？
           <span class="qa-icon">▼</span>
         </button>
         <div class="qa-a">
           <div class="qa-a-inner">
-            自動匹配依賴「關鍵詞」觸發。檢查以下幾點：<br /><br />
-            1. 你的消息里是否包含了触发词？（比如"日報生成"需要消息里含有「日報」）<br />
-            2. 對應嘅技能係咪已經打開（喺「Skill」頁面確認開關係開啟狀態）？<br />
-            3. 輸入框旁邊嘅選擇器係咪處於「自動匹配」模式？<br /><br />
-            如果自動匹配唔穩定，可以直接喺選擇器度手動揀技能，優先級最高。
+            Agent 運行有嚴格嘅安全限制，防止無限循環：<br /><br />
+            ・牆鐘時間上限：<strong>10 分鐘</strong><br />
+            ・總步驟數上限：<strong>12 步</strong><br />
+            ・總工具調用上限：<strong>40 次</strong><br />
+            ・同一工具重複調用上限：<strong>3 次</strong>（相同參數）<br />
+            ・連續無進展輪次：<strong>3 輪</strong><br /><br />
+            高風險工具仲有重放防護——完全相同嘅參數再次調用會被拒絕，防止無效循環。apply_patch 每次寫入前自動建立 checkpoint（檔案備份）。
           </div>
         </div>
       </div>
 
       <div class="qa-item">
         <button class="qa-q" onclick="toggleQA(this)">
-          我嘅對話記錄存喺邊度？會唔會唔見咗？
+          工作區記憶寫入失敗點算？
           <span class="qa-icon">▼</span>
         </button>
         <div class="qa-a">
           <div class="qa-a-inner">
-            預設儲存位置：<br />
+            可能嘅原因：<br /><br />
+            1. 唔喺工作區對話中——update_memory 需要工作區上下文<br />
+            2. 內容包含敏感資訊——記憶唔可以包含 API Key、Token、密碼<br />
+            3. 內容睇落似對話記錄——系統拒絕保存對話格式嘅內容<br />
+            4. 內容過長——單條記憶唔超過 4000 字元
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <button class="qa-q" onclick="toggleQA(this)">
+          Command Runner 冇法執行，點排查？
+          <span class="qa-icon">▼</span>
+        </button>
+        <div class="qa-a">
+          <div class="qa-a-inner">
+            檢查清單：<br /><br />
+            1. 設定頁面中係咪已打開 command_runner 開關？<br />
+            2. 係咪已添加至少一個授權工作目錄？<br />
+            3. 命令嘅 cwd 係咪喺授權目錄範圍內？<br />
+            4. 命令係咪觸發咗危險命令攔截（14 種模式）？<br />
+            5. 係咪喺確認彈窗中點擊咗「允許」？
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <button class="qa-q" onclick="toggleQA(this)">
+          我嘅對話記錄存喺邊？會唔會唔見咗？
+          <span class="qa-icon">▼</span>
+        </button>
+        <div class="qa-a">
+          <div class="qa-a-inner">
+            預設存儲位置：<br />
             ・Windows：<code>%APPDATA%/ai-workbench/app.db</code><br />
-            ・macOS：<code>~/Library/Application Support/ai-workbench/app.db</code><br /><br />
-            你可以喺「設定」頁面睇到具體路徑。建議定期將呢個 .db 檔案複製到 USB 手指或雲端硬碟做備份，防止電腦損壞時遺失。亦可以喺設定度更改儲存位置，直接指向你嘅雲端硬碟同步資料夾。
-          </div>
-        </div>
-      </div>
-
-      <div class="qa-item">
-        <button class="qa-q" onclick="toggleQA(this)">
-          讀取檔案時提示「檔案未授權」或「讀取失敗」點算？
-          <span class="qa-icon">▼</span>
-        </button>
-        <div class="qa-a">
-          <div class="qa-a-inner">
-            檔案讀取有幾個限制：<br /><br />
-            1. 必須通過對話頁面嘅「選擇檔案」掣嚟揀檔案，唔可以手動輸入路徑。<br />
-            2. 只支援 .txt、.md、.markdown 三種格式。<br />
-            3. 檔案大小唔可以超過 5MB。<br />
-            4. 檔案授權資訊喺應用程式關閉後會清除，重新打開應用程式後需要重新揀檔案。
-          </div>
-        </div>
-      </div>
-
-      <div class="qa-item">
-        <button class="qa-q" onclick="toggleQA(this)">
-          解除安裝應用程式之後，我嘅數據仲喺度嗎？
-          <span class="qa-icon">▼</span>
-        </button>
-        <div class="qa-a">
-          <div class="qa-a-inner">
-            喺 Windows 上解除安裝時，安裝程式會詢問你係咪同時刪除本地數據（對話記錄、模型設定、密鑰等）。你可以揀保留，之後重新安裝後數據依然喺度。<br /><br />
-            如果你擔心數據安全，建議解除安裝前先手動搵到 app.db 檔案備份，或者喺設定度點「清理對話歷史」先至解除安裝。
+            ・macOS：<code>~/Library/Application Support/ai-workbench/app.db</code><br />
+            ・Linux：<code>~/.config/ai-workbench/app.db</code><br /><br />
+            建議定期備份 app.db、app.db-wal、app.db-shm 三個檔案。亦可以喺設定裡更改存儲位置，指向網盤同步資料夾。
           </div>
         </div>
       </div>
@@ -1770,7 +1822,7 @@ body { transition: background .35s ease, color .35s ease; }
   <div class="wrap">
     <div class="cta-box fade-up">
       <h2>而家就開始用</h2>
-      <p>下載对应你系统的安装包，安装后配置一个 AI 服务即可開始對話。</p>
+      <p>下載對應你系統嘅安裝檔，安裝後設定一個 AI 服務即可開始。支援 Agent 模式自主執行。</p>
 
       <div class="install-tabs">
         <a href="#" class="install-card">
@@ -1807,8 +1859,9 @@ body { transition: background .35s ease, color .35s ease; }
         AI Workbench
       </div>
       <div class="footer-meta">
-        <span>本地優先 · 隐私第一</span>
+        <span>本地優先 · 隱私第一</span>
         <span>Windows · macOS · Linux</span>
+        <span>v0.1.0</span>
         <span style="color: var(--dim)">MIT License</span>
       </div>
     </div>
@@ -1901,7 +1954,8 @@ body { transition: background .35s ease, color .35s ease; }
   }, { threshold: 0.3 });
   var statsEls = document.querySelectorAll('.stats-grid');
   for (var j = 0; j < statsEls.length; j++) { countObserver.observe(statsEls[j]); }
-  // ======================================================== STAT SPARKLE after count-up
+
+  // ======================================================== STAT SPARKLE
   var sparkleObserver = new IntersectionObserver(function(entries) {
     entries.forEach(function(e) {
       if (!e.isIntersecting) return;
@@ -1922,13 +1976,11 @@ body { transition: background .35s ease, color .35s ease; }
   }, { threshold: 0.3 });
   for (var j = 0; j < statsEls.length; j++) { sparkleObserver.observe(statsEls[j]); }
 
-
   // ======================================================== FAQ ACCORDION
   window.toggleQA = function(btn) {
     var item = btn.closest('.qa-item');
     if (!item) return;
     var isOpen = item.classList.contains('open');
-    // close all
     var allOpen = document.querySelectorAll('.qa-item.open');
     for (var k = 0; k < allOpen.length; k++) {
       allOpen[k].classList.remove('open');
@@ -1940,36 +1992,6 @@ body { transition: background .35s ease, color .35s ease; }
       answer.style.maxHeight = answer.scrollHeight + 'px';
     }
   };
-
-  // ======================================================== FEATURE TABS
-  var tabs = document.querySelectorAll('.feat-tab');
-  for (var t = 0; t < tabs.length; t++) {
-    tabs[t].addEventListener('click', function() {
-      var active = document.querySelector('.feat-tab.active');
-      if (active) active.classList.remove('active');
-      this.classList.add('active');
-      var group = this.getAttribute('data-tab');
-      ['chat','workspace','files','ux'].forEach(function(g) {
-        var el = document.getElementById('feat-' + g);
-        if (!el) return;
-        if (g === group) {
-          el.style.display = '';
-          el.style.opacity = '0';
-          el.style.transform = 'translateY(12px)';
-          requestAnimationFrame(function() {
-            el.style.transition = 'opacity .3s ease, transform .3s ease';
-            el.style.opacity = '1';
-            el.style.transform = 'translateY(0)';
-          });
-        } else {
-          el.style.display = 'none';
-          el.style.opacity = '';
-          el.style.transform = '';
-          el.style.transition = '';
-        }
-      });
-    });
-  }
 
   // ======================================================== CANVAS PARTICLES
   var canvas = document.getElementById('particles');
@@ -2022,7 +2044,6 @@ body { transition: background .35s ease, color .35s ease; }
         particles[i].update();
         particles[i].draw();
       }
-      // connections
       for (var i = 0; i < particles.length; i++) {
         for (var j = i + 1; j < particles.length; j++) {
           var dx = particles[i].x - particles[j].x;
@@ -2045,15 +2066,17 @@ body { transition: background .35s ease, color .35s ease; }
 
   // ======================================================== TYPING TERMINAL
   var messages = [
-    { user: '帮我写一份今日工作日報', ai: '好的，以下是你今天的日報：\n\n📋 今日工作日報\n1. 完成客户需求分析报告\n2. 跟进项目A第3阶段进度\n3. 整理了本周会议纪要\n\n💡 明日计划：启动项目B方案设计。' },
-    { user: '请帮我總結这篇文章的核心要点', ai: '这篇文章的核心要点如下：\n\n1. 本地化AI是未来的趋势——用户数据隐私越来越被重视\n2. 桌面应用相比Web应用在性能和体验上更有优势\n3. 多模型支持是刚需——不同场景需要不同的AI' },
-    { user: '能帮我改寫这段文字成公眾號风格吗？', ai: '当然可以！以下是改寫后的版本：\n\n💡 你有没有想过——\n每天和AI聊天时，你说的每一句话，都可能被存在别人的服务器上？\n\n今天，我们带来了答案。一个真正属于你的AI助手，让所有对话都只留在你的电脑里👇' }
+    { user: '修復登入頁面嘅樣式 bug', ai: '好，我嚟檢查登入頁面嘅樣式問題...', tool: '🔍 search_text → "login.css"' },
+    { user: '幫我寫一份今日工作日報', ai: '好，以下係你今日嘅日報：\n\n📋 今日工作日報\n1. 完成客戶需求分析報告\n2. 跟進專案A第3階段進度\n3. 整理咗本週會議紀要\n\n💡 明日計劃：啟動專案B方案設計。' },
+    { user: '查下專案裡面有冇用到 Redis', ai: '搜尋完成，以下係同 Redis 相關嘅檔案：\n\n📄 config/database.yml\n📄 src/cache/redis-client.ts\n📄 README.md（第 42 行提及）', tool: '🔍 search_text → "redis"' }
   ];
   var msgIndex = 0;
   var typingLine = document.getElementById('typing-line');
   var typingCursor = document.getElementById('typing-cursor');
   var aiReplyLine = document.getElementById('ai-reply-line');
   var aiText = document.getElementById('ai-text');
+  var toolLine = document.getElementById('tool-line');
+  var toolText = document.getElementById('tool-text');
 
   function typeMessage() {
     if (!typingLine || !aiReplyLine || !aiText) return;
@@ -2061,6 +2084,7 @@ body { transition: background .35s ease, color .35s ease; }
     typingLine.textContent = '';
     aiReplyLine.style.display = 'none';
     aiText.textContent = '';
+    if (toolLine) { toolLine.style.display = 'none'; toolText.textContent = ''; }
     if (typingCursor) typingCursor.style.display = 'inline-block';
 
     var i = 0;
@@ -2069,28 +2093,47 @@ body { transition: background .35s ease, color .35s ease; }
         clearInterval(typeUser);
         if (typingCursor) typingCursor.style.display = 'none';
 
-        setTimeout(function() {
-          aiReplyLine.style.display = 'block';
-          var j = 0;
-          var typeAI = setInterval(function() {
-            if (j >= msg.ai.length) {
-              clearInterval(typeAI);
-              msgIndex = (msgIndex + 1) % messages.length;
-              setTimeout(typeMessage, 3500);
-              return;
+        // Show tool call if present
+        if (msg.tool && toolLine && toolText) {
+          toolLine.style.display = 'block';
+          var t = 0;
+          var typeTool = setInterval(function() {
+            if (t >= msg.tool.length) {
+              clearInterval(typeTool);
+              // Then show AI reply
+              setTimeout(function() { showAiReply(msg); }, 400);
+            } else {
+              toolText.textContent = msg.tool.substring(0, t + 1);
+              t++;
             }
-            aiText.textContent += msg.ai[j];
-            j++;
-          }, 16);
-        }, 600);
-        return;
+          }, 28);
+        } else {
+          setTimeout(function() { showAiReply(msg); }, 500);
+        }
+      } else {
+        typingLine.textContent = msg.user.substring(0, i + 1);
+        i++;
       }
-      typingLine.textContent += msg.user[i];
-      i++;
-    }, 38);
+    }, 45);
   }
 
-  if (typingLine) { typeMessage(); }
+  function showAiReply(msg) {
+    aiReplyLine.style.display = 'block';
+    aiText.textContent = '';
+    var k = 0;
+    var typeAi = setInterval(function() {
+      if (k >= msg.ai.length) {
+        clearInterval(typeAi);
+        msgIndex = (msgIndex + 1) % messages.length;
+        setTimeout(typeMessage, 3500);
+      } else {
+        aiText.textContent = msg.ai.substring(0, k + 1);
+        k++;
+      }
+    }, 22);
+  }
+
+  typeMessage();
 })();
 </script>
 </body>

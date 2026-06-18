@@ -1,0 +1,2184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Workbench 操作手册 v0.1.0</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0e1219;
+  --bg2: #141b26;
+  --bg3: #1a2234;
+  --bg4: #1f2a3e;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #eef2f8;
+  --text2: #bcc6d4;
+  --muted: #8a95a8;
+  --dim: #576378;
+  --accent: #3b82f6;
+  --accent2: #6366f1;
+  --accent3: #06b6d4;
+  --green: #22c55e;
+  --amber: #f59e0b;
+  --red: #f87171;
+  --purple: #a855f7;
+  --r: 14px;
+  --r-sm: 10px;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg); color: var(--text);
+  line-height: 1.8; font-size: 16px;
+  min-height: 100vh;
+}
+
+/* ---- SIDEBAR ---- */
+.sidebar {
+  position: fixed; top: 0; left: 0; bottom: 0; width: 280px;
+  background: var(--bg2); border-right: 1px solid var(--border);
+  padding: 32px 0; overflow-y: auto; z-index: 100;
+  transition: transform .3s;
+}
+.sidebar-brand {
+  padding: 0 28px 28px; border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.sidebar-brand h2 {
+  font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 10px;
+}
+.sidebar-brand .dot {
+  width: 10px; height: 10px; border-radius: 50%; background: var(--accent);
+  box-shadow: 0 0 12px rgba(59,130,246,0.4); flex-shrink: 0;
+}
+.sidebar-brand span { color: var(--muted); font-size: 13px; font-weight: 400; margin-top: 4px; display: block; }
+
+.sidebar nav { padding: 0 12px; }
+.nav-group { margin-bottom: 6px; }
+.nav-group-title {
+  font-size: 11px; font-weight: 700; color: var(--dim);
+  text-transform: uppercase; letter-spacing: 1.2px;
+  padding: 12px 16px 6px; user-select: none;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 16px; border-radius: 8px;
+  font-size: 14px; color: var(--text2); cursor: pointer;
+  transition: all .2s; text-decoration: none;
+}
+.nav-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+.nav-item.active { background: rgba(59,130,246,0.12); color: var(--accent); font-weight: 600; }
+.nav-item .nav-icon { font-size: 16px; width: 22px; text-align: center; flex-shrink: 0; }
+
+/* ---- MAIN ---- */
+.main { margin-left: 280px; }
+.main-inner { max-width: 860px; margin: 0 auto; padding: 48px 48px 80px; }
+
+/* ---- HEADER ---- */
+.manual-header {
+  text-align: center; padding: 60px 0 48px;
+  border-bottom: 1px solid var(--border); margin-bottom: 48px;
+}
+.manual-header .badge {
+  display: inline-block; font-size: 12px; font-weight: 600;
+  padding: 5px 16px; border-radius: 99px;
+  background: rgba(59,130,246,0.1); color: var(--accent);
+  border: 1px solid rgba(59,130,246,0.2);
+  margin-bottom: 20px; letter-spacing: .5px;
+}
+.manual-header h1 {
+  font-size: 36px; font-weight: 800; line-height: 1.3; margin-bottom: 16px;
+}
+.manual-header h1 .grad {
+  background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.manual-header .subtitle { font-size: 16px; color: var(--muted); line-height: 1.7; }
+.manual-header .meta {
+  margin-top: 24px; font-size: 13px; color: var(--dim);
+  display: flex; justify-content: center; gap: 24px; flex-wrap: wrap;
+}
+
+/* ---- SECTIONS ---- */
+.section { margin-bottom: 56px; scroll-margin-top: 24px; }
+.section-header { margin-bottom: 28px; }
+.section-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff; font-size: 14px; font-weight: 800;
+  margin-right: 12px; vertical-align: middle;
+}
+.section-title {
+  font-size: 24px; font-weight: 800; display: inline; vertical-align: middle;
+}
+.section-desc { color: var(--muted); font-size: 15px; margin-top: 10px; line-height: 1.7; }
+
+/* ---- SUBSECTION ---- */
+.subsection { margin-top: 32px; scroll-margin-top: 24px; }
+.subsection-title {
+  font-size: 18px; font-weight: 700; margin-bottom: 16px;
+  padding-left: 14px; border-left: 3px solid var(--accent);
+}
+
+/* ---- CARDS ---- */
+.card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 24px 28px;
+  margin-bottom: 14px; transition: all .25s;
+}
+.card:hover { border-color: var(--border2); }
+.card h4 { font-size: 15px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.card p, .card li { font-size: 14.5px; color: var(--text2); line-height: 1.8; }
+
+/* ---- STEP CARDS ---- */
+.step-flow { display: flex; flex-direction: column; gap: 0; }
+.step-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 24px 28px 24px 72px;
+  position: relative; margin-bottom: 0; transition: all .25s;
+}
+.step-card:hover { border-color: var(--border2); }
+.step-card + .step-card { margin-top: -1px; border-top-left-radius: 0; border-bottom-left-radius: 0; }
+.step-card + .step-card::before {
+  content: ''; position: absolute; left: 35px; top: -14px;
+  width: 2px; height: 14px; background: rgba(59,130,246,0.2);
+}
+.step-num {
+  position: absolute; left: 20px; top: 24px;
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff; font-size: 15px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(59,130,246,0.25);
+}
+.step-card h4 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.step-card p, .step-card li { font-size: 14.5px; color: var(--text2); line-height: 1.8; }
+
+/* ---- TIP / WARNING / NOTE ---- */
+.callout {
+  border-radius: var(--r); padding: 18px 22px; margin: 16px 0;
+  display: flex; gap: 14px; align-items: flex-start;
+}
+.callout-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.callout-body { font-size: 14.5px; line-height: 1.75; }
+.callout-body strong { color: var(--text); }
+.callout.tip { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.18); }
+.callout.tip .callout-body { color: #93bbf8; }
+.callout.warning { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.18); }
+.callout.warning .callout-body { color: #fcd076; }
+.callout.danger { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.18); }
+.callout.danger .callout-body { color: #f8a5a5; }
+.callout.note { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.18); }
+.callout.note .callout-body { color: #86efac; }
+
+/* ---- TABLE ---- */
+.table-wrap { overflow-x: auto; margin: 16px 0; }
+table {
+  width: 100%; border-collapse: collapse;
+  font-size: 14px; line-height: 1.7;
+}
+thead { background: var(--bg4); }
+th {
+  text-align: left; padding: 12px 16px;
+  font-size: 13px; font-weight: 700; color: var(--muted);
+  border-bottom: 2px solid var(--border2);
+}
+td {
+  padding: 11px 16px; border-bottom: 1px solid var(--border);
+  color: var(--text2);
+}
+tbody tr:hover { background: rgba(255,255,255,0.02); }
+td code, th code {
+  font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+  font-size: 13px; background: rgba(255,255,255,0.06);
+  padding: 2px 7px; border-radius: 4px; color: var(--accent3);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+/* ---- CODE ---- */
+code {
+  font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+  font-size: 13px; background: rgba(255,255,255,0.06);
+  padding: 2px 7px; border-radius: 4px; color: var(--accent3);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+pre {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--r-sm); padding: 20px 24px;
+  overflow-x: auto; margin: 14px 0; font-size: 13.5px;
+  line-height: 1.7;
+}
+pre code { background: none; border: none; padding: 0; color: var(--text2); }
+
+/* ---- LISTS ---- */
+ul, ol { padding-left: 22px; }
+li { font-size: 14.5px; color: var(--text2); line-height: 1.85; margin-bottom: 4px; }
+li strong { color: var(--text); }
+
+/* ---- FEATURE GRID ---- */
+.feat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.feat-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 22px 24px;
+  transition: all .25s;
+}
+.feat-card:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.2); }
+.feat-card .feat-icon { font-size: 24px; margin-bottom: 10px; display: block; }
+.feat-card h4 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.feat-card p { font-size: 13.5px; color: var(--text2); line-height: 1.75; }
+
+/* ---- RISK BADGE ---- */
+.risk-badge {
+  display: inline-block; font-size: 11px; font-weight: 700;
+  padding: 2px 10px; border-radius: 99px; white-space: nowrap;
+}
+.risk-safe { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.25); }
+.risk-medium { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.25); }
+.risk-high { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.25); }
+
+/* ---- FLOW DIAGRAM ---- */
+.flow-diagram {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 28px 32px; margin: 16px 0;
+  font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+  font-size: 13.5px; line-height: 2; color: var(--text2);
+  overflow-x: auto;
+}
+.flow-diagram .arrow { color: var(--accent); }
+.flow-diagram .highlight { color: var(--accent3); font-weight: 600; }
+
+/* ---- COMPARISON TABLE ---- */
+.compare-table th:first-child { width: 30%; }
+
+/* ---- FAQ ---- */
+.faq-item {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); margin-bottom: 8px; overflow: hidden;
+}
+.faq-q {
+  width: 100%; background: none; border: none; cursor: pointer;
+  padding: 18px 22px; display: flex; align-items: center;
+  justify-content: space-between; gap: 14px;
+  font-size: 15px; font-weight: 600; color: var(--text);
+  text-align: left; font-family: inherit; transition: background .2s;
+}
+.faq-q:hover { background: rgba(255,255,255,0.02); }
+.faq-icon {
+  font-size: 12px; color: var(--muted); transition: transform .25s;
+  flex-shrink: 0;
+}
+.faq-q.open .faq-icon { transform: rotate(180deg); }
+.faq-a {
+  max-height: 0; overflow: hidden; transition: max-height .35s ease, padding .35s ease;
+  padding: 0 22px;
+}
+.faq-a.open { max-height: 800px; padding: 0 22px 20px; }
+.faq-a p, .faq-a li { font-size: 14.5px; color: var(--text2); line-height: 1.8; }
+
+/* ---- FOOTER ---- */
+.manual-footer {
+  text-align: center; padding: 40px 0 0;
+  border-top: 1px solid var(--border); margin-top: 48px;
+}
+.manual-footer p { font-size: 13px; color: var(--dim); }
+
+/* ---- BACK TO TOP ---- */
+.back-top {
+  position: fixed; bottom: 32px; right: 32px; z-index: 200;
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--bg3); border: 1px solid var(--border2);
+  color: var(--text); font-size: 20px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity .3s; text-decoration: none;
+}
+.back-top.visible { opacity: 1; }
+.back-top:hover { background: var(--bg4); border-color: var(--accent); color: var(--accent); }
+
+/* ---- TOC TOGGLE (mobile) ---- */
+.toc-toggle {
+  display: none; position: fixed; top: 16px; left: 16px; z-index: 200;
+  width: 42px; height: 42px; border-radius: 10px;
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text); font-size: 20px; cursor: pointer;
+  align-items: center; justify-content: center;
+}
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .toc-toggle { display: flex; }
+  .main { margin-left: 0; }
+  .main-inner { padding: 24px 20px 60px; }
+  .feat-grid { grid-template-columns: 1fr; }
+  .manual-header h1 { font-size: 26px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOC Toggle (Mobile) -->
+<button class="toc-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')" aria-label="目录">☰</button>
+
+<!-- ===================== SIDEBAR ===================== -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <h2><span class="dot"></span> AI Workbench</h2>
+    <span>操作手册 v0.1.0</span>
+  </div>
+  <nav>
+    <div class="nav-group">
+      <div class="nav-group-title">入门</div>
+      <a class="nav-item" href="#ch1" onclick="closeSidebar()"><span class="nav-icon">🚀</span> 什么是 AI Workbench</a>
+      <a class="nav-item" href="#ch2" onclick="closeSidebar()"><span class="nav-icon">📦</span> 安装与启动</a>
+      <a class="nav-item" href="#ch3" onclick="closeSidebar()"><span class="nav-icon">🖥️</span> 界面概览</a>
+      <a class="nav-item" href="#ch4" onclick="closeSidebar()"><span class="nav-icon">🔑</span> 配置模型</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">核心功能</div>
+      <a class="nav-item" href="#ch5" onclick="closeSidebar()"><span class="nav-icon">💬</span> 开始聊天</a>
+      <a class="nav-item" href="#ch6" onclick="closeSidebar()"><span class="nav-icon">📋</span> 管理对话</a>
+      <a class="nav-item" href="#ch7" onclick="closeSidebar()"><span class="nav-icon">📁</span> 工作区</a>
+      <a class="nav-item" href="#ch8" onclick="closeSidebar()"><span class="nav-icon">✏️</span> 消息编辑</a>
+      <a class="nav-item" href="#ch9" onclick="closeSidebar()"><span class="nav-icon">📥</span> 导出 Markdown</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">进阶功能</div>
+      <a class="nav-item" href="#ch10" onclick="closeSidebar()"><span class="nav-icon">⚡</span> 技能系统</a>
+      <a class="nav-item" href="#ch11" onclick="closeSidebar()"><span class="nav-icon">🔧</span> 工具详解</a>
+      <a class="nav-item" href="#ch12" onclick="closeSidebar()"><span class="nav-icon">⚙️</span> 命令执行器</a>
+      <a class="nav-item" href="#ch13" onclick="closeSidebar()"><span class="nav-icon">🤖</span> Agent 模式</a>
+      <a class="nav-item" href="#ch14" onclick="closeSidebar()"><span class="nav-icon">🧠</span> 工作区记忆</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">设置与帮助</div>
+      <a class="nav-item" href="#ch15" onclick="closeSidebar()"><span class="nav-icon">⚙️</span> 设置页面</a>
+      <a class="nav-item" href="#ch16" onclick="closeSidebar()"><span class="nav-icon">⌨️</span> 键盘快捷键</a>
+      <a class="nav-item" href="#ch17" onclick="closeSidebar()"><span class="nav-icon">❓</span> 常见问题</a>
+      <a class="nav-item" href="#ch18" onclick="closeSidebar()"><span class="nav-icon">🎓</span> 进阶技巧</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">附录</div>
+      <a class="nav-item" href="#appA" onclick="closeSidebar()"><span class="nav-icon">📐</span> 项目技术信息</a>
+      <a class="nav-item" href="#appB" onclick="closeSidebar()"><span class="nav-icon">🗄️</span> 数据库表一览</a>
+      <a class="nav-item" href="#appC" onclick="closeSidebar()"><span class="nav-icon">💻</span> 支持的平台</a>
+    </div>
+  </nav>
+</aside>
+
+<!-- ===================== MAIN CONTENT ===================== -->
+<div class="main">
+<div class="main-inner">
+
+<!-- HEADER -->
+<header class="manual-header">
+  <div class="badge">📘 操作手册</div>
+  <h1>AI Workbench <span class="grad">用户操作指南</span></h1>
+  <p class="subtitle">从安装到精通，全面掌握你的本地 AI Agent 工作台 —— 不只是聊天，更是自主执行</p>
+  <div class="meta">
+    <span>版本 v0.1.0</span>
+    <span>14 内置工具 · Agent 模式 · 5 层安全防护</span>
+    <span>适用：Windows / macOS / Linux</span>
+  </div>
+</header>
+
+<!-- ======================== 第 1 章 ======================== -->
+<section class="section" id="ch1">
+  <div class="section-header">
+    <span class="section-num">1</span>
+    <h2 class="section-title">什么是 AI Workbench</h2>
+    <p class="section-desc">AI Workbench 是一款本地优先的桌面 AI Agent 工作台——不只是聊天，更能自主浏览项目、修改代码、执行命令。</p>
+  </div>
+
+  <div class="subsection" id="ch1-1">
+    <h3 class="subsection-title">核心特性</h3>
+    <div class="feat-grid">
+      <div class="feat-card">
+        <span class="feat-icon">🔒</span>
+        <h4>数据完全在本地</h4>
+        <p>所有聊天记录、配置、密钥都保存在你电脑的 SQLite 数据库中，不经过任何云端服务。</p>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🔌</span>
+        <h4>连接多种大模型</h4>
+        <p>支持 DeepSeek、OpenAI、Claude、通义千问、Kimi、Ollama、LM Studio 等 9+ 服务商，以及自定义端点。</p>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🤖</span>
+        <h4>Agent 自主执行</h4>
+        <p>AI 可以自主浏览项目目录、搜索代码、修改文件、执行命令——多步骤连续工作，无需人工干预每一步。</p>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🧠</span>
+        <h4>工作区记忆</h4>
+        <p>每个项目有独立的持久化记忆，AI 记住你的编码规范、项目架构和长期偏好。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch1-2">
+    <h3 class="subsection-title">不只是聊天</h3>
+    <div class="card">
+      <h4>💡 内置 Skill 和 Tool 系统</h4>
+      <p>AI Workbench 内置 14 个工具和 3 个技能，让 AI 能够：</p>
+      <ul>
+        <li>读取你的本地文件、浏览项目目录、搜索代码</li>
+        <li>执行授权命令（如 <code>npm run build</code>）</li>
+        <li>在确认后直接修改代码文件</li>
+        <li>自动运行测试和构建验证</li>
+      </ul>
+    </div>
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body"><strong>一句话理解：</strong>普通 AI 聊天 = 你问它答；AI Workbench = 你说目标，AI 自己看项目、搜代码、改文件、跑验证、报告结果。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== 第 2 章 ======================== -->
+<section class="section" id="ch2">
+  <div class="section-header">
+    <span class="section-num">2</span>
+    <h2 class="section-title">安装与启动</h2>
+    <p class="section-desc">AI Workbench 支持 Windows、macOS 和 Linux 三大平台。</p>
+  </div>
+
+  <div class="subsection" id="ch2-1">
+    <h3 class="subsection-title">系统要求</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>操作系统</th><th>最低版本</th><th>安装包格式</th></tr></thead>
+        <tbody>
+          <tr><td>🪟 Windows</td><td>Windows 10 / 11</td><td><code>.exe</code>（NSIS 安装程序）</td></tr>
+          <tr><td>🍎 macOS</td><td>macOS 11+</td><td><code>.dmg</code></td></tr>
+          <tr><td>🐧 Linux</td><td>主流发行版</td><td><code>.AppImage</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch2-2">
+    <h3 class="subsection-title">安装步骤</h3>
+    <div class="step-flow">
+      <div class="step-card">
+        <span class="step-num">1</span>
+        <h4>下载安装包</h4>
+        <p>前往 AI Workbench 官方网站，选择与你操作系统对应的安装包进行下载。</p>
+      </div>
+      <div class="step-card">
+        <span class="step-num">2</span>
+        <h4>运行安装程序</h4>
+        <ul>
+          <li><strong>Windows：</strong>双击 <code>.exe</code> 文件，按照安装向导提示完成安装。</li>
+          <li><strong>macOS：</strong>打开 <code>.dmg</code> 文件，将应用图标拖入「Applications」文件夹。</li>
+          <li><strong>Linux：</strong>赋予 <code>.AppImage</code> 文件执行权限后直接运行。</li>
+        </ul>
+      </div>
+      <div class="step-card">
+        <span class="step-num">3</span>
+        <h4>启动应用</h4>
+        <p>安装完成后，从开始菜单（Windows）、Launchpad（macOS）或应用目录（Linux）中启动 AI Workbench。首次打开将显示欢迎界面，并自动初始化 SQLite 数据库和内置 Skill。</p>
+      </div>
+    </div>
+    <div class="callout note">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body">首次启动需要初始化数据库、运行迁移、创建内置 Skill，可能需要 2-5 秒。后续启动通常 1-2 秒。</div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch2-3">
+    <h3 class="subsection-title">卸载说明</h3>
+    <div class="callout warning">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>Windows 卸载：</strong>卸载器会询问是否同步删除本地数据（聊天记录、模型配置、加密密钥、数据库文件）。你可以选择保留，重新安装后数据依然存在。
+      </div>
+    </div>
+    <p style="margin-top:8px;">建议卸载前手动备份 <code>app.db</code> 文件（参见第 15 章数据存储部分），或在设置中点击「清理会话历史」后再卸载。</p>
+  </div>
+</section>
+
+<!-- ======================== 第 3 章 ======================== -->
+<section class="section" id="ch3">
+  <div class="section-header">
+    <span class="section-num">3</span>
+    <h2 class="section-title">界面概览</h2>
+    <p class="section-desc">AI Workbench 的主界面由侧边栏和主内容区组成。</p>
+  </div>
+
+  <div class="subsection" id="ch3-1">
+    <h3 class="subsection-title">侧边栏导航</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>图标</th><th>名称</th><th>功能</th></tr></thead>
+        <tbody>
+          <tr><td>💬</td><td>Chat</td><td>聊天页面——与 AI 对话的主要场所</td></tr>
+          <tr><td>🔨</td><td>Skill</td><td>技能管理——查看、创建、导入技能</td></tr>
+          <tr><td>🔧</td><td>工具</td><td>工具调试页面——查看已注册工具、测试命令执行</td></tr>
+          <tr><td>⚙️</td><td>设置</td><td>应用设置——数据存储、主题、安全策略、Command Runner</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch3-2">
+    <h3 class="subsection-title">聊天页面布局</h3>
+    <div class="feat-grid">
+      <div class="feat-card">
+        <span class="feat-icon">📂</span>
+        <h4>工作区选择器</h4>
+        <p>顶部下拉框，切换/管理/创建工作区，或选择「全局」进行普通对话。</p>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🤖</span>
+        <h4>模型选择器</h4>
+        <p>选择当前对话使用的 AI 模型配置，显示格式：配置名称 · 模型名称 · default。</p>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">📋</span>
+        <h4>会话列表</h4>
+        <p>左侧按时间分组显示对话列表（今天/昨天/N天前等），支持搜索、重命名、删除。</p>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">💬</span>
+        <h4>消息区域</h4>
+        <p>中间区域显示对话消息，支持 Markdown 渲染、代码高亮、工具调用面板展开。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch3-3">
+    <h3 class="subsection-title">面板调整</h3>
+    <div class="card">
+      <h4>↔️ 可拖动调整</h4>
+      <ul>
+        <li>侧边栏右边缘可拖动调整宽度</li>
+        <li>会话列表和聊天区域之间的分隔线可拖动调整比例</li>
+        <li>宽度缩小后侧边栏自动切换为图标模式</li>
+        <li>所有面板大小保存在本地，下次启动自动恢复</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== 第 4 章 ======================== -->
+<section class="section" id="ch4">
+  <div class="section-header">
+    <span class="section-num">4</span>
+    <h2 class="section-title">配置模型</h2>
+    <p class="section-desc">安装后第一步：添加一个 AI 服务商的 API Key，让 AI Workbench 能够连接大语言模型。</p>
+  </div>
+
+  <div class="subsection" id="ch4-1">
+    <h3 class="subsection-title">支持的供应商</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>供应商</th><th>说明</th><th>需 API Key</th></tr></thead>
+        <tbody>
+          <tr><td>Anthropic</td><td>Claude 系列模型</td><td>是</td></tr>
+          <tr><td>OpenAI</td><td>GPT 系列模型</td><td>是</td></tr>
+          <tr><td>DeepSeek</td><td>DeepSeek 系列模型</td><td>是</td></tr>
+          <tr><td>Kimi / Kimi Code</td><td>Moonshot Kimi 模型</td><td>是</td></tr>
+          <tr><td>Qwen (通义千问)</td><td>阿里云百炼平台</td><td>是</td></tr>
+          <tr><td>Bailian (百炼)</td><td>阿里云百炼通用入口</td><td>是</td></tr>
+          <tr><td>Ollama</td><td>本地运行模型</td><td>否</td></tr>
+          <tr><td>LM Studio</td><td>本地运行模型</td><td>否</td></tr>
+          <tr><td>OpenAI-compatible</td><td>任意兼容 OpenAI 接口的服务</td><td>需填写地址</td></tr>
+          <tr><td>Custom Provider</td><td>完全自定义</td><td>需手动填写</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch4-2">
+    <h3 class="subsection-title">API Key 获取指南</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>服务商</th><th>获取地址</th></tr></thead>
+        <tbody>
+          <tr><td>DeepSeek</td><td><code>platform.deepseek.com</code> → API Keys</td></tr>
+          <tr><td>Kimi (Moonshot)</td><td><code>platform.moonshot.cn</code> → API Keys</td></tr>
+          <tr><td>Qwen/通义千问</td><td><code>bailian.console.aliyun.com</code> → API-KEY 管理</td></tr>
+          <tr><td>Anthropic</td><td><code>console.anthropic.com</code> → API Keys</td></tr>
+          <tr><td>OpenAI</td><td><code>platform.openai.com</code> → API Keys</td></tr>
+          <tr><td>Ollama</td><td>无需 API Key，本地安装后 <code>ollama pull &lt;模型名&gt;</code></td></tr>
+          <tr><td>LM Studio</td><td>无需 API Key，在 LM Studio 中下载加载模型后启动服务器</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body"><strong>免费方案：</strong>安装 <strong>Ollama</strong> 本地运行模型，无需 API Key。前往 <code>ollama.com</code> 下载安装后，在 AI Workbench 选择「Ollama」供应商，Base URL 默认 <code>http://localhost:11434/v1</code>。</div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch4-3">
+    <h3 class="subsection-title">配置步骤</h3>
+    <div class="step-flow">
+      <div class="step-card">
+        <span class="step-num">1</span>
+        <h4>打开模型配置</h4>
+        <p>点击左侧导航栏的「模型配置」或在 Chat 页面顶部点击模型选择器中的「配置模型」。</p>
+      </div>
+      <div class="step-card">
+        <span class="step-num">2</span>
+        <h4>选择 AI 服务商</h4>
+        <p>从下拉列表中选择你已有账号的服务商。大部分供应商的请求地址会自动填充。</p>
+      </div>
+      <div class="step-card">
+        <span class="step-num">3</span>
+        <h4>填入 API Key 和模型名称</h4>
+        <p>粘贴 API Key（保存后自动加密，显示为 <code>sk-****xxxx</code> 掩码）。在 Model Name 下拉框选择或手动输入模型名称。</p>
+      </div>
+      <div class="step-card">
+        <span class="step-num">4</span>
+        <h4>高级选项（可选）</h4>
+        <p>设置 Temperature（稳定 0.2 / 均衡 0.7 / 创意 1.0 / 头脑风暴 1.3）、Max Tokens（默认 4096）、设为默认模型等。</p>
+      </div>
+      <div class="step-card">
+        <span class="step-num">5</span>
+        <h4>保存并测试连接</h4>
+        <p>点击「保存配置」，然后点击卡片下方的「测试连接」按钮。成功显示绿色提示和连接延迟；失败显示红色错误信息。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch4-4">
+    <h3 class="subsection-title">管理多个配置</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>操作</th><th>方式</th></tr></thead>
+        <tbody>
+          <tr><td>设为默认</td><td>点击卡片上的星标按钮（⭐），只能有一个默认配置</td></tr>
+          <tr><td>启用/禁用</td><td>卡片上的开关。禁用的配置不出现在模型选择器中</td></tr>
+          <tr><td>编辑</td><td>点击铅笔图标（✏️），表单自动填充已有内容</td></tr>
+          <tr><td>删除</td><td>点击垃圾桶图标（🗑️），需确认两次</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch4-5">
+    <h3 class="subsection-title">连接故障排除</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>错误提示</th><th>可能原因</th><th>解决方法</th></tr></thead>
+        <tbody>
+          <tr><td><code>401</code> / <code>403</code></td><td>API Key 无效或过期</td><td>重新去服务商官网获取新的 Key</td></tr>
+          <tr><td><code>404</code></td><td>请求地址填错</td><td>检查「请求地址」是否与官方文档一致</td></tr>
+          <tr><td>超时 / <code>fetch failed</code></td><td>网络不通</td><td>检查网络连接；如用本地模型，确认服务已启动</td></tr>
+          <tr><td><code>model not found</code></td><td>模型名称有误</td><td>检查模型名称大小写和版本号是否准确</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== 第 5 章 ======================== -->
+<section class="section" id="ch5">
+  <div class="section-header">
+    <span class="section-num">5</span>
+    <h2 class="section-title">开始聊天</h2>
+    <p class="section-desc">配置好 AI 模型后，你就可以开始和 AI 对话了。</p>
+  </div>
+
+  <div class="subsection" id="ch5-1">
+    <h3 class="subsection-title">发送消息</h3>
+    <div class="step-flow">
+      <div class="step-card">
+        <span class="step-num">1</span>
+        <h4>进入聊天页面</h4>
+        <p>点击左侧导航栏的「Chat」（💬 图标）。</p>
+      </div>
+      <div class="step-card">
+        <span class="step-num">2</span>
+        <h4>新建对话</h4>
+        <p>点击会话列表顶部的「＋」按钮。对话以「新对话」为临时标题，发送第一条消息后标题自动取前 20 个字符。</p>
+      </div>
+      <div class="step-card">
+        <span class="step-num">3</span>
+        <h4>输入并发送</h4>
+        <p>在底部输入框中输入内容，按 <strong>Enter</strong> 发送（<strong>Shift+Enter</strong> 换行）。输入框底部有可拖动调整手柄，往上拖可扩大输入区域（80px-260px）。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch5-2">
+    <h3 class="subsection-title">流式输出</h3>
+    <p>消息发送后，AI 的回复会像打字一样<strong>逐字显示</strong>（流式输出）。在回复过程中你可能看到：</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>状态</th><th>显示内容</th></tr></thead>
+        <tbody>
+          <tr><td>等待首个 Token</td><td>输入区域上方出现加载动画</td></tr>
+          <tr><td>模型正在思考</td><td>可折叠的「模型正在思考」面板（部分模型支持 reasoning）</td></tr>
+          <tr><td>本地工具执行中</td><td>显示「正在读取文件...」或「正在执行命令...」</td></tr>
+          <tr><td>正在生成回复</td><td>文字逐字出现</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">点击输入框右侧的 <strong>停止</strong> 按钮（■），正在生成的消息会中止，显示「已取消」状态。</div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch5-3">
+    <h3 class="subsection-title">错误处理</h3>
+    <p>如果消息发送失败（API Key 无效、网络不通等）：</p>
+    <ul>
+      <li>页面顶部出现<strong>红色错误提示条</strong>，显示具体原因</li>
+      <li>点击 <strong>重试</strong> 按钮可重新发送上一条用户消息</li>
+      <li>AI 回复失败的消息显示红色边框和错误图标</li>
+    </ul>
+  </div>
+
+  <div class="subsection" id="ch5-4">
+    <h3 class="subsection-title">滚动与「回到底部」</h3>
+    <div class="card">
+      <h4>↓ 自动滚动</h4>
+      <p>对话内容较多时，消息列表自动滚动到最新消息。手动往上滚动查看历史后，右下角出现 <strong>↓</strong> 浮动按钮，点击快速回到底部。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== 第 6 章 ======================== -->
+<section class="section" id="ch6">
+  <div class="section-header">
+    <span class="section-num">6</span>
+    <h2 class="section-title">管理对话</h2>
+    <p class="section-desc">对话列表按时间分组显示，支持搜索、重命名、删除。</p>
+  </div>
+
+  <div class="subsection" id="ch6-1">
+    <h3 class="subsection-title">对话列表分组</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>分组</th><th>对应时间</th></tr></thead>
+        <tbody>
+          <tr><td>今天</td><td>当天更新的对话</td></tr>
+          <tr><td>昨天</td><td>昨天更新的对话</td></tr>
+          <tr><td>N 天前</td><td>2-6 天前更新</td></tr>
+          <tr><td>一周前</td><td>7-13 天前更新</td></tr>
+          <tr><td>两周前</td><td>14-20 天前更新</td></tr>
+          <tr><td>三周前</td><td>21-27 天前更新</td></tr>
+          <tr><td>一个月前</td><td>28 天及更早</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>每个对话项显示：对话标题、所属工作区标签（或「普通对话」）、最后更新时间。</p>
+  </div>
+
+  <div class="subsection" id="ch6-2">
+    <h3 class="subsection-title">对话操作</h3>
+    <div class="feat-grid">
+      <div class="feat-card">
+        <span class="feat-icon">🔄</span>
+        <h4>切换对话</h4>
+        <p>直接点击左侧列表中的任意对话即可加载历史消息。</p>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">✏️</span>
+        <h4>重命名对话</h4>
+        <p>悬停在标题上，点击铅笔图标（✏️），输入新标题后按 Enter 保存。</p>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🗑️</span>
+        <h4>删除对话</h4>
+        <p>悬停后点击垃圾桶图标（🗑️），进入确认状态——再次点击「删除」确认。</p>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🔍</span>
+        <h4>搜索对话</h4>
+        <p>在会话列表顶部的搜索框中输入关键词，快速筛选对话列表。</p>
+      </div>
+    </div>
+    <div class="callout danger">
+      <span class="callout-icon">🚨</span>
+      <div class="callout-body"><strong>警告：</strong>删除操作不可恢复。对话中的所有消息和关联的工具调用日志会一并删除。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== 第 7 章 ======================== -->
+<section class="section" id="ch7">
+  <div class="section-header">
+    <span class="section-num">7</span>
+    <h2 class="section-title">工作区（Workspace）</h2>
+    <p class="section-desc">工作区让你能将对话按本地项目文件夹进行分组管理，是 Agent 模式和工具系统的基础。</p>
+  </div>
+
+  <div class="subsection" id="ch7-1">
+    <h3 class="subsection-title">什么是工作区</h3>
+    <div class="card">
+      <h4>📁 工作区 = 一个本地文件夹 + 属于它的对话 + 项目记忆</h4>
+      <p>创建工作区后：</p>
+      <ul>
+        <li>该工作区下新建的对话自动关联到此工作区</li>
+        <li>工具（如 <code>list_dir</code>、<code>read_file</code>、<code>command_runner</code>）的操作范围限定在工作区根目录内</li>
+        <li>Agent 模式会自动加载工作区的项目上下文（README、package.json、git status 等）</li>
+        <li>工作区记忆自动注入到每次 Agent 运行中</li>
+      </ul>
+    </div>
+    <div class="callout note">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body">选择「全局」（不进入任何工作区）时，可创建不和任何文件夹关联的普通对话，所有对话照常保存。</div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch7-2">
+    <h3 class="subsection-title">创建与切换工作区</h3>
+    <div class="step-flow">
+      <div class="step-card">
+        <span class="step-num">1</span>
+        <h4>创建工作区</h4>
+        <p>在 Chat 页面顶部的工作区选择器中，点击「管理工作区」或「新建工作区」，选择一个本地文件夹作为工作区根目录。工作区名称默认使用文件夹名称。</p>
+      </div>
+      <div class="step-card">
+        <span class="step-num">2</span>
+        <h4>切换工作区</h4>
+        <p>在 Chat 页面顶栏的工作区下拉框中选择一个工作区。会话列表只显示属于该工作区的对话，工具操作默认以工作区根路径为基准。</p>
+      </div>
+      <div class="step-card">
+        <span class="step-num">3</span>
+        <h4>重命名与删除</h4>
+        <p>在工作区管理界面点击铅笔图标重命名（只改数据库记录，不改磁盘文件夹）。点击垃圾桶图标删除工作区——会同时移除此工作区下的所有对话记录和工具日志，但<strong>不会删除磁盘上的实际文件夹</strong>。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch7-3">
+    <h3 class="subsection-title">工作区路径失效处理</h3>
+    <p>如果工作区对应的本地文件夹被移动、重命名或删除：</p>
+    <ul>
+      <li>Chat 页面顶部显示<strong>红色警告提示</strong>，包含原工作区名称和磁盘路径</li>
+      <li>可选择<strong>「重新选择工作区」</strong>重新绑定到新文件夹</li>
+      <li>或选择<strong>「转为普通对话」</strong>将当前对话从工作区解绑</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ======================== 第 8 章 ======================== -->
+<section class="section" id="ch8">
+  <div class="section-header">
+    <span class="section-num">8</span>
+    <h2 class="section-title">消息编辑与重新生成</h2>
+    <p class="section-desc">发错消息或对回复不满意？随时修改和重新生成。</p>
+  </div>
+
+  <div class="subsection" id="ch8-1">
+    <h3 class="subsection-title">编辑消息（重新提交）</h3>
+    <div class="step-flow">
+      <div class="step-card">
+        <span class="step-num">1</span>
+        <h4>悬停在你的消息上</h4>
+        <p>将鼠标悬停在<strong>你自己的消息</strong>上，点击 <strong>编辑</strong> 按钮（✏️）。</p>
+      </div>
+      <div class="step-card">
+        <span class="step-num">2</span>
+        <h4>修改并重新提交</h4>
+        <p>修改内容后点击 <strong>重新提交</strong> 或按 <code>Enter</code>。</p>
+      </div>
+    </div>
+    <div class="callout warning">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body"><strong>注意：</strong>编辑后，当前消息之后的<strong>所有消息</strong>（包括 AI 回复）会被删除，AI 基于修改后的内容重新生成回复。这是「从此处重新对话」的行为。</div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch8-2">
+    <h3 class="subsection-title">重新生成 AI 回复</h3>
+    <p>将鼠标悬停在<strong>最后一条 AI 回复</strong>上，点击 <strong>重新生成</strong> 按钮（🔄）。</p>
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">只能重新生成<strong>最后一条</strong> AI 回复。要修改更早的对话，请用「编辑」功能修改对应的用户消息。</div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch8-3">
+    <h3 class="subsection-title">复制 AI 回复</h3>
+    <p>将鼠标悬停在 AI 回复上，点击 <strong>复制</strong> 按钮（📋），Markdown 格式的完整内容会复制到剪贴板。复制成功后按钮短暂显示 ✔️。</p>
+  </div>
+</section>
+
+<!-- ======================== 第 9 章 ======================== -->
+<section class="section" id="ch9">
+  <div class="section-header">
+    <span class="section-num">9</span>
+    <h2 class="section-title">导出 Markdown</h2>
+    <p class="section-desc">单条回复或整个对话都可以导出为 Markdown 文件。</p>
+  </div>
+
+  <div class="subsection" id="ch9-1">
+    <h3 class="subsection-title">导出单条 AI 回复</h3>
+    <div class="card">
+      <h4>📥 导出步骤</h4>
+      <p>鼠标悬停在 AI 回复上，点击 <strong>导出 Markdown</strong> 按钮（📥），在弹出的原生保存对话框中选择路径。默认文件名：<code>AI_Reply_&lt;日期&gt;.md</code></p>
+      <p style="margin-top:8px;">导出内容包含：标题、生成时间、模型信息、使用的 Skill 名称（如有）、完整回复内容。</p>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch9-2">
+    <h3 class="subsection-title">导出完整会话</h3>
+    <div class="card">
+      <h4>📋 导出整个对话</h4>
+      <p>在 Chat 页面顶部，点击 <strong>导出当前会话</strong> 按钮，选择保存路径。默认文件名：<code>Conversation_&lt;日期&gt;.md</code></p>
+      <p style="margin-top:8px;">导出内容包含：</p>
+      <ul>
+        <li>每条用户消息（<code>## User</code>）</li>
+        <li>每条 AI 回复（<code>## Assistant</code>），含模型信息</li>
+        <li><strong>工具调用审计摘要表格</strong>（<code>## 工具调用记录</code>）：时间、工具名、状态、耗时、摘要</li>
+      </ul>
+    </div>
+    <div class="callout note">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body">工具输出只导出摘要，不导出完整文件内容。导出通过 Electron 原生对话框完成。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== 第 10 章 ======================== -->
+<section class="section" id="ch10">
+  <div class="section-header">
+    <span class="section-num">10</span>
+    <h2 class="section-title">技能（Skills）</h2>
+    <p class="section-desc">Skill 是预设的提示词模板，激活后 AI 会按照特定的风格和格式来处理你的输入。</p>
+  </div>
+
+  <div class="subsection" id="ch10-1">
+    <h3 class="subsection-title">内置 Skill</h3>
+    <p>应用首次启动时自动创建三个内置 Skill：</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Skill ID</th><th>名称</th><th>作用</th><th>触发关键词</th></tr></thead>
+        <tbody>
+          <tr><td><code>text-summary</code></td><td>文本总结</td><td>总结文本内容</td><td>总结、摘要、提炼、概括</td></tr>
+          <tr><td><code>daily-report</code></td><td>日报生成</td><td>将工作内容整理成日报</td><td>日报、今日工作、工作汇报、工作总结</td></tr>
+          <tr><td><code>wechat-rewrite</code></td><td>公众号改写</td><td>改写成公众号文章风格</td><td>公众号、改写、推文、文章优化</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch10-2">
+    <h3 class="subsection-title">在聊天中使用 Skill</h3>
+    <p>输入框附近有一个 <strong>Skill 选择器</strong>下拉框，提供三种模式：</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>模式</th><th>选择器值</th><th>行为</th></tr></thead>
+        <tbody>
+          <tr><td>自动匹配</td><td><code>__auto__</code>（默认）</td><td>根据消息内容匹配关键词，或根据附件文件类型匹配</td></tr>
+          <tr><td>不使用 Skill</td><td><code>__none__</code></td><td>不附加任何 Skill</td></tr>
+          <tr><td>手动选择</td><td>具体 Skill 名称</td><td>强制使用指定 Skill，不论内容是否匹配</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body"><strong>一次性上下文：</strong>Skill 只在发送<strong>当前这条消息</strong>时生效。发送后选择器自动切换回「自动匹配」。可以在同一对话中用不同 Skill 处理不同问题。手动选择的优先级最高。</div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch10-3">
+    <h3 class="subsection-title">Skill 懒加载机制</h3>
+    <div class="card">
+      <h4>⚡ 按需加载，节省上下文</h4>
+      <p>当 Skill 通过<strong>自动匹配</strong>触发时，AI 先收到 Skill 的<strong>概要卡片</strong>（名称、描述、触发关键词、工具列表），而非完整 prompt。AI 判断需要使用完整指令时，调用 <code>load_skill</code> 工具加载完整的 system prompt。</p>
+    </div>
+    <div class="callout note">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body"><strong>手动选择的 Skill</strong> 不受此限制——手动选择时直接使用完整 Skill prompt。</div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch10-4">
+    <h3 class="subsection-title">创建自定义 Skill</h3>
+    <div class="step-flow">
+      <div class="step-card">
+        <span class="step-num">1</span>
+        <h4>进入 Skill 管理页面</h4>
+        <p>点击侧边栏的「Skill」（🔨 图标），切换到「已安装」标签页。</p>
+      </div>
+      <div class="step-card">
+        <span class="step-num">2</span>
+        <h4>创建 Skill</h4>
+        <p>点击「添加 Skill」→「创建 Skill」，在弹出对话框中填写名称、描述和指令（用自然语言描述 AI 应该扮演什么角色）。</p>
+      </div>
+    </div>
+    <div style="margin-top:12px;">
+      <pre><code>技能名称：代码审查员
+描述：你是一个严格的代码审查员，检查代码中的潜在问题。
+指令：
+你是一位资深代码审查员。
+请审查用户提供的代码，从以下维度分析：
+1. 功能正确性
+2. 安全漏洞
+3. 性能问题
+4. 代码可维护性
+对于每个问题，提供具体的代码示例和改进建议。</code></pre>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch10-5">
+    <h3 class="subsection-title">导入 Skill</h3>
+    <p>支持从外部导入 Skill：</p>
+    <ol>
+      <li>点击「添加 Skill」→「导入 Skill」</li>
+      <li>在文件选择器中选择一个包含 <code>SKILL.md</code> 的文件夹，或一个单独的 <code>.md</code> / <code>.markdown</code> 文件</li>
+      <li>导入器解析文件的 YAML 头信息（frontmatter），提取名称、描述、Prompt 等</li>
+    </ol>
+    <div style="margin-top:12px;">
+      <pre><code>---
+id: my-skill
+name: 我的技能
+description: 技能描述
+trigger:
+  keywords:
+    - 关键词1
+    - 关键词2
+  fileTypes:
+    - txt
+    - md
+tools:
+  - txt_reader
+  - read_file
+  - search_text
+output:
+  format: markdown
+---
+
+# System Prompt
+
+这里是系统提示词...
+
+# User Template
+
+这里是用模板，可以用 {{input}} 占位，工具结果用 {{tool_result}} 占位。</code></pre>
+    </div>
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">如果导入的 Skill ID 已存在，系统自动重命名为 <code>原ID-copy</code> 或 <code>原ID-copy-N</code>。</div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch10-6">
+    <h3 class="subsection-title">启用/禁用与删除</h3>
+    <ul>
+      <li><strong>开关：</strong>在 Skill 卡片上切换启用/禁用。禁用的 Skill 不出现在选择器中，也不会被自动匹配</li>
+      <li><strong>删除：</strong>点击垃圾桶图标 → 确认删除。删除操作不可恢复，但不影响导入源文件夹</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ======================== 第 11 章 ======================== -->
+<section class="section" id="ch11">
+  <div class="section-header">
+    <span class="section-num">11</span>
+    <h2 class="section-title">工具（Tools）详解</h2>
+    <p class="section-desc">AI Workbench 内置 14 个工具，让 AI 能读取文件、浏览目录、搜索代码、修改文件、执行命令。每个工具都有明确的风险等级。</p>
+  </div>
+
+  <div class="subsection" id="ch11-1">
+    <h3 class="subsection-title">风险等级体系</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>等级</th><th>含义</th><th>示例</th></tr></thead>
+        <tbody>
+          <tr><td><span class="risk-badge risk-safe">🟢 safe</span></td><td>纯只读操作，无副作用</td><td>读文件、列目录、搜索、查看 git</td></tr>
+          <tr><td><span class="risk-badge risk-medium">🟡 medium</span></td><td>写工作区内文件，有限副作用</td><td>创建文件/目录、应用 patch</td></tr>
+          <tr><td><span class="risk-badge risk-high">🔴 high</span></td><td>执行命令、写入记忆等需确认的操作</td><td>执行命令、更新记忆</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout note">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body"><strong>核心设计原则：</strong>文件操作需授权、命令需经确认、按风险分级、结果脱敏、日志不保存完整内容（文件读取只保存元数据和 500 字预览）。</div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch11-2">
+    <h3 class="subsection-title">14 个内置工具一览</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>工具名</th><th>分类</th><th>风险</th><th>功能</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><code>list_dir</code></td><td>只读浏览</td><td><span class="risk-badge risk-safe">🟢 safe</span></td><td>列出工作区目录内容</td></tr>
+          <tr><td>2</td><td><code>read_file</code></td><td>只读浏览</td><td><span class="risk-badge risk-safe">🟢 safe</span></td><td>读取工作区内文本文件（最大 512KB）</td></tr>
+          <tr><td>3</td><td><code>search_files</code></td><td>只读浏览</td><td><span class="risk-badge risk-safe">🟢 safe</span></td><td>搜索文件路径</td></tr>
+          <tr><td>4</td><td><code>search_text</code></td><td>只读浏览</td><td><span class="risk-badge risk-safe">🟢 safe</span></td><td>搜索文件内容（正则、glob 过滤）</td></tr>
+          <tr><td>5</td><td><code>txt_reader</code></td><td>只读文件</td><td><span class="risk-badge risk-safe">🟢 safe</span></td><td>读取用户选择的 .txt 文件</td></tr>
+          <tr><td>6</td><td><code>markdown_reader</code></td><td>只读文件</td><td><span class="risk-badge risk-safe">🟢 safe</span></td><td>读取用户选择的 .md 文件</td></tr>
+          <tr><td>7</td><td><code>git_status</code></td><td>Git</td><td><span class="risk-badge risk-safe">🟢 safe</span></td><td>查看工作区 git 状态</td></tr>
+          <tr><td>8</td><td><code>git_diff</code></td><td>Git</td><td><span class="risk-badge risk-safe">🟢 safe</span></td><td>查看工作区 git diff</td></tr>
+          <tr><td>9</td><td><code>load_skill</code></td><td>Skill</td><td><span class="risk-badge risk-safe">🟢 safe</span></td><td>懒加载 Skill 完整 prompt</td></tr>
+          <tr><td>10</td><td><code>create_file</code></td><td>文件创建</td><td><span class="risk-badge risk-medium">🟡 medium</span></td><td>创建 UTF-8 文本文件（最大 256KB）</td></tr>
+          <tr><td>11</td><td><code>create_directory</code></td><td>文件创建</td><td><span class="risk-badge risk-medium">🟡 medium</span></td><td>在工作区内创建目录（需确认）</td></tr>
+          <tr><td>12</td><td><code>apply_patch</code></td><td>代码修改</td><td><span class="risk-badge risk-medium">🟡 medium</span></td><td>应用 unified diff 修改文件（含检查点）</td></tr>
+          <tr><td>13</td><td><code>command_runner</code></td><td>命令执行</td><td><span class="risk-badge risk-high">🔴 high</span></td><td>执行授权目录内的命令</td></tr>
+          <tr><td>14</td><td><code>update_memory</code></td><td>记忆</td><td><span class="risk-badge risk-high">🔴 high</span></td><td>更新工作区持久化项目记忆</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch11-3">
+    <h3 class="subsection-title">文件读取工具</h3>
+    <p><code>txt_reader</code> 和 <code>markdown_reader</code> 用于读取用户<strong>手动选择</strong>的文件：</p>
+    <ol>
+      <li>在输入框下方点击 <strong>选择文件</strong> 按钮</li>
+      <li>在文件对话框中选择文件</li>
+      <li>文件选择后显示：文件名、文件类型标记色块、文件大小</li>
+      <li>可选：点击 <strong>读取测试</strong> 按钮预览文件内容（最多 500 字符）</li>
+      <li>发送消息后，AI 自动读取文件内容并基于文件回答</li>
+    </ol>
+    <div class="callout warning">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body"><strong>限制：</strong>必须通过文件对话框选择；单文件最大 5MB；文件后缀必须是 <code>.txt</code>、<code>.md</code> 或 <code>.markdown</code>；文件授权信息在应用关闭后清除。</div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch11-4">
+    <h3 class="subsection-title">工作区只读工具</h3>
+    <p>这四个工具是 Agent 模式的核心只读工具，让 AI 能在工作区内自由浏览和搜索文件：</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>工具</th><th>功能</th><th>主要参数</th></tr></thead>
+        <tbody>
+          <tr><td><code>list_dir</code></td><td>列出目录中的文件和子目录</td><td><code>path</code>、<code>maxEntries</code>（默认 200，最大 1000）</td></tr>
+          <tr><td><code>read_file</code></td><td>读取文本文件内容</td><td><code>path</code>、<code>maxBytes</code>（默认 64KB，最大 512KB）</td></tr>
+          <tr><td><code>search_files</code></td><td>搜索文件路径</td><td><code>path</code>、<code>query</code>、<code>maxResults</code>（默认 100）</td></tr>
+          <tr><td><code>search_text</code></td><td>搜索文件内容</td><td><code>path</code>、<code>query</code>、<code>caseSensitive</code>、<code>regex</code>、<code>include</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout note">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body">所有操作<strong>限于当前工作区根目录内</strong>。优先使用 <code>rg</code>（ripgrep）搜索，不可用时自动回退为 Node.js 递归遍历。大文件读取会被截断并标记 <code>truncated</code>。</div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch11-5">
+    <h3 class="subsection-title">代码修改工具（apply_patch）</h3>
+    <div class="card">
+      <h4>📝 unified diff 补丁修改</h4>
+      <p><code>apply_patch</code> 允许 AI 在<strong>用户确认后</strong>，应用 unified diff 格式的补丁修改工作区文件。</p>
+    </div>
+    <div class="flow-diagram">
+<span class="highlight">AI 生成 unified diff</span> <span class="arrow">→</span> 原生确认对话框（修改摘要、文件列表、diff 预览）<br>
+<span class="arrow">→</span> 你点击「允许」 <span class="arrow">→</span> 临时文件验证补丁 <span class="arrow">→</span> 创建 <span class="highlight">checkpoint</span>（文件备份）<span class="arrow">→</span> 正式写入<br>
+<span class="arrow">→</span> 自动运行 <span class="highlight">npm test / build</span> 验证
+    </div>
+    <div class="callout warning">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <strong>安全限制：</strong><br />
+        • 只能修改<strong>已存在</strong>的文件（不能新增或删除）<br />
+        • 只能修改<strong>工作区内部</strong>的文件<br />
+        • 必须在 <strong>Agent 模式</strong>下运行<br />
+        • 修改前自动创建<strong>检查点</strong>（文件备份）<br />
+        • 修改后自动触发<strong>自动验证</strong>（npm test/build）<br />
+        • <strong>不会</strong>自动执行 git commit
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch11-6">
+    <h3 class="subsection-title">Git 工具</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>工具</th><th>功能</th><th>超时</th></tr></thead>
+        <tbody>
+          <tr><td><code>git_status</code></td><td>运行 <code>git status --short --branch</code></td><td>2.5 秒</td></tr>
+          <tr><td><code>git_diff</code></td><td>查看 git 工作区差异</td><td>10 秒</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>只在关联了 git 仓库的工作区中可用。输出自动截断（status 最多 80 行，diff 最大 16KB）。</p>
+  </div>
+
+  <div class="subsection" id="ch11-7">
+    <h3 class="subsection-title">工具日志</h3>
+    <p>在聊天中，每条触发过工具调用的用户消息下方，有一个<strong>可展开的面板</strong>，显示：</p>
+    <ul>
+      <li>调用的工具名称和所属工作区</li>
+      <li>执行状态（成功 ✓ / 失败 ✗ / 已取消 / 超时）</li>
+      <li>执行耗时（毫秒）</li>
+      <li>文件元信息和路径（绝对路径 + 工作区相对路径）</li>
+      <li>命令执行的工作目录（cwd）</li>
+      <li>内容预览（最多 500 字符）</li>
+    </ul>
+    <div class="callout note">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body">所有敏感信息入库前已被自动脱敏。</div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch11-8">
+    <h3 class="subsection-title">工具调试页面</h3>
+    <p>点击侧边栏的「工具」（🔧 图标）进入工具调试页面：</p>
+    <ul>
+      <li>查看所有已注册工具及风险等级</li>
+      <li>测试 <code>command_runner</code>：在 argv 或 shell 模式下调试命令执行</li>
+      <li>调试页面的工具调用保存在名为「工具运行时调试」的归档对话中</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ======================== 第 12 章 ======================== -->
+<section class="section" id="ch12">
+  <div class="section-header">
+    <span class="section-num">12</span>
+    <h2 class="section-title">命令执行器（Command Runner）</h2>
+    <p class="section-desc"><code>command_runner</code> 是风险最高、安全措施最多的工具。它允许 AI 在你的电脑上执行本地命令。</p>
+  </div>
+
+  <div class="subsection" id="ch12-1">
+    <h3 class="subsection-title">两种触发方式</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>方式</th><th>说明</th><th>示例</th></tr></thead>
+        <tbody>
+          <tr><td>自动识别</td><td>在工作区对话中，系统自动检测消息是否包含可执行的命令</td><td>「node 版本是什么？」→ 自动执行 <code>node -v</code></td></tr>
+          <tr><td>工具调用</td><td>AI 在 Agent 模式下自主调用 <code>command_runner</code></td><td>AI 判断需要运行命令了解项目状态</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch12-2">
+    <h3 class="subsection-title">自动命令识别规则</h3>
+    <p>在工作区对话中，系统智能分析消息内容，自动识别两类命令：</p>
+    <div class="card">
+      <h4>① 版本查询（自动执行）</h4>
+      <p>消息中同时满足：① 询问版本（包含「版本」、<code>version</code>、<code>-v</code> 等关键词）；② 提及已知可执行程序：</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>提及的程序</th><th>自动执行的命令</th></tr></thead>
+        <tbody>
+          <tr><td>Node / Node.js / nodejs</td><td><code>node -v</code></td></tr>
+          <tr><td>npm</td><td><code>npm -v</code></td></tr>
+          <tr><td>pnpm</td><td><code>pnpm -v</code></td></tr>
+          <tr><td>yarn</td><td><code>yarn -v</code></td></tr>
+          <tr><td>git</td><td><code>git --version</code></td></tr>
+          <tr><td>python / python3</td><td><code>python --version</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card" style="margin-top:14px;">
+      <h4>② 显式命令（自动提取）</h4>
+      <p>消息中包含以下格式时自动提取并执行：</p>
+      <ul>
+        <li><strong>代码块格式：</strong><code>```bash</code>、<code>```sh</code>、<code>```shell</code> 等代码块中的命令</li>
+        <li><strong>自然语言格式：</strong>包含「运行/执行/帮我运行 + 命令」后跟冒号或反引号的命令</li>
+      </ul>
+    </div>
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">版本查询超时 30 秒，显式命令超时 60 秒。自动命令识别只在工作区对话中生效。</div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch12-3">
+    <h3 class="subsection-title">五层安全防护</h3>
+    <div class="feat-grid">
+      <div class="feat-card">
+        <span class="feat-icon">1️⃣</span>
+        <h4>手动启用</h4>
+        <p>在设置页面手动打开开关，<strong>默认关闭</strong>。</p>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">2️⃣</span>
+        <h4>授权目录</h4>
+        <p>只能执行<strong>授权工作目录</strong>内的命令。</p>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">3️⃣</span>
+        <h4>危险命令拦截</h4>
+        <p>自动拒绝 <strong>14 种</strong>危险模式（shell 和 argv 双模式覆盖）。</p>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">4️⃣</span>
+        <h4>执行确认弹窗</h4>
+        <p>每次执行前弹出<strong>原生对话框</strong>，显示完整命令和工作目录。</p>
+      </div>
+    </div>
+    <div class="card" style="max-width:420px; margin-top:14px;">
+      <h4>5️⃣ 超时与取消</h4>
+      <p>默认 60 秒超时（最大 300 秒），支持中途取消。输出上限 stdout + stderr 合计 20,000 字符。</p>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch12-4">
+    <h3 class="subsection-title">危险命令拦截清单</h3>
+    <p>以下 14 种命令模式会被自动拒绝：</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>模式</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td><code>rm -rf</code></td><td>递归强制删除（Unix）</td></tr>
+          <tr><td><code>del /s /q</code></td><td>递归强制删除（Windows）</td></tr>
+          <tr><td><code>format</code></td><td>磁盘格式化</td></tr>
+          <tr><td><code>shutdown</code></td><td>系统关机</td></tr>
+          <tr><td><code>reboot</code></td><td>系统重启</td></tr>
+          <tr><td><code>sudo</code></td><td>超级用户提权</td></tr>
+          <tr><td><code>mkfs</code></td><td>创建文件系统</td></tr>
+          <tr><td><code>reg delete</code></td><td>删除注册表键（Windows）</td></tr>
+          <tr><td><code>net user</code></td><td>管理用户账户（Windows）</td></tr>
+          <tr><td><code>powershell -enc</code></td><td>编码 PowerShell 命令</td></tr>
+          <tr><td><code>Remove-Item -Recurse</code></td><td>PowerShell 递归删除</td></tr>
+          <tr><td><code>rd /s /q</code></td><td>递归删除目录（Windows）</td></tr>
+          <tr><td><code>rmdir /s /q</code></td><td>递归删除目录（Windows）</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch12-5">
+    <h3 class="subsection-title">命令执行模式</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>模式</th><th>输入</th><th>安全性</th><th>适用场景</th></tr></thead>
+        <tbody>
+          <tr><td><strong>argv</strong></td><td><code>executable</code> + <code>args</code>（参数数组）</td><td>🟢 更高</td><td><strong>推荐</strong>，AI Agent 使用</td></tr>
+          <tr><td><strong>shell</strong></td><td><code>command</code>（完整命令字符串）</td><td>🟡 较低</td><td>需要管道、重定向等 Shell 功能</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body"><strong>推荐使用 argv 模式</strong>——参数不会被 Shell 解析，能有效避免 Shell 注入攻击。</div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch12-6">
+    <h3 class="subsection-title">敏感信息脱敏</h3>
+    <p>命令输出和工具日志中的以下敏感信息会被自动替换为 <code>[REDACTED]</code>：</p>
+    <ul>
+      <li>API Key（<code>sk-</code>、<code>sk-ant-</code> 开头）</li>
+      <li><code>Authorization</code> 请求头中的 Bearer Token</li>
+      <li>包含 <code>api_key</code>、<code>authorization</code>、<code>password</code>、<code>token</code>、<code>secret</code> 等关键词的 JSON 字段值</li>
+      <li>密码形式的字符串（<code>password: xxx</code>、<code>token: xxx</code>）</li>
+    </ul>
+    <div class="callout danger">
+      <span class="callout-icon">🔒</span>
+      <div class="callout-body"><strong>脱敏在数据写入数据库之前执行</strong>，确保敏感信息不以明文落盘。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== 第 13 章 ======================== -->
+<section class="section" id="ch13">
+  <div class="section-header">
+    <span class="section-num">13</span>
+    <h2 class="section-title">Agent 模式</h2>
+    <p class="section-desc">Agent 模式是本应用的高级工作方式——AI 可以像一位自主的开发者一样多步骤连续工作。</p>
+  </div>
+
+  <div class="subsection" id="ch13-1">
+    <h3 class="subsection-title">什么是 Agent 模式</h3>
+    <div class="card">
+      <h4>🤖 自主多步骤执行</h4>
+      <p>与普通聊天模式（一问一答）不同，Agent 模式下 AI 可以：</p>
+      <ul>
+        <li><strong>自主多步骤执行</strong>：连续调用多个工具，每步结果影响下一步决策</li>
+        <li><strong>主动浏览项目</strong>：通过只读工具自己找到需要的信息，不需要你手动选择文件</li>
+        <li><strong>修改代码</strong>：通过 <code>apply_patch</code> 在用户确认后直接修改文件</li>
+        <li><strong>创建文件和目录</strong>：通过 <code>create_file</code> 和 <code>create_directory</code></li>
+        <li><strong>自动验证</strong>：修改代码后自动运行 <code>npm test</code> / <code>npm build</code></li>
+        <li><strong>文件保护</strong>：每次写入前自动创建 checkpoint（文件备份）</li>
+      </ul>
+    </div>
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">
+        <strong>一句话对比：</strong><br />
+        • 普通模式：你选文件 → AI 读 → AI 回答（一问一答）<br />
+        • Agent 模式：AI 看项目结构 → 自己搜索 → 读相关文件 → 生成修改 → 你确认 → 应用修改 → 自动验证 → 报告结果
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch13-2">
+    <h3 class="subsection-title">Agent 运行流程</h3>
+    <div class="flow-diagram">
+用户发送消息<br>
+<span class="arrow">↓</span><br>
+<span class="highlight">请求分类</span>（判断是否为 workspace_task / project_analysis / tool_task）<br>
+<span class="arrow">↓</span><br>
+加载<span class="highlight">工作区上下文</span>（README、package.json、git status 等）<br>
+<span class="arrow">↓</span><br>
+加载<span class="highlight">工作区记忆</span>（如有）<br>
+<span class="arrow">↓</span><br>
+注入 Skill（自动匹配时为概要卡片，手动选择时为完整 prompt）<br>
+<span class="arrow">↓</span><br>
+<span class="highlight">LLM 调用 #1</span> → AI 思考 → 决定调用工具<br>
+<span class="arrow">↓</span><br>
+执行工具 #1 → 工具结果返回给 AI<br>
+<span class="arrow">↓</span><br>
+<span class="highlight">LLM 调用 #2</span> → AI 基于结果继续思考 → 调用更多工具<br>
+<span class="arrow">↓</span><br>
+...（多步循环，直到任务完成或达到安全限制）<br>
+<span class="arrow">↓</span><br>
+<span class="highlight">apply_patch</span> → 用户确认 → 创建 checkpoint → 写入文件<br>
+<span class="arrow">↓</span><br>
+<span class="highlight">自动验证</span>：运行 npm test / npm build<br>
+<span class="arrow">↓</span><br>
+LLM 最终调用 → 生成最终回答（附修改摘要、文件列表、验证结果）
+    </div>
+  </div>
+
+  <div class="subsection" id="ch13-3">
+    <h3 class="subsection-title">安全停止机制</h3>
+    <p>Agent 运行有严格的安全限制，防止无限循环：</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>限制项</th><th>默认值</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>墙钟时间</td><td><strong>10 分钟</strong></td><td>单次 Agent 运行的总时长上限</td></tr>
+          <tr><td>总工具调用</td><td>40 次</td><td>单次运行的总工具调用次数上限</td></tr>
+          <tr><td>read_file 预算</td><td>20 次</td><td>文件读取工具的单独预算</td></tr>
+          <tr><td>search 预算</td><td>20 次</td><td>搜索工具的单独预算</td></tr>
+          <tr><td>list_dir 预算</td><td>20 次</td><td>目录列出工具的单独预算</td></tr>
+          <tr><td>重复调用上限</td><td>3 次</td><td>同一工具连续调用相同参数的最大次数</td></tr>
+          <tr><td>无进展轮次</td><td>3 轮</td><td>连续无有效进展的最大轮次</td></tr>
+          <tr><td><strong>总步骤数</strong></td><td><strong>12 步</strong></td><td>单次 Agent 运行的最大步骤数</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch13-4">
+    <h3 class="subsection-title">重放防护</h3>
+    <p>高风险工具（<code>command_runner</code>、<code>apply_patch</code>、<code>create_file</code>、<code>create_directory</code>）具有重放防护——如果 AI 尝试用完全相同的输入参数再次调用同一个工具，系统会拒绝执行，防止 AI 陷入无效循环。</p>
+  </div>
+
+  <div class="subsection" id="ch13-5">
+    <h3 class="subsection-title">自动验证系统</h3>
+    <p>Agent 通过 <code>apply_patch</code> 修改文件后，系统自动运行验证：</p>
+    <ol>
+      <li>检查工作区是否有 <code>package.json</code></li>
+      <li>如果有 <code>test</code> script → 执行 <code>npm run test</code>（超时 5 分钟）</li>
+      <li>如果有 <code>build</code> script → 执行 <code>npm run build</code>（超时 5 分钟）</li>
+      <li>验证结果追加到 AI 的最终回复中</li>
+    </ol>
+    <div style="margin-top:12px;">
+      <pre><code>本次修改摘要：
+- 修复了登录页面的样式问题
+
+文件列表：
+- src/pages/Login.tsx
+- src/styles/login.css
+
+验证结果：
+- npm run build：通过
+- npm run test：未通过：1 test failed
+
+未验证原因：
+- 测试用例期望值未更新</code></pre>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch13-6">
+    <h3 class="subsection-title">Agent 检查点</h3>
+    <p>每次 <code>apply_patch</code> 写入文件前，系统自动创建<strong>检查点（checkpoint）</strong>：</p>
+    <ul>
+      <li><strong>保存内容：</strong>文件的完整内容（修改前版本）+ SHA-256 哈希</li>
+      <li><strong>存储位置：</strong><code>agent_checkpoints</code> 数据库表</li>
+      <li><strong>用途：</strong>如果修改结果不理想，可从检查点恢复</li>
+    </ul>
+  </div>
+
+  <div class="subsection" id="ch13-7">
+    <h3 class="subsection-title">Agent 步骤时间线</h3>
+    <p>Agent 模式下，每条 AI 回复下方显示可展开的<strong>「Agent 步骤」面板</strong>：</p>
+    <ul>
+      <li><strong>步骤编号：</strong>#0, #1, #2...</li>
+      <li><strong>步骤类型：</strong><code>llm_call</code>（LLM 调用）、<code>tool_call</code>（工具调用）、<code>tool_result</code>（工具结果）</li>
+      <li><strong>执行状态：</strong>running / success / failed / skipped</li>
+      <li><strong>工具名称和执行耗时</strong>（毫秒级）</li>
+      <li><strong>详细信息：</strong>展开后可查看工具调用的参数和返回结果预览</li>
+    </ul>
+  </div>
+
+  <div class="subsection" id="ch13-8">
+    <h3 class="subsection-title">Ask 与 Craft 模式</h3>
+    <p>Agent 模式有两种子模式：</p>
+    <div class="table-wrap">
+      <table class="compare-table">
+        <thead><tr><th>维度</th><th>Ask（询问）</th><th>Craft（构建）</th></tr></thead>
+        <tbody>
+          <tr><td>行为</td><td>强制使用 legacy 模式，一问一答</td><td>当模型支持 tool calls 时使用完整 Agent 模式</td></tr>
+          <tr><td>适合场景</td><td>简单问答、代码咨询、理解代码</td><td>代码修改、项目分析、多步操作</td></tr>
+          <tr><td>文件访问</td><td>手动选择单个文件</td><td>AI 自主浏览工作区文件</td></tr>
+          <tr><td>工具调用</td><td>一次性调用</td><td>多步骤连续调用</td></tr>
+          <tr><td>代码修改</td><td>❌ 不支持</td><td>✅ 支持（需确认）</td></tr>
+          <tr><td>自动验证</td><td>❌ 不支持</td><td>✅ 支持（npm test/build）</td></tr>
+          <tr><td>工作区上下文</td><td>不加载</td><td>自动注入项目快照</td></tr>
+          <tr><td>工作区记忆</td><td>不加载</td><td>自动注入</td></tr>
+          <tr><td>步骤可见性</td><td>只看最终回复</td><td>完整时间线</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch13-9">
+    <h3 class="subsection-title">请求分类</h3>
+    <p>系统自动对每条用户消息进行分类，以决定使用 legacy 还是 Agent 运行时：</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>分类</th><th>说明</th><th>走 Agent 运行时？</th></tr></thead>
+        <tbody>
+          <tr><td><code>casual</code></td><td>问候/感谢（你好、谢谢等）</td><td>❌ 否</td></tr>
+          <tr><td><code>direct_answer</code></td><td>知识问答（什么是/为什么/如何/解释等）</td><td>❌ 否</td></tr>
+          <tr><td><code>tool_task</code></td><td>选中文件、有命令意图、代码块命令</td><td>✅ 是</td></tr>
+          <tr><td><code>project_analysis</code></td><td>分析项目结构/目录/模块/README 等</td><td>✅ 是</td></tr>
+          <tr><td><code>workspace_task</code></td><td>代码修改/编辑/修复/重构/构建</td><td>✅ 是</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch13-10">
+    <h3 class="subsection-title">启用 Agent 模式</h3>
+    <p>Agent 模式通过<strong>环境变量</strong>控制：</p>
+    <pre><code># macOS / Linux
+export AI_WORKBENCH_ENABLE_AGENT_MODE=1
+
+# Windows PowerShell
+$env:AI_WORKBENCH_ENABLE_AGENT_MODE="1"
+
+# Windows Command Prompt
+set AI_WORKBENCH_ENABLE_AGENT_MODE=1
+
+# 然后启动应用
+npm run dev</code></pre>
+    <div class="callout warning">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body"><strong>模型兼容性：</strong>Agent 模式要求模型支持 tool calls（<code>openai-chat-completions</code> 或 <code>anthropic-messages</code> 格式）。不支持时自动降级为 legacy 模式。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== 第 14 章 ======================== -->
+<section class="section" id="ch14">
+  <div class="section-header">
+    <span class="section-num">14</span>
+    <h2 class="section-title">工作区记忆（Workspace Memory）</h2>
+    <p class="section-desc">每个工作区有独立的持久化项目记忆——AI 对这个项目的长期记忆，在每次 Agent 运行时自动注入。</p>
+  </div>
+
+  <div class="subsection" id="ch14-1">
+    <h3 class="subsection-title">应该 / 不应该保存的内容</h3>
+    <div class="feat-grid">
+      <div class="feat-card" style="border-color: rgba(34,197,94,0.2);">
+        <span class="feat-icon">✅</span>
+        <h4>应该保存</h4>
+        <p>项目约定和编码规范（如「使用 TypeScript 严格模式」）<br>稳定的用户偏好（如「使用中文注释」）<br>长期注意事项（如「不要修改 src/legacy/ 目录」）<br>项目架构要点</p>
+      </div>
+      <div class="feat-card" style="border-color: rgba(248,113,113,0.2);">
+        <span class="feat-icon">❌</span>
+        <h4>不应该保存</h4>
+        <p>聊天对话全文<br>API Key、Token、密码<br>临时的一次性指令</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch14-2">
+    <h3 class="subsection-title">记忆的三种来源</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>来源</th><th>说明</th><th>优先级</th></tr></thead>
+        <tbody>
+          <tr><td>数据库</td><td>AI 通过 <code>update_memory</code> 工具写入。持续有效直到工作区被删除</td><td>最高</td></tr>
+          <tr><td>memory.md 文件</td><td>工作区根目录下 <code>.ai-workbench/memory.md</code> 文件。适合手动编辑或团队共享（可提交到 git）</td><td>中等</td></tr>
+          <tr><td>空</td><td>没有记忆时显示「暂无 workspace memory」</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body">数据库中有记忆时优先使用数据库记忆；数据库为空时回退到 <code>memory.md</code> 文件。</div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch14-3">
+    <h3 class="subsection-title">在聊天中查看记忆</h3>
+    <p>工作区对话中，聊天页面顶部的信息栏有一个 <strong>「Memory」按钮</strong>，点击可展开查看：</p>
+    <ul>
+      <li>记忆来源（数据库 / memory.md / 暂无）</li>
+      <li>记忆摘要（最多 280 字）</li>
+      <li>最后更新时间</li>
+    </ul>
+  </div>
+
+  <div class="subsection" id="ch14-4">
+    <h3 class="subsection-title">AI 更新记忆</h3>
+    <div class="step-flow">
+      <div class="step-card">
+        <span class="step-num">1</span>
+        <h4>AI 判断需要记住</h4>
+        <p>AI 在对话中判断需要记住某个项目约定或偏好。</p>
+      </div>
+      <div class="step-card">
+        <span class="step-num">2</span>
+        <h4>调用 update_memory 工具</h4>
+        <p>AI 调用 <code>update_memory</code> 工具，传入记忆内容和原因。</p>
+      </div>
+      <div class="step-card">
+        <span class="step-num">3</span>
+        <h4>用户确认</h4>
+        <p>弹出原生确认对话框，显示记忆内容和来源工作区。你点击「允许写入」后，记忆写入数据库并立即生效。</p>
+      </div>
+    </div>
+    <div class="callout danger">
+      <span class="callout-icon">🔒</span>
+      <div class="callout-body"><strong>安全检查：</strong>系统自动拒绝包含 API Key、Token、密码等敏感信息的记忆，以及看起来像聊天记录的内容。单条记忆最多 4000 字符，注入到 prompt 时截断为 1500 字符。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== 第 15 章 ======================== -->
+<section class="section" id="ch15">
+  <div class="section-header">
+    <span class="section-num">15</span>
+    <h2 class="section-title">设置页面</h2>
+    <p class="section-desc">点击侧边栏的「设置」（⚙️ 图标），管理应用偏好。</p>
+  </div>
+
+  <div class="subsection" id="ch15-1">
+    <h3 class="subsection-title">数据存储</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>信息</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>数据目录</td><td>当前 SQLite 数据库文件所在的文件夹路径</td></tr>
+          <tr><td>数据库路径</td><td>数据库文件 <code>app.db</code> 的完整路径</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>点击「选择数据目录」可更改存储位置，系统自动将现有数据库复制到新位置。点击「恢复默认」可恢复到 Electron 默认 <code>userData</code> 目录。</p>
+  </div>
+
+  <div class="subsection" id="ch15-2">
+    <h3 class="subsection-title">主题设置</h3>
+    <div class="feat-grid">
+      <div class="feat-card">
+        <span class="feat-icon">🌙</span>
+        <h4>跟随系统</h4>
+        <p>自动跟随操作系统的亮色/暗色主题。</p>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">☀️</span>
+        <h4>浅色</h4>
+        <p>始终使用浅色主题。</p>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🌑</span>
+        <h4>深色</h4>
+        <p>始终使用深色主题。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch15-3">
+    <h3 class="subsection-title">安全策略（只读展示）</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>项目</th><th>内容</th></tr></thead>
+        <tbody>
+          <tr><td>文件读取大小限制</td><td>单文件最大 5MB</td></tr>
+          <tr><td>工具日志脱敏</td><td>API Key、Token、密码等入库前替换为 <code>[REDACTED]</code>；文件读取只保存元信息和 500 字预览</td></tr>
+          <tr><td>工具结果 Prompt 防护</td><td>工具结果进入模型前标记为不可信资料，提示模型不能盲从</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch15-4">
+    <h3 class="subsection-title">数据清理</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>按钮</th><th>作用</th><th>不影响</th></tr></thead>
+        <tbody>
+          <tr><td>清理工具日志</td><td>删除所有 <code>tool_logs</code> 记录</td><td>对话、消息、模型配置、Skill、API Key、工作区、Agent 数据</td></tr>
+          <tr><td>清理会话历史</td><td>删除所有对话、消息、工具日志、Agent 运行记录</td><td>模型配置、Skill、API Key、工作区</td></tr>
+          <tr><td>重置内置 Skill</td><td>删除内置 Skill 并重新导入</td><td>用户创建和导入的 Skill</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout danger">
+      <span class="callout-icon">🚨</span>
+      <div class="callout-body"><strong>所有清理操作不可撤销！</strong>请谨慎操作。</div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch15-5">
+    <h3 class="subsection-title">隐私与安全</h3>
+    <ul>
+      <li>API Key 加密保存（Electron <code>safeStorage</code> 或 AES-256-GCM 回退）</li>
+      <li>模型调用直接发送到用户配置的服务商，应用不额外转发</li>
+      <li>所有数据存储在本地</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ======================== 第 16 章 ======================== -->
+<section class="section" id="ch16">
+  <div class="section-header">
+    <span class="section-num">16</span>
+    <h2 class="section-title">键盘快捷键</h2>
+    <p class="section-desc">AI Workbench 的快捷键一览。</p>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>快捷键</th><th>作用场景</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td><code>Enter</code></td><td>聊天输入框</td><td>发送消息</td></tr>
+        <tr><td><code>Shift + Enter</code></td><td>聊天输入框</td><td>换行（多行输入）</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ======================== 第 17 章 ======================== -->
+<section class="section" id="ch17">
+  <div class="section-header">
+    <span class="section-num">17</span>
+    <h2 class="section-title">常见问题与故障排除</h2>
+    <p class="section-desc">点击问题展开查看解答。</p>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-q" onclick="toggleFAQ(this)">
+      连接测试失败了，怎么办？
+      <span class="faq-icon">▼</span>
+    </button>
+    <div class="faq-a">
+      <p>最常见的几个原因和解决方法：</p>
+      <ul>
+        <li><strong>401 / 403：</strong>API Key 无效或过期 → 重新去服务商官网获取新的 Key</li>
+        <li><strong>404：</strong>请求地址填错了 → 检查「请求地址」是否和官方文档一致</li>
+        <li><strong>超时 / fetch failed：</strong>网络不通 → 检查网络；如用本地模型确认服务已启动</li>
+        <li><strong>model not found：</strong>模型名称有误 → 检查模型名称大小写和版本号是否准确</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-q" onclick="toggleFAQ(this)">
+      Agent 模式没有生效，为什么？
+      <span class="faq-icon">▼</span>
+    </button>
+    <div class="faq-a">
+      <p>检查清单：</p>
+      <ol>
+        <li>是否设置了环境变量 <code>AI_WORKBENCH_ENABLE_AGENT_MODE=1</code>？（需重启应用）</li>
+        <li>当前是否处于 <strong>Craft</strong> 模式？（Ask 模式下强制 legacy）</li>
+        <li>当前模型是否支持 tool calls？（<code>openai-chat-completions</code> 或 <code>anthropic-messages</code> 格式）</li>
+        <li>当前对话是否关联了工作区？（部分 Agent 功能需要工作区上下文）</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-q" onclick="toggleFAQ(this)">
+      Command Runner 无法执行命令？
+      <span class="faq-icon">▼</span>
+    </button>
+    <div class="faq-a">
+      <p>检查清单：</p>
+      <ol>
+        <li>设置页面中是否已打开 <code>command_runner</code> 开关？</li>
+        <li>是否已添加至少一个授权工作目录？</li>
+        <li>命令的 <code>cwd</code> 是否在授权目录范围内？</li>
+        <li>命令是否触发了危险命令拦截（14 种模式）？</li>
+        <li>是否在确认弹窗中点击了「允许」？</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-q" onclick="toggleFAQ(this)">
+      apply_patch 执行失败了？
+      <span class="faq-icon">▼</span>
+    </button>
+    <div class="faq-a">
+      <p>可能的原因：</p>
+      <ol>
+        <li><strong>不在工作区对话中</strong>——<code>apply_patch</code> 只能在关联了工作区的对话中使用</li>
+        <li><strong>不在 Agent 模式</strong>——需要启用 Agent 模式</li>
+        <li><strong>目标文件不存在</strong>——<code>apply_patch</code> 只能修改已存在的文件</li>
+        <li><strong>补丁和目标内容不匹配</strong>——文件在 AI 生成补丁后被外部修改过</li>
+        <li><strong>目标文件在工作区外部</strong>——修改目标必须在工作区目录内</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-q" onclick="toggleFAQ(this)">
+      工作区记忆写入失败？
+      <span class="faq-icon">▼</span>
+    </button>
+    <div class="faq-a">
+      <p>可能的原因：</p>
+      <ol>
+        <li><strong>不在工作区对话中</strong>——<code>update_memory</code> 需要工作区上下文</li>
+        <li><strong>内容包含敏感信息</strong>——记忆不能包含 API Key、Token、密码等</li>
+        <li><strong>内容看起来像聊天记录</strong>——系统拒绝保存对话格式的内容</li>
+        <li><strong>内容过长</strong>——单条记忆不超过 4000 字符</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-q" onclick="toggleFAQ(this)">
+      Skill 没有自动匹配，为什么？
+      <span class="faq-icon">▼</span>
+    </button>
+    <div class="faq-a">
+      <p>检查清单：</p>
+      <ol>
+        <li>消息中是否确实包含 Skill 的触发关键词？</li>
+        <li>对应的 Skill 是否已启用？</li>
+        <li>选择器是否处于「自动匹配」模式（而非「不使用 Skill」）？</li>
+      </ol>
+      <p>如果自动匹配不稳定，可以直接在选择器里手动选技能，优先级最高。</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-q" onclick="toggleFAQ(this)">
+      读取文件时提示失败怎么办？
+      <span class="faq-icon">▼</span>
+    </button>
+    <div class="faq-a">
+      <p>文件读取有几个限制：</p>
+      <ol>
+        <li>必须通过聊天页面的「选择文件」按钮来选择文件，不能手动输入路径</li>
+        <li>只支持 <code>.txt</code>、<code>.md</code>、<code>.markdown</code> 三种格式</li>
+        <li>文件大小不能超过 5MB</li>
+        <li>文件授权信息在应用关闭后会清除，重新打开应用后需要重新选择文件</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-q" onclick="toggleFAQ(this)">
+      我的聊天记录存在哪儿？数据库路径是什么？
+      <span class="faq-icon">▼</span>
+    </button>
+    <div class="faq-a">
+      <p>默认存储位置：</p>
+      <ul>
+        <li>Windows：<code>%APPDATA%/ai-workbench/app.db</code></li>
+        <li>macOS：<code>~/Library/Application Support/ai-workbench/app.db</code></li>
+        <li>Linux：<code>~/.config/ai-workbench/app.db</code></li>
+      </ul>
+      <p>在设置页面可查看和更改存储位置。建议同时备份 <code>app.db</code>、<code>app.db-wal</code>、<code>app.db-shm</code>。</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-q" onclick="toggleFAQ(this)">
+      卸载应用之后，我的数据还在吗？
+      <span class="faq-icon">▼</span>
+    </button>
+    <div class="faq-a">
+      <p>在 Windows 上卸载时，卸载器会询问是否同步删除本地数据（聊天记录、模型配置、加密密钥、数据库文件）。你可以选择保留，重新安装后数据依然存在。</p>
+      <p>建议卸载前先手动找到 <code>app.db</code> 文件备份，或在设置里点「清理会话历史」再卸载。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== 第 18 章 ======================== -->
+<section class="section" id="ch18">
+  <div class="section-header">
+    <span class="section-num">18</span>
+    <h2 class="section-title">进阶技巧</h2>
+    <p class="section-desc">掌握这些技巧，让 AI Workbench 发挥最大价值。</p>
+  </div>
+
+  <div class="subsection" id="ch18-1">
+    <h3 class="subsection-title">多模型切换建议</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>任务类型</th><th>模型建议</th><th>Temperature</th></tr></thead>
+        <tbody>
+          <tr><td>代码生成</td><td>Claude / DeepSeek / GPT-4</td><td>0.2（稳定）</td></tr>
+          <tr><td>内容写作</td><td>Claude / GPT-4 / 通义千问</td><td>0.7-1.0</td></tr>
+          <tr><td>翻译</td><td>DeepSeek / GPT-4 / Kimi</td><td>0.2-0.7</td></tr>
+          <tr><td>头脑风暴</td><td>Claude / 任何模型</td><td>1.3（头脑风暴）</td></tr>
+          <tr><td>本地隐私</td><td>Ollama / LM Studio</td><td>按需设置</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch18-2">
+    <h3 class="subsection-title">使用 Agent 模式进行自动化代码修改</h3>
+    <div class="step-flow">
+      <div class="step-card">
+        <span class="step-num">1</span>
+        <h4>启用 Agent 模式</h4>
+        <p>设置 <code>AI_WORKBENCH_ENABLE_AGENT_MODE=1</code>，重启应用。</p>
+      </div>
+      <div class="step-card">
+        <span class="step-num">2</span>
+        <h4>创建/进入工作区</h4>
+        <p>确保对话关联到项目文件夹。</p>
+      </div>
+      <div class="step-card">
+        <span class="step-num">3</span>
+        <h4>描述任务</h4>
+        <p>用自然语言描述代码修改需求，例如：「把 <code>src/utils/format.ts</code> 里的日期格式化函数改成用 <code>dayjs</code>」</p>
+      </div>
+      <div class="step-card">
+        <span class="step-num">4</span>
+        <h4>观察 Agent 步骤时间线</h4>
+        <p>展开 AI 回复下方的「Agent 步骤」面板，查看 AI 的思考和操作过程。</p>
+      </div>
+      <div class="step-card">
+        <span class="step-num">5</span>
+        <h4>确认代码修改</h4>
+        <p><code>apply_patch</code> 时在确认对话框中审查修改内容，点击「允许」应用。</p>
+      </div>
+      <div class="step-card">
+        <span class="step-num">6</span>
+        <h4>查看验证结果</h4>
+        <p>修改完成后，验证结果追加在回复末尾（npm test / build 结果）。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch18-3">
+    <h3 class="subsection-title">使用工作区记忆管理项目知识</h3>
+    <div class="card">
+      <h4>方式一：让 AI 自动更新</h4>
+      <p>在工作区对话中告诉 AI 你的偏好：</p>
+      <ul>
+        <li>「后续所有代码修改请使用中文注释」</li>
+        <li>「不要修改 <code>src/legacy/</code> 目录下的任何文件」</li>
+      </ul>
+      <p>AI 会调用 <code>update_memory</code> 工具持久化这些约定。</p>
+    </div>
+    <div class="card" style="margin-top:14px;">
+      <h4>方式二：手动创建 memory.md 文件</h4>
+      <p>在工作区根目录下创建 <code>.ai-workbench/memory.md</code> 文件，可提交到 git 与团队共享：</p>
+    </div>
+    <div style="margin-top:12px;">
+      <pre><code># 项目约定
+
+- 使用 TypeScript 严格模式，禁止使用 any
+- 所有注释使用中文
+- 组件放在 src/components/ 下，页面放在 src/pages/ 下
+- 不要修改 src/legacy/ 目录中的代码
+- 测试使用 vitest，覆盖率要求 >80%</code></pre>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch18-4">
+    <h3 class="subsection-title">使用本地模型（完全离线）</h3>
+    <div class="card">
+      <h4>Ollama</h4>
+      <ol>
+        <li>安装 <a href="https://ollama.com/" style="color:var(--accent3);">Ollama</a></li>
+        <li><code>ollama pull qwen2.5:7b</code>（或其他模型）</li>
+        <li>模型配置中选择供应商「Ollama」</li>
+        <li>确认 Base URL 为 <code>http://localhost:11434/v1</code></li>
+        <li>不需要 API Key</li>
+      </ol>
+    </div>
+    <div class="card" style="margin-top:14px;">
+      <h4>LM Studio</h4>
+      <ol>
+        <li>安装 <a href="https://lmstudio.ai/" style="color:var(--accent3);">LM Studio</a></li>
+        <li>在 LM Studio 中下载并加载模型</li>
+        <li>启动 LM Studio 本地服务器</li>
+        <li>模型配置中选择供应商「LM Studio」</li>
+        <li>确认 Base URL 为 <code>http://localhost:1234/v1</code></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="subsection" id="ch18-5">
+    <h3 class="subsection-title">利用自动命令识别快速查询</h3>
+    <p>在工作区对话中直接用自然语言查询开发环境：</p>
+    <ul>
+      <li>「当前 Node 版本是什么？」—— 自动执行 <code>node -v</code></li>
+      <li>「帮我查一下 git 版本」—— 自动执行 <code>git --version</code></li>
+      <li>「运行 <code>npm run build</code>」—— 自动提取并执行</li>
+    </ul>
+  </div>
+
+  <div class="subsection" id="ch18-6">
+    <h3 class="subsection-title">数据备份</h3>
+    <p>建议定期备份数据库文件：</p>
+    <ol>
+      <li>在设置页面查看数据库路径</li>
+      <li>将 <code>app.db</code>、<code>app.db-wal</code>、<code>app.db-shm</code> 复制到安全位置</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ======================== 附录 A ======================== -->
+<section class="section" id="appA">
+  <div class="section-header">
+    <span class="section-num">A</span>
+    <h2 class="section-title">项目技术信息</h2>
+    <p class="section-desc">AI Workbench 的技术栈一览。</p>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>项目</th><th>技术</th></tr></thead>
+      <tbody>
+        <tr><td>桌面框架</td><td>Electron 40</td></tr>
+        <tr><td>前端框架</td><td>React 19 + TypeScript 6</td></tr>
+        <tr><td>UI 组件库</td><td>Tailwind CSS 3 + Radix UI（shadcn/ui New York 风格）</td></tr>
+        <tr><td>状态管理</td><td>Zustand 5</td></tr>
+        <tr><td>路由</td><td>React Router 7（HashRouter）</td></tr>
+        <tr><td>Markdown 渲染</td><td>react-markdown + remark-gfm</td></tr>
+        <tr><td>数据库</td><td>SQLite（WAL 模式，级联外键）</td></tr>
+        <tr><td>数据校验</td><td>Zod 4</td></tr>
+        <tr><td>构建工具</td><td>electron-vite + Vite 7</td></tr>
+        <tr><td>打包工具</td><td>electron-builder（NSIS / DMG / AppImage）</td></tr>
+        <tr><td>API 加密</td><td>Electron safeStorage / AES-256-GCM 回退</td></tr>
+        <tr><td>数据脱敏</td><td>写入数据库前递归剥离 API Key / Token / 密码</td></tr>
+        <tr><td>Agent 运行时</td><td>最大 12 步骤，LLM tool-call 循环，自动 checkpoint/验证</td></tr>
+        <tr><td>文件搜索</td><td>ripgrep（<code>rg</code>）优先，Node.js 递归遍历降级</td></tr>
+        <tr><td>补丁格式</td><td>Unified diff，写入前临时文件验证 + 修改前 checkpoint</td></tr>
+        <tr><td>安全</td><td>contextIsolation: true, nodeIntegration: false</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ======================== 附录 B ======================== -->
+<section class="section" id="appB">
+  <div class="section-header">
+    <span class="section-num">B</span>
+    <h2 class="section-title">数据库核心表一览</h2>
+    <p class="section-desc">应用共有 14 张核心表。</p>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>表名</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td><code>model_configs</code></td><td>模型配置（加密存储 API Key）</td></tr>
+        <tr><td><code>skills</code></td><td>技能定义 + 配置 JSON</td></tr>
+        <tr><td><code>skill_files</code></td><td>技能关联文件元数据</td></tr>
+        <tr><td><code>workspaces</code></td><td>工作区元数据 + 根路径</td></tr>
+        <tr><td><code>workspace_memories</code></td><td>工作区持久化记忆</td></tr>
+        <tr><td><code>conversations</code></td><td>对话（含工作区关联）</td></tr>
+        <tr><td><code>messages</code></td><td>用户 / 助手 / 系统 / 工具消息</td></tr>
+        <tr><td><code>tool_logs</code></td><td>工具调用审计日志（已脱敏）</td></tr>
+        <tr><td><code>tools</code></td><td>工具定义</td></tr>
+        <tr><td><code>files</code></td><td>上传文件追踪</td></tr>
+        <tr><td><code>agent_runs</code></td><td>Agent 运行生命周期</td></tr>
+        <tr><td><code>agent_steps</code></td><td>Agent 步骤详情（LLM 调用、工具调用、错误）</td></tr>
+        <tr><td><code>agent_checkpoints</code></td><td>Agent 文件修改检查点（修改前快照 + SHA-256）</td></tr>
+        <tr><td><code>app_settings</code></td><td>键值对应用设置</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ======================== 附录 C ======================== -->
+<section class="section" id="appC">
+  <div class="section-header">
+    <span class="section-num">C</span>
+    <h2 class="section-title">支持的平台</h2>
+    <p class="section-desc">AI Workbench 支持三大桌面平台。</p>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>平台</th><th>安装格式</th></tr></thead>
+      <tbody>
+        <tr><td>🪟 Windows 10/11</td><td>NSIS <code>.exe</code> 安装程序</td></tr>
+        <tr><td>🍎 macOS 11+</td><td><code>.dmg</code> 磁盘映像</td></tr>
+        <tr><td>🐧 Linux</td><td><code>.AppImage</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="manual-footer">
+  <p>AI Workbench 操作手册 · 版本 v0.1.0 · 2026 年 6 月</p>
+  <p style="margin-top:6px;">🔒 你的 AI 对话记录，永远只在你自己的电脑上 · 基于 MIT 协议开源</p>
+</footer>
+
+</div>
+</div>
+
+<!-- Back to Top -->
+<a href="#" class="back-top" id="backTop" aria-label="回到顶部">↑</a>
+
+<script>
+// FAQ toggle
+function toggleFAQ(btn) {
+  const answer = btn.nextElementSibling;
+  const isOpen = btn.classList.contains('open');
+  btn.classList.toggle('open');
+  answer.classList.toggle('open');
+  if (!isOpen) {
+    answer.style.maxHeight = answer.scrollHeight + 'px';
+  } else {
+    answer.style.maxHeight = '0';
+  }
+}
+
+// Sidebar active state
+const navItems = document.querySelectorAll('.nav-item');
+const sections = document.querySelectorAll('.section, .subsection');
+
+function updateActiveNav() {
+  let current = '';
+  sections.forEach(sec => {
+    const rect = sec.getBoundingClientRect();
+    if (rect.top <= 120) current = sec.id;
+  });
+  navItems.forEach(item => {
+    item.classList.remove('active');
+    if (item.getAttribute('href') === '#' + current) {
+      item.classList.add('active');
+    }
+  });
+}
+
+window.addEventListener('scroll', updateActiveNav, { passive: true });
+updateActiveNav();
+
+// Close sidebar on mobile after clicking nav item
+function closeSidebar() {
+  if (window.innerWidth <= 900) {
+    document.querySelector('.sidebar').classList.remove('open');
+  }
+}
+
+// Back to top
+const backTop = document.getElementById('backTop');
+window.addEventListener('scroll', function() {
+  if (window.scrollY > 400) {
+    backTop.classList.add('visible');
+  } else {
+    backTop.classList.remove('visible');
+  }
+}, { passive: true });
+backTop.addEventListener('click', function(e) {
+  e.preventDefault();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+</script>
+
+</body>
+</html>

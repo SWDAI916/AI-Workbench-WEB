@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>AI Workbench — Your Private AI Assistant. Your Data, Your Rules.</title>
+<title>AI Workbench — Local-First AI Agent Workspace</title>
 <style>
 /* ============================================================ RESET */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -97,6 +97,13 @@ body.light .btn-dl:hover, body.green .btn-dl:hover { background: var(--bg3); }
 body.light .safe-card, body.green .safe-card { background: var(--bg); }
 body.light .why-flag.pain, body.green .why-flag.pain { background: rgba(224,64,64,0.08); color: #c53030; }
 body.light .why-flag.value, body.green .why-flag.value { background: rgba(60,128,40,0.1); color: #2d6620; }
+body.light .risk-safe, body.green .risk-safe { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.25); color: var(--green); }
+body.light .risk-medium, body.green .risk-medium { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.25); color: var(--amber); }
+body.light .risk-high, body.green .risk-high { background: rgba(248,113,113,0.12); border-color: rgba(248,113,113,0.25); color: var(--red); }
+body.light .agent-step-line, body.green .agent-step-line { background: rgba(77,130,47,0.2); }
+body.light .agent-step-dot, body.green .agent-step-dot { background: var(--accent); }
+body.light .shield-layer, body.green .shield-layer { background: var(--bg); border-color: var(--border2); }
+body.light .mem-card, body.green .mem-card { background: var(--bg); }
 
 html { scroll-behavior: smooth; }
 
@@ -154,7 +161,7 @@ nav.scrolled { box-shadow: 0 1px 30px rgba(0,0,0,0.4); }
 }
 @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
 
-.nav-links { display: flex; gap: 34px; list-style: none; }
+.nav-links { display: flex; gap: 28px; list-style: none; }
 .nav-links a {
   color: var(--muted); text-decoration: none; font-size: 14.5px; font-weight: 500;
   transition: color .2s;
@@ -167,7 +174,6 @@ nav.scrolled { box-shadow: 0 1px 30px rgba(0,0,0,0.4); }
   border: 1px solid rgba(34,197,94,0.22); font-weight: 500;
 }
 
-/* ---------- NAV DROPDOWN SELECTS ---------- */
 .nav-select {
   background: var(--bg3); color: var(--text); border: 1px solid var(--border);
   border-radius: 6px; padding: 5px 24px 5px 10px; font-size: 12.5px; font-weight: 500;
@@ -234,8 +240,12 @@ section.wide-section { padding: 90px 0; }
   padding: 6px 16px; border-radius: 99px; margin-bottom: 32px;
   letter-spacing: .5px; font-weight: 500;
 }
+.hero-badge::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green); box-shadow: 0 0 8px var(--green);
+  animation: pulse 2.4s infinite;
+}
 
-/* ---------- HERO ICON ---------- */
 .hero-icon-wrap {
   margin-bottom: 36px;
   display: flex; justify-content: center; align-items: center;
@@ -261,11 +271,6 @@ section.wide-section { padding: 90px 0; }
 @keyframes iconGlow {
   0%,100% { opacity: .6; transform: translate(-50%, -50%) scale(1); }
   50% { opacity: 1; transform: translate(-50%, -50%) scale(1.12); }
-}
-.hero-badge::before {
-  content: ''; width: 6px; height: 6px; border-radius: 50%;
-  background: var(--green); box-shadow: 0 0 8px var(--green);
-  animation: pulse 2.4s infinite;
 }
 
 .hero h1 {
@@ -328,7 +333,21 @@ section.wide-section { padding: 90px 0; }
   background: rgba(17,24,39,0.9); border: 1px solid var(--border2);
   border-radius: 14px; overflow: hidden;
   box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+  position: relative;
 }
+.terminal-wrap::after {
+  content: ''; position: absolute; left: 0; right: 0; height: 2px;
+  background: rgba(59,130,246,0.12);
+  animation: scanLine 3.5s linear infinite;
+  pointer-events: none; z-index: 5; border-radius: 1px;
+}
+@keyframes scanLine {
+  0% { top: 0; opacity: 0; }
+  8% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
 .term-bar {
   display: flex; align-items: center; gap: 7px; padding: 11px 15px;
   background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border);
@@ -347,6 +366,7 @@ section.wide-section { padding: 90px 0; }
 }
 .term-user { color: var(--accent); }
 .term-ai { color: var(--green); }
+.term-tool { color: var(--amber); }
 .term-text { color: var(--text); }
 .term-cursor {
   display: inline-block; width: 8px; height: 16px; background: var(--accent);
@@ -376,16 +396,18 @@ section.wide-section { padding: 90px 0; }
 }
 .stat-card {
   background: var(--bg2); padding: 34px 20px; text-align: center;
-  transition: background .25s; border-right: 1px solid var(--border);
+  transition: background .25s, transform .25s; border-right: 1px solid var(--border);
 }
 .stat-card:last-child { border-right: none; }
-.stat-card:hover { background: var(--bg3); }
+.stat-card:hover { background: var(--bg3); transform: translateY(-3px); }
 .stat-num {
   font-size: 2.6rem; font-weight: 800; letter-spacing: -1.5px;
   background: linear-gradient(135deg, var(--accent), var(--accent3));
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent;
+  transition: filter .25s;
 }
+.stat-card:hover .stat-num { filter: drop-shadow(0 0 10px rgba(59,130,246,0.4)); }
 .stat-label { font-size: 14px; color: var(--muted); margin-top: 6px; font-weight: 500; }
 
 /* ============================================================ WHY */
@@ -420,7 +442,7 @@ section.wide-section { padding: 90px 0; }
 .why-card.value li::before { background: var(--green); }
 
 /* ============================================================ HOW IT WORKS */
-#how, #skills, #safety, #guide { background: var(--bg2); }
+#how, #agent, #tools, #memory, #skills, #safety, #guide { background: var(--bg2); }
 
 .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; position: relative; }
 .steps::before {
@@ -444,51 +466,191 @@ section.wide-section { padding: 90px 0; }
 .step h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
 .step p  { font-size: 15px; color: var(--text2); line-height: 1.75; }
 
-/* ============================================================ FEATURES TABBED */
-.feat-tabs {
-  display: inline-flex; justify-content: center; gap: 4px; margin-bottom: 36px;
-  background: var(--bg3); border: 1px solid var(--border); border-radius: 99px;
-  padding: 4px;
+/* ============================================================ AGENT MODE */
+.agent-flow {
+  display: flex; flex-direction: column; gap: 0;
+  position: relative; max-width: 680px; margin: 0 auto;
 }
-.feat-tabs-wrap { text-align: center; }
 
-.feat-tab {
-  padding: 9px 22px; border-radius: 99px; border: none; cursor: pointer;
-  font-size: 14.5px; color: var(--muted); font-weight: 500;
-  background: transparent; transition: all .25s; white-space: nowrap;
-  font-family: inherit;
+.agent-step {
+  display: flex; gap: 20px; align-items: flex-start;
+  padding: 18px 0; position: relative;
 }
-.feat-tab.active { background: var(--accent); color: #fff; box-shadow: 0 4px 16px rgba(59,130,246,0.3); }
 
-.feat-grid {
+.agent-step-line {
+  position: absolute; left: 23px; top: 46px; bottom: -18px;
+  width: 2px; background: rgba(59,130,246,0.15);
+}
+
+.agent-step:last-child .agent-step-line { display: none; }
+
+.agent-step-dot {
+  width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+  background: var(--bg3); border: 2px solid var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; z-index: 1;
+  box-shadow: 0 0 16px rgba(59,130,246,0.15);
+  transition: transform .3s, box-shadow .3s;
+}
+
+.agent-step:hover .agent-step-dot {
+  transform: scale(1.1);
+  box-shadow: 0 0 24px rgba(59,130,246,0.3);
+}
+
+.agent-step-body {
+  flex: 1; padding-top: 4px;
+}
+
+.agent-step-num {
+  font-size: 12px; color: var(--accent); font-weight: 600;
+  letter-spacing: 1.5px; margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.agent-step-title {
+  font-size: 16px; font-weight: 700; margin-bottom: 6px;
+}
+
+.agent-step-desc {
+  font-size: 14.5px; color: var(--text2); line-height: 1.7;
+}
+
+.agent-modes {
   display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+  margin-top: 36px;
 }
 
-.feat-card {
+.mode-card {
   background: var(--bg3); border: 1px solid var(--border);
   border-radius: var(--r); padding: 28px;
-  position: relative; transition: all .3s; overflow: hidden;
+  transition: all .3s;
+  position: relative; overflow: hidden;
 }
-.feat-card:hover {
-  border-color: rgba(59,130,246,0.3);
+.mode-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 14px 44px rgba(0,0,0,0.3);
 }
-.feat-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
-.feat-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, var(--accent), var(--accent3));
-  opacity: 0; transition: opacity .3s;
-}
-.feat-card:hover::before { opacity: 1; }
 
-.feat-icon { font-size: 28px; margin-bottom: 16px; display: block; }
-.feat-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
-.feat-desc { font-size: 14.5px; color: var(--text2); line-height: 1.75; }
+.mode-card.ask { border-top: 3px solid var(--accent3); }
+.mode-card.craft { border-top: 3px solid var(--accent); }
+
+.mode-emoji { font-size: 32px; margin-bottom: 12px; display: block; }
+.mode-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+.mode-desc { font-size: 14.5px; color: var(--text2); line-height: 1.7; }
+.mode-tag {
+  display: inline-block; margin-top: 14px;
+  font-size: 12px; padding: 4px 12px; border-radius: 99px;
+  font-weight: 600; letter-spacing: .5px;
+}
+.mode-tag.ask { background: rgba(6,182,212,0.1); color: var(--accent3); border: 1px solid rgba(6,182,212,0.2); }
+.mode-tag.craft { background: rgba(59,130,246,0.1); color: var(--accent); border: 1px solid rgba(59,130,246,0.2); }
+
+/* ============================================================ TOOLS */
+.tools-categories {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;
+}
+
+.tools-group {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 28px;
+  transition: all .3s;
+}
+.tools-group:hover {
+  border-color: var(--border2);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 44px rgba(0,0,0,0.3);
+}
+
+.tools-group-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 18px;
+}
+.tools-group-icon { font-size: 24px; }
+.tools-group-title { font-size: 17px; font-weight: 700; }
+
+.tools-list { display: flex; flex-direction: column; gap: 10px; }
+
+.tool-item {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 14px; color: var(--text2);
+  padding: 6px 0;
+  transition: color .2s;
+}
+.tool-item:hover { color: var(--text); }
+
+.tool-name {
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 13.5px; font-weight: 600; color: var(--text);
+  background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px;
+}
+
+.risk-badge {
+  font-size: 12px; padding: 2px 8px; border-radius: 4px;
+  font-weight: 600; flex-shrink: 0;
+}
+
+.risk-safe   { background: rgba(34,197,94,0.1);  border: 1px solid rgba(34,197,94,0.2);  color: var(--green); }
+.risk-medium { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); color: var(--amber); }
+.risk-high   { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.2); color: var(--red); }
+
+.tool-desc-inline { font-size: 13.5px; color: var(--muted); }
+
+.risk-explainer {
+  margin-top: 28px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 24px 28px;
+}
+.risk-explainer h4 { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+.risk-row {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 14px; color: var(--text2); padding: 5px 0;
+}
+.risk-row .risk-badge { font-size: 13px; padding: 3px 10px; }
+
+/* ============================================================ WORKSPACE MEMORY */
+.mem-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+.mem-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 28px;
+  transition: all .3s; text-align: center;
+  position: relative; overflow: hidden;
+}
+.mem-card:hover {
+  border-color: rgba(168,85,247,0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 44px rgba(0,0,0,0.3);
+}
+.mem-card::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 50% at 50% 110%, rgba(168,85,247,0.1) 0%, transparent 70%);
+  opacity: 0; transition: opacity .3s; pointer-events: none;
+}
+.mem-card:hover::after { opacity: 1; }
+
+.mem-icon { font-size: 32px; margin-bottom: 14px; display: block; }
+.mem-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.mem-desc { font-size: 14.5px; color: var(--text2); line-height: 1.7; }
+
+.mem-explainer {
+  margin-top: 28px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 28px;
+}
+.mem-explainer h4 { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+.mem-flow {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  font-size: 14px; color: var(--text2);
+}
+.mem-flow-step {
+  background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.2);
+  padding: 4px 14px; border-radius: 6px; color: var(--purple); font-weight: 600;
+  font-size: 13px;
+}
+.mem-flow-arrow { color: var(--muted); font-size: 16px; }
 
 /* ============================================================ SKILLS */
-#skills { background: var(--bg2); }
-
 .skills-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 36px; }
 
 .sk-card {
@@ -496,11 +658,14 @@ section.wide-section { padding: 90px 0; }
   padding: 30px; transition: all .3s; position: relative; overflow: hidden;
 }
 .sk-card:hover { border-color: rgba(99,102,241,0.35); transform: translateY(-3px); box-shadow: 0 14px 44px rgba(99,102,241,0.07); }
-.sk-card::after {
-  content: ''; position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(99,102,241,0.04) 0%, transparent 50%);
-  pointer-events: none;
+.sk-card::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit;
+  background: radial-gradient(ellipse 60% 45% at 50% 110%, rgba(99,102,241,0.13) 0%, transparent 70%);
+  opacity: 0; transition: opacity .35s ease; pointer-events: none; z-index: 0;
 }
+.sk-card:hover::before { opacity: 1; }
+.sk-card > * { position: relative; z-index: 1; }
+
 .sk-emoji { font-size: 32px; margin-bottom: 14px; display: block; }
 .sk-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
 .sk-desc  { font-size: 14.5px; color: var(--text2); line-height: 1.7; }
@@ -509,6 +674,11 @@ section.wide-section { padding: 90px 0; }
   font-size: 12px; padding: 3px 10px; border-radius: 5px;
   background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2);
   color: var(--accent2); font-weight: 500;
+  transition: transform .2s cubic-bezier(.34,1.56,.64,1), background .2s, border-color .2s, color .2s;
+}
+.kw:hover {
+  transform: scale(1.1) translateY(-2px);
+  background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.45); color: var(--text);
 }
 
 .sk-explainer {
@@ -520,41 +690,65 @@ section.wide-section { padding: 90px 0; }
 .sk-explainer li { font-size: 15px; color: var(--text2); line-height: 1.85; margin-bottom: 7px; }
 .sk-explainer li strong { color: var(--text); }
 
-/* ============================================================ TESTIMONIALS */
-.testi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-.testi-grid .testi-card:last-child { grid-column: 1 / -1; max-width: 520px; margin: 0 auto; }
-
-.testi-card {
-  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r);
-  padding: 28px; transition: all .3s;
+/* ============================================================ SAFETY / SHIELD */
+.shield-layers {
+  display: flex; flex-direction: column; gap: 0;
+  max-width: 580px; margin: 0 auto;
 }
-.testi-card:hover { border-color: var(--border2); transform: translateY(-2px); }
-.testi-card .stars { color: var(--amber); font-size: 13px; margin-bottom: 12px; letter-spacing: 1px; }
-.testi-card .quote {
-  font-size: 15px; color: var(--text2); line-height: 1.8; margin-bottom: 18px;
-  font-style: italic; padding-left: 12px;
-  border-left: 3px solid rgba(59,130,246,0.2);
-}
-.testi-card .author { font-size: 14px; font-weight: 600; color: var(--text); }
-.testi-card .role { font-size: 13px; color: var(--muted); margin-top: 2px; }
 
-/* ============================================================ SAFETY */
-.safety-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-
-.safe-card {
-  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r);
-  padding: 28px; display: flex; gap: 20px; align-items: flex-start;
+.shield-layer {
+  display: flex; align-items: center; gap: 18px;
+  padding: 20px 28px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r);
   transition: all .3s;
+  position: relative;
 }
-.safe-card:hover { border-color: rgba(34,197,94,0.25); box-shadow: 0 8px 28px rgba(34,197,94,0.03); }
-.safe-icon {
-  width: 46px; height: 46px; flex-shrink: 0; border-radius: 11px;
+.shield-layer:hover {
+  border-color: rgba(34,197,94,0.25);
+  box-shadow: 0 8px 28px rgba(34,197,94,0.06);
+  transform: translateX(4px);
+}
+
+.shield-layer:first-child { border-radius: var(--r) var(--r) 6px 6px; }
+.shield-layer:last-child  { border-radius: 6px 6px var(--r) var(--r); }
+.shield-layer:not(:first-child):not(:last-child) { border-radius: 6px; }
+
+.shield-num {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
   background: rgba(34,197,94,0.07); border: 1px solid rgba(34,197,94,0.16);
-  display: flex; align-items: center; justify-content: center; font-size: 21px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800; color: var(--green);
+  animation: safeBreathe 3.3s ease-in-out infinite;
 }
-.safe-body h4 { font-size: 15px; font-weight: 600; margin-bottom: 7px; }
-.safe-body p  { font-size: 14.5px; color: var(--text2); line-height: 1.7; }
-.safe-body code {
+
+.shield-text h4 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.shield-text p  { font-size: 14px; color: var(--text2); line-height: 1.65; }
+
+@keyframes safeBreathe {
+  0%,100% { transform: scale(1); box-shadow: none; }
+  50% { transform: scale(1.08); box-shadow: 0 0 12px rgba(34,197,94,0.15); }
+}
+.shield-layer:hover .shield-num {
+  animation: none;
+  transform: rotate(12deg) scale(1.12);
+  box-shadow: 0 0 16px rgba(34,197,94,0.22);
+}
+
+.desensitize-note {
+  margin-top: 28px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 24px 28px;
+  display: flex; align-items: flex-start; gap: 16px;
+}
+.desensitize-icon {
+  width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0;
+  background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.16);
+  display: flex; align-items: center; justify-content: center; font-size: 20px;
+}
+.desensitize-body h4 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.desensitize-body p { font-size: 14.5px; color: var(--text2); line-height: 1.7; }
+.desensitize-body code {
   font-size: 13px; background: rgba(255,255,255,0.05); padding: 1px 6px; border-radius: 4px;
   border: 1px solid rgba(255,255,255,0.06); color: var(--text2);
 }
@@ -621,13 +815,26 @@ section.wide-section { padding: 90px 0; }
 
 /* ============================================================ CTA */
 .cta-box {
-  background: var(--bg3); border: 1px solid var(--border2);
+  background: var(--bg3); border: 1px solid transparent;
+  background-clip: padding-box;
   border-radius: 20px; padding: 68px; text-align: center;
   position: relative; overflow: hidden;
 }
 .cta-box::before {
   content: ''; position: absolute; inset: 0; pointer-events: none;
   background: radial-gradient(ellipse 65% 55% at 50% 0%, rgba(59,130,246,0.07) 0%, transparent 65%);
+}
+.cta-box::after {
+  content: ''; position: absolute; inset: -1px; border-radius: 21px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3), var(--purple), var(--accent));
+  background-size: 300% 300%;
+  animation: borderFlow 6s ease infinite;
+  z-index: -1; opacity: .5;
+}
+@keyframes borderFlow {
+  0%   { background-position: 0%   50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0%   50%; }
 }
 .cta-box h2 { font-size: 2rem; font-weight: 800; letter-spacing: -1.5px; margin-bottom: 14px; position: relative; }
 .cta-box p  { color: var(--text2); max-width: 460px; margin: 0 auto 40px; line-height: 1.8; font-size: 16px; position: relative; }
@@ -644,7 +851,17 @@ section.wide-section { padding: 90px 0; }
   transform: translateY(-3px);
   box-shadow: 0 10px 36px rgba(0,0,0,0.28);
 }
-.install-card .plat-icon { font-size: 30px; margin-bottom: 10px; display: block; }
+.install-card .plat-icon { font-size: 30px; margin-bottom: 10px; display: inline-block; animation: platBounce 2.5s ease-in-out infinite; }
+.install-card:nth-child(1) .plat-icon { animation-delay: 0s; }
+.install-card:nth-child(2) .plat-icon { animation-delay: 0.8s; }
+.install-card:nth-child(3) .plat-icon { animation-delay: 1.6s; }
+@keyframes platBounce {
+  0%,100% { transform: translateY(0); }
+  30% { transform: translateY(-10px); }
+  50% { transform: translateY(0); }
+  70% { transform: translateY(-5px); }
+  85% { transform: translateY(0); }
+}
 .install-card .plat-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
 .install-card .plat-fmt { font-size: 13px; color: var(--muted); }
 .install-card .plat-btn {
@@ -685,35 +902,35 @@ footer {
 .fade-up { opacity: 0; transform: translateY(24px); transition: opacity .55s ease, transform .55s ease; }
 .fade-up.visible { opacity: 1; transform: translateY(0); }
 
-/* ---------- STAGGERED CHILDREN ---------- */
-.fade-up.visible > .feat-card:nth-child(1),
-.fade-up.visible > .safe-card:nth-child(1),
-.fade-up.visible > .sk-card:nth-child(1),
-.fade-up.visible > .testi-card:nth-child(1),
-.fade-up.visible > .model-card:nth-child(1) { animation: cardReveal .5s ease both; }
-.fade-up.visible > .feat-card:nth-child(2),
-.fade-up.visible > .safe-card:nth-child(2),
-.fade-up.visible > .sk-card:nth-child(2),
-.fade-up.visible > .testi-card:nth-child(2),
-.fade-up.visible > .model-card:nth-child(2) { animation: cardReveal .5s .08s ease both; }
-.fade-up.visible > .feat-card:nth-child(3),
-.fade-up.visible > .safe-card:nth-child(3),
-.fade-up.visible > .sk-card:nth-child(3),
-.fade-up.visible > .testi-card:nth-child(3),
-.fade-up.visible > .model-card:nth-child(3) { animation: cardReveal .5s .16s ease both; }
-.fade-up.visible > .feat-card:nth-child(4),
-.fade-up.visible > .safe-card:nth-child(4),
-.fade-up.visible > .sk-card:nth-child(4),
-.fade-up.visible > .testi-card:nth-child(4),
-.fade-up.visible > .model-card:nth-child(4) { animation: cardReveal .5s .24s ease both; }
-.fade-up.visible > .model-card:nth-child(5)  { animation: cardReveal .5s .32s ease both; }
-.fade-up.visible > .model-card:nth-child(6)  { animation: cardReveal .5s .40s ease both; }
-.fade-up.visible > .model-card:nth-child(7)  { animation: cardReveal .5s .48s ease both; }
-.fade-up.visible > .model-card:nth-child(8)  { animation: cardReveal .5s .56s ease both; }
-.fade-up.visible > .model-card:nth-child(n+9){ animation: cardReveal .5s .64s ease both; }
+.fade-up.visible > .stat-card:nth-child(n),
+.fade-up.visible > .why-card:nth-child(n),
+.fade-up.visible > .step:nth-child(n),
+.fade-up.visible > .agent-step:nth-child(n),
+.fade-up.visible > .mode-card:nth-child(n),
+.fade-up.visible > .tools-group:nth-child(n),
+.fade-up.visible > .mem-card:nth-child(n),
+.fade-up.visible > .sk-card:nth-child(n),
+.fade-up.visible > .shield-layer:nth-child(n),
+.fade-up.visible > .model-card:nth-child(n) { animation: cardReveal .5s ease both; }
+
+.fade-up.visible > *:nth-child(1) { animation-delay: 0s; }
+.fade-up.visible > *:nth-child(2) { animation-delay: .08s; }
+.fade-up.visible > *:nth-child(3) { animation-delay: .16s; }
+.fade-up.visible > *:nth-child(4) { animation-delay: .24s; }
+.fade-up.visible > *:nth-child(5) { animation-delay: .32s; }
+.fade-up.visible > *:nth-child(6) { animation-delay: .40s; }
+.fade-up.visible > *:nth-child(7) { animation-delay: .48s; }
+.fade-up.visible > *:nth-child(8) { animation-delay: .56s; }
+.fade-up.visible > *:nth-child(n+9) { animation-delay: .64s; }
+
 @keyframes cardReveal {
   from { opacity: 0; transform: translateY(18px) scale(0.97); }
   to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+@keyframes statSparkle {
+  0%,100% { filter: brightness(1); }
+  50% { filter: brightness(1.3) drop-shadow(0 0 6px rgba(59,130,246,0.5)); }
 }
 
 /* ---------- STEPS STAGGER ---------- */
@@ -723,84 +940,6 @@ footer {
 @keyframes stepIn {
   from { opacity: 0; transform: translateY(22px); }
   to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ---------- BODY TRANSITION (THEME SWITCH) ---------- */
-body { transition: background .35s ease, color .35s ease; }
-
-/* ---------- NAV LINK UNDERLINE SLIDE ---------- */
-.nav-links a { position: relative; }
-.nav-links a::after {
-  content: ''; position: absolute; left: 0; bottom: -3px;
-  width: 0; height: 2px; border-radius: 2px;
-  background: var(--accent); transition: width .25s ease;
-}
-.nav-links a:hover::after { width: 100%; }
-
-/* ---------- CARD GLOW ON HOVER ---------- */
-.feat-card::after {
-  content: ''; position: absolute; inset: 0; border-radius: inherit;
-  background: radial-gradient(ellipse 70% 50% at 50% 110%, rgba(59,130,246,0.12) 0%, transparent 70%);
-  opacity: 0; transition: opacity .35s ease; pointer-events: none;
-}
-.feat-card:hover::after { opacity: 1; }
-
-.sk-card::before {
-  content: ''; position: absolute; inset: 0; border-radius: inherit;
-  background: radial-gradient(ellipse 60% 45% at 50% 110%, rgba(99,102,241,0.13) 0%, transparent 70%);
-  opacity: 0; transition: opacity .35s ease; pointer-events: none; z-index: 0;
-}
-.sk-card:hover::before { opacity: 1; }
-.sk-card > * { position: relative; z-index: 1; }
-
-/* ---------- SAFE-ICON HOVER SPIN + GLOW ---------- */
-.safe-card { transition: all .3s, transform .3s; }
-.safe-card:hover { transform: translateY(-3px); }
-.safe-icon { transition: transform .4s cubic-bezier(.34,1.56,.64,1), box-shadow .3s; }
-.safe-card:hover .safe-icon {
-  transform: rotate(12deg) scale(1.12);
-  box-shadow: 0 0 16px rgba(34,197,94,0.22);
-}
-
-/* ---------- KEYWORD TAG BOUNCE ---------- */
-.kw { transition: transform .2s cubic-bezier(.34,1.56,.64,1), background .2s, border-color .2s, color .2s; }
-.kw:hover {
-  transform: scale(1.1) translateY(-2px);
-  background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.45); color: var(--text);
-}
-
-/* ---------- STAT CARD GLOW ON HOVER ---------- */
-.stat-card { transition: background .25s, transform .25s; }
-.stat-card:hover { transform: translateY(-3px); }
-.stat-num { transition: filter .25s; }
-.stat-card:hover .stat-num { filter: drop-shadow(0 0 10px rgba(59,130,246,0.4)); }
-
-/* ---------- TESTI CARD HOVER ---------- */
-.testi-card { transition: all .3s; }
-.testi-card:hover {
-  border-color: rgba(59,130,246,0.25);
-  transform: translateY(-3px);
-  box-shadow: 0 12px 36px rgba(0,0,0,0.18);
-}
-
-/* ---------- CTA ANIMATED BORDER LIGHT ---------- */
-@keyframes borderFlow {
-  0%   { background-position: 0%   50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0%   50%; }
-}
-.cta-box {
-  background: var(--bg3);
-  border: 1px solid transparent;
-  background-clip: padding-box;
-  position: relative;
-}
-.cta-box::after {
-  content: ''; position: absolute; inset: -1px; border-radius: 21px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3), var(--purple), var(--accent));
-  background-size: 300% 300%;
-  animation: borderFlow 6s ease infinite;
-  z-index: -1; opacity: .5;
 }
 
 /* ---------- HERO ENTRANCE STAGGER ---------- */
@@ -816,311 +955,17 @@ body { transition: background .35s ease, color .35s ease; }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ---------- LOGO DOT EXTRA GLOW PULSE ---------- */
-.logo-dot {
-  animation: pulse 2.4s infinite, dotGlow 2.4s infinite;
-}
-@keyframes dotGlow {
-  0%,100% { box-shadow: 0 0 14px var(--accent), 0 0 30px rgba(59,130,246,0.35); }
-  50%      { box-shadow: 0 0 22px var(--accent), 0 0 50px rgba(59,130,246,0.55); }
-}
+/* ---------- BODY TRANSITION (THEME SWITCH) ---------- */
+body { transition: background .35s ease, color .35s ease; }
 
-/* ---------- SCROLL PROGRESS GLOW ---------- */
-#scroll-progress {
-  filter: drop-shadow(0 0 4px rgba(59,130,246,0.5));
+/* ---------- NAV LINK UNDERLINE SLIDE ---------- */
+.nav-links a { position: relative; }
+.nav-links a::after {
+  content: ''; position: absolute; left: 0; bottom: -3px;
+  width: 0; height: 2px; border-radius: 2px;
+  background: var(--accent); transition: width .25s ease;
 }
-
-/* ---------- FAQ ITEM HOVER LIFT ---------- */
-.qa-item { transition: border-color .25s, transform .25s, box-shadow .25s; }
-.qa-item:hover {
-  transform: translateX(3px);
-  box-shadow: -3px 0 0 var(--accent);
-  border-color: rgba(59,130,246,0.25);
-}
-
-/* ---------- INSTALL CARD SHIMMER ---------- */
-.install-card { overflow: hidden; }
-.install-card::after {
-  content: ''; position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
-  background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%);
-  transition: left .45s ease; pointer-events: none;
-}
-.install-card:hover::after { left: 140%; }
-
-/* ---------- MODEL CARD GLOW ON HOVER ---------- */
-.model-card::before {
-  content: ''; position: absolute; inset: 0; border-radius: inherit;
-  background: radial-gradient(ellipse 80% 60% at 50% 120%, rgba(59,130,246,0.1) 0%, transparent 70%);
-  opacity: 0; transition: opacity .3s; pointer-events: none;
-}
-.model-card:hover::before { opacity: 1; }
-
-/* ---------- WHY CARD HOVER LIGHT ---------- */
-.why-card::before {
-  content: ''; position: absolute; inset: 0; border-radius: inherit;
-  background: radial-gradient(ellipse 70% 50% at 50% 110%, rgba(59,130,246,0.07) 0%, transparent 70%);
-  opacity: 0; transition: opacity .35s; pointer-events: none;
-}
-.why-card.pain::before {
-  background: radial-gradient(ellipse 70% 50% at 50% 110%, rgba(248,113,113,0.07) 0%, transparent 70%);
-}
-.why-card.value::before {
-  background: radial-gradient(ellipse 70% 50% at 50% 110%, rgba(34,197,94,0.07) 0%, transparent 70%);
-}
-.why-card:hover::before { opacity: 1; }
-
-
-/* ============================================================ NEW ANIMATIONS v2 --- AMBIENT & AUTO */
-
-/* ---------- 1. HERO FLOATING ORBS ---------- */
-.hero::before, .hero::after {
-  content: ''; position: absolute; border-radius: 50%; pointer-events: none;
-  opacity: 0.55; filter: blur(70px); z-index: 0;
-}
-.hero::before {
-  width: 300px; height: 300px;
-  background: radial-gradient(circle, rgba(99,102,241,0.22), transparent);
-  top: 10%; left: 3%;
-  animation: floatOrb1 11s ease-in-out infinite;
-}
-.hero::after {
-  width: 260px; height: 260px;
-  background: radial-gradient(circle, rgba(6,182,212,0.18), transparent);
-  bottom: 18%; right: 5%;
-  animation: floatOrb2 9s ease-in-out infinite;
-}
-@keyframes floatOrb1 {
-  0%,100% { transform: translate(0,0) scale(1); }
-  25% { transform: translate(50px,-40px) scale(1.2); }
-  50% { transform: translate(-30px,-70px) scale(0.88); }
-  75% { transform: translate(-60px,30px) scale(1.1); }
-}
-@keyframes floatOrb2 {
-  0%,100% { transform: translate(0,0) scale(1); }
-  33% { transform: translate(-40px,-50px) scale(1.25); }
-  66% { transform: translate(30px,40px) scale(0.82); }
-}
-
-/* ---------- 2. SECOND HERO GLOW DRIFT ---------- */
-.hero-glow-2 {
-  animation: glow2Drift 12s ease-in-out infinite;
-}
-@keyframes glow2Drift {
-  0%,100% { transform: translate(0,0); }
-  25% { transform: translate(40px,-30px); }
-  50% { transform: translate(-30px,40px); }
-  75% { transform: translate(-50px,-15px); }
-}
-
-/* ---------- 3. STARS TWINKLE (TESTIMONIALS) ---------- */
-.testi-card .stars {
-  animation: starTwinkle 2.2s ease-in-out infinite;
-}
-.testi-card:nth-child(1) .stars { animation-delay: 0s; }
-.testi-card:nth-child(2) .stars { animation-delay: 0.7s; }
-.testi-card:nth-child(3) .stars { animation-delay: 1.4s; }
-@keyframes starTwinkle {
-  0%,100% { opacity: 1; transform: scale(1); }
-  40% { opacity: 0.55; transform: scale(0.92); }
-  80% { opacity: 0.9; transform: scale(1.03); }
-}
-
-/* ---------- 4. SKILL EMOJI FLOAT ---------- */
-.sk-emoji {
-  animation: emojiFloat 3.8s ease-in-out infinite;
-}
-.sk-card:nth-child(1) .sk-emoji { animation-delay: 0s; }
-.sk-card:nth-child(2) .sk-emoji { animation-delay: 1.1s; }
-.sk-card:nth-child(3) .sk-emoji { animation-delay: 2.2s; }
-@keyframes emojiFloat {
-  0%,100% { transform: translateY(0); }
-  50% { transform: translateY(-9px); }
-}
-
-/* ---------- 5. MODEL CARD AUTO SHIMMER ---------- */
-.model-card { overflow: hidden; }
-.model-card::after {
-  content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-  background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.025) 45%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.025) 55%, transparent 60%);
-  animation: modelShimmer 5s linear infinite; pointer-events: none; z-index: 1;
-}
-.model-card:nth-child(even)::after { animation-delay: 2.5s; }
-@keyframes modelShimmer {
-  0% { transform: translate(-50%, -50%) rotate(0deg); }
-  100% { transform: translate(50%, 50%) rotate(360deg); }
-}
-.model-card > * { position: relative; z-index: 2; }
-.model-card::before { z-index: 1; }
-
-/* ---------- 6. CTA HEARTBEAT ---------- */
-.cta-box h2 {
-  animation: heartbeat 2.8s ease-in-out infinite;
-}
-@keyframes heartbeat {
-  0%,100% { transform: scale(1); }
-  6% { transform: scale(1.04); }
-  12% { transform: scale(1); }
-  18% { transform: scale(1.04); }
-  24% { transform: scale(1); }
-}
-
-/* ---------- 7. FAQ ICON GENTLE DRIFT ---------- */
-.qa-icon {
-  animation: qaDrift 3.5s ease-in-out infinite;
-}
-.qa-item:nth-child(odd) .qa-icon { animation-delay: 0s; }
-.qa-item:nth-child(even) .qa-icon { animation-delay: 1.7s; }
-@keyframes qaDrift {
-  0%,100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
-}
-.qa-item.open .qa-icon {
-  animation: none;
-  transform: rotate(180deg);
-}
-
-/* ---------- 8. DIVIDER GRADIENT FLOW ---------- */
-.divider {
-  background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), var(--accent3), var(--accent), transparent);
-  background-size: 300% 100%;
-  animation: dividerFlow 10s linear infinite;
-}
-@keyframes dividerFlow {
-  0% { background-position: 300% 0; }
-  100% { background-position: -300% 0; }
-}
-
-/* ---------- 9. STEP NUMBER PULSING RING ---------- */
-.step-num::after {
-  content: ''; position: absolute; inset: -7px; border-radius: 50%;
-  border: 2px solid rgba(59,130,246,0.25);
-  animation: stepRing 2.4s ease-in-out infinite;
-}
-.step:nth-child(2) .step-num::after { animation-delay: 0.8s; }
-.step:nth-child(3) .step-num::after { animation-delay: 1.6s; }
-@keyframes stepRing {
-  0%,100% { transform: scale(1); opacity: 0.4; }
-  50% { transform: scale(1.18); opacity: 0; }
-}
-
-/* ---------- 10. WHY-FLAG GENTLE PULSE ---------- */
-.why-flag {
-  animation: flagPulse 3.2s ease-in-out infinite;
-}
-.why-flag.pain { animation-delay: 0s; }
-.why-flag.value { animation-delay: 1.6s; }
-@keyframes flagPulse {
-  0%,100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-
-/* ---------- 11. BACK-TO-TOP ORBITING GLOW ---------- */
-#back-top::before {
-  content: ''; position: absolute; inset: -5px; border-radius: 50%;
-  border: 2px solid rgba(59,130,246,0.25);
-  animation: orbitSpin 4.5s linear infinite;
-  opacity: 0; transition: opacity .4s;
-}
-#back-top.visible::before { opacity: 1; }
-@keyframes orbitSpin {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(1.2); }
-  100% { transform: rotate(360deg) scale(1); }
-}
-
-/* ---------- 12. SECTION HEADER ANIMATED ACCENT LINE ---------- */
-.sh::after {
-  content: ''; display: block; width: 44px; height: 3px;
-  border-radius: 2px; margin: 18px auto 0;
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
-  transform: scaleX(0); transition: transform .7s cubic-bezier(.16,1,.3,1);
-}
-.sh.fade-up.visible::after {
-  transform: scaleX(1);
-}
-
-/* ---------- 13. FEATURE ICON GENTLE TILT ---------- */
-.feat-icon {
-  animation: iconTilt 5s ease-in-out infinite;
-  display: inline-block;
-}
-.feat-card:nth-child(1) .feat-icon { animation-delay: 0s; }
-.feat-card:nth-child(2) .feat-icon { animation-delay: 1.6s; }
-.feat-card:nth-child(3) .feat-icon { animation-delay: 3.2s; }
-@keyframes iconTilt {
-  0%,100% { transform: rotate(0); }
-  25% { transform: rotate(6deg); }
-  75% { transform: rotate(-6deg); }
-}
-
-/* ---------- 14. TRUST STRIP ITEMS WAVE ---------- */
-.trust-item {
-  animation: trustWave 5.5s ease-in-out infinite;
-}
-.trust-item:nth-child(1) { animation-delay: 0s; }
-.trust-item:nth-child(2) { animation-delay: 0.5s; }
-.trust-item:nth-child(3) { animation-delay: 1.0s; }
-.trust-item:nth-child(4) { animation-delay: 1.5s; }
-@keyframes trustWave {
-  0%,100% { transform: translateY(0); }
-  25% { transform: translateY(-6px); }
-  75% { transform: translateY(-2px); }
-}
-
-/* ---------- 15. TERMINAL SCAN LINE ---------- */
-.terminal-wrap::after {
-  content: ''; position: absolute; left: 0; right: 0; height: 2px;
-  background: rgba(59,130,246,0.12);
-  animation: scanLine 3.5s linear infinite;
-  pointer-events: none; z-index: 5; border-radius: 1px;
-}
-@keyframes scanLine {
-  0% { top: 0; opacity: 0; }
-  8% { opacity: 1; }
-  85% { opacity: 1; }
-  100% { top: 100%; opacity: 0; }
-}
-
-/* ---------- 16. STAT NUMBER SPARKLE ---------- */
-@keyframes statSparkle {
-  0%,100% { filter: brightness(1); }
-  50% { filter: brightness(1.3) drop-shadow(0 0 6px rgba(59,130,246,0.5)); }
-}
-
-/* ---------- 17. INSTALL CARD PLATFORM ICON BOUNCE ---------- */
-.install-card .plat-icon {
-  display: inline-block;
-  animation: platBounce 2.5s ease-in-out infinite;
-}
-.install-card:nth-child(1) .plat-icon { animation-delay: 0s; }
-.install-card:nth-child(2) .plat-icon { animation-delay: 0.8s; }
-.install-card:nth-child(3) .plat-icon { animation-delay: 1.6s; }
-@keyframes platBounce {
-  0%,100% { transform: translateY(0); }
-  30% { transform: translateY(-10px); }
-  50% { transform: translateY(0); }
-  70% { transform: translateY(-5px); }
-  85% { transform: translateY(0); }
-}
-
-/* ---------- 18. SAFE-ICON AUTO BREATHE ---------- */
-.safe-icon {
-  animation: safeBreathe 3.3s ease-in-out infinite;
-}
-.safe-card:nth-child(1) .safe-icon { animation-delay: 0s; }
-.safe-card:nth-child(2) .safe-icon { animation-delay: 0.6s; }
-.safe-card:nth-child(3) .safe-icon { animation-delay: 1.2s; }
-.safe-card:nth-child(4) .safe-icon { animation-delay: 1.8s; }
-.safe-card:nth-child(5) .safe-icon { animation-delay: 2.4s; }
-@keyframes safeBreathe {
-  0%,100% { transform: scale(1); box-shadow: none; }
-  50% { transform: scale(1.08); box-shadow: 0 0 12px rgba(34,197,94,0.15); }
-}
-.safe-card:hover .safe-icon {
-  animation: none;
-  transform: rotate(12deg) scale(1.12);
-  box-shadow: 0 0 16px rgba(34,197,94,0.22);
-}
+.nav-links a:hover::after { width: 100%; }
 
 /* ============================================================ RESPONSIVE */
 @media (max-width: 900px) {
@@ -1136,23 +981,20 @@ body { transition: background .35s ease, color .35s ease; }
   .steps::before { display: none; }
   .step { padding: 0; text-align: left; display: flex; gap: 18px; align-items: flex-start; }
   .step-num { flex-shrink: 0; margin: 0; width: 48px; height: 48px; font-size: 17px; }
-  .feat-grid { grid-template-columns: 1fr; }
-  .feat-card:last-child:nth-child(odd) { grid-column: auto; }
-  .feat-tabs { padding: 3px; gap: 2px; }
-  .feat-tab { padding: 7px 14px; font-size: 12.5px; }
+  .agent-modes { grid-template-columns: 1fr; }
+  .tools-categories { grid-template-columns: 1fr; }
+  .mem-grid { grid-template-columns: 1fr; }
   .skills-row { grid-template-columns: 1fr; }
-  .testi-grid { grid-template-columns: 1fr; }
-  .safety-grid { grid-template-columns: 1fr; }
   .models-grid { grid-template-columns: repeat(2, 1fr); }
   .install-tabs { grid-template-columns: 1fr; }
   .cta-box { padding: 40px 20px; }
   .terminal-wrap { max-width: 100%; }
   .trust-strip { gap: 24px; }
+  .shield-layers { max-width: 100%; }
+  .agent-flow { max-width: 100%; }
 }
 @media (max-width: 580px) {
   .models-grid { grid-template-columns: repeat(2, 1fr); }
-  .testi-grid { grid-template-columns: 1fr; }
-  .testi-grid .testi-card:last-child { grid-column: auto; max-width: none; margin: 0; }
   .hero-icon { width: 120px; height: 120px; border-radius: 26px; }
   .hero-icon-glow { width: 180px; height: 180px; }
   .stats-grid { grid-template-columns: 1fr 1fr; }
@@ -1178,14 +1020,15 @@ body { transition: background .35s ease, color .35s ease; }
     AI Workbench
   </div>
   <ul class="nav-links">
-    <li><a href="#why">Pain Points</a></li>
+    <li><a href="#why">Why</a></li>
     <li><a href="#how">Get Started</a></li>
-    <li><a href="#features">Features</a></li>
-    <li><a href="#testimonials">Reviews</a></li>
-    <li><a href="#safety">Security</a></li>
+    <li><a href="#agent">Agent</a></li>
+    <li><a href="#tools">Tools</a></li>
+    <li><a href="#memory">Memory</a></li>
+    <li><a href="#safety">Safety</a></li>
     <li><a href="#guide">FAQ</a></li>
   </ul>
-  <span class="nav-pill">Local-First</span>
+  <span class="nav-pill">v0.1.0</span>
   <select class="nav-select" onchange="switchLang(this.value)" aria-label="Select language">
     <option value="index.html">简体中文</option>
     <option value="index_en.html" selected>English</option>
@@ -1194,7 +1037,7 @@ body { transition: background .35s ease, color .35s ease; }
   <select class="nav-select" id="theme-select" onchange="switchTheme(this.value)" aria-label="Select theme">
     <option value="dark">🌙 Dark</option>
     <option value="light">☀️ Light</option>
-    <option value="green">🌿 Eye Care</option>
+    <option value="green">🌿 Eye-Care</option>
   </select>
 </nav>
 
@@ -1209,15 +1052,15 @@ body { transition: background .35s ease, color .35s ease; }
 
       <div class="hero-icon-wrap fade-up">
         <div class="hero-icon-glow"></div>
-        <img src="icon.png" alt="AI Workbench Icon" class="hero-icon" />
+        <img src="icon.png" alt="AI Workbench icon" class="hero-icon" />
       </div>
 
-      <div class="hero-badge fade-up">Your AI conversations stay on your computer — always</div>
+      <div class="hero-badge fade-up">Local-First · Your data never leaves your computer</div>
 
-      <h1 class="fade-up">Chat with AI like you normally would — <br /><span class="grad">your data never leaves your computer</span></h1>
+      <h1 class="fade-up">Not just chat —<br /><span class="grad">your AI Agent Workbench</span></h1>
 
       <p class="hero-sub fade-up">
-        AI Workbench is a desktop AI assistant. Connect to DeepSeek, ChatGPT, Claude and more using your own API keys. All conversations and settings are stored locally — no intermediate servers involved.
+        AI Workbench is a local-first desktop AI Agent workspace. 14 built-in tools let the AI autonomously browse your project, search code, modify files, and run commands — all conversations and configurations stay on your computer.
       </p>
 
       <div class="hero-btns fade-up">
@@ -1225,9 +1068,9 @@ body { transition: background .35s ease, color .35s ease; }
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
           Getting Started Guide
         </a>
-        <a href="#features" class="btn btn-ghost">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-          Explore All Features
+        <a href="#agent" class="btn btn-ghost">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          Learn Agent Mode
         </a>
       </div>
 
@@ -1237,21 +1080,24 @@ body { transition: background .35s ease, color .35s ease; }
           <span class="term-dot r"></span>
           <span class="term-dot y"></span>
           <span class="term-dot g"></span>
-          <span class="term-title">AI Workbench — New Conversation</span>
+          <span class="term-title">AI Workbench — Agent Mode</span>
         </div>
         <div class="term-body">
-          <div><span class="term-user">▸ You:</span><span class="term-text" id="typing-line"></span><span class="term-cursor" id="typing-cursor"></span></div>
+          <div><span class="term-user">▸ You：</span><span class="term-text" id="typing-line"></span><span class="term-cursor" id="typing-cursor"></span></div>
           <div style="margin-top:12px;display:none;" id="ai-reply-line">
-            <span class="term-ai">◇ AI:</span><span class="term-text" id="ai-text"></span>
+            <span class="term-ai">◇ AI：</span><span class="term-text" id="ai-text"></span>
+          </div>
+          <div style="margin-top:8px;display:none;" id="tool-line">
+            <span class="term-tool">⟳ Tool：</span><span class="term-text" id="tool-text"></span>
           </div>
         </div>
       </div>
 
       <div class="trust-strip fade-up">
-        <div class="trust-item"><span class="trust-icon">🔒</span>100% Local Data Storage</div>
-        <div class="trust-item"><span class="trust-icon">🧩</span>8+ AI Services Supported</div>
-        <div class="trust-item"><span class="trust-icon">💻</span>Windows / Mac / Linux</div>
-        <div class="trust-item"><span class="trust-icon">🆓</span>No Subscription — Use Your Own Key</div>
+        <div class="trust-item"><span class="trust-icon">🤖</span>Agent Autonomous Execution</div>
+        <div class="trust-item"><span class="trust-icon">🧰</span>14 Built-in Tools</div>
+        <div class="trust-item"><span class="trust-icon">🔒</span>100% Local Data</div>
+        <div class="trust-item"><span class="trust-icon">🆓</span>Use Your Own Key</div>
       </div>
     </div>
   </div>
@@ -1261,20 +1107,20 @@ body { transition: background .35s ease, color .35s ease; }
 <section id="stats" class="tight">
   <div class="stats-grid">
     <div class="stat-card fade-up">
-      <div class="stat-num"><span data-count="8">8</span>+</div>
+      <div class="stat-num"><span data-count="14">14</span></div>
+      <div class="stat-label">Built-in Tools</div>
+    </div>
+    <div class="stat-card fade-up">
+      <div class="stat-num">Agent</div>
+      <div class="stat-label">Autonomous Mode</div>
+    </div>
+    <div class="stat-card fade-up">
+      <div class="stat-num"><span data-count="5">5</span> Layers</div>
+      <div class="stat-label">Security Defense</div>
+    </div>
+    <div class="stat-card fade-up">
+      <div class="stat-num"><span data-count="9">9</span>+</div>
       <div class="stat-label">AI Services Supported</div>
-    </div>
-    <div class="stat-card fade-up">
-      <div class="stat-num"><span data-count="3">3</span></div>
-      <div class="stat-label">Operating Systems</div>
-    </div>
-    <div class="stat-card fade-up">
-      <div class="stat-num"><span data-count="100">100</span>%</div>
-      <div class="stat-label">Data Stays Local</div>
-    </div>
-    <div class="stat-card fade-up">
-      <div class="stat-num"><span data-count="5">0</span></div>
-      <div class="stat-label">Security Layers</div>
     </div>
   </div>
 </section>
@@ -1286,33 +1132,35 @@ body { transition: background .35s ease, color .35s ease; }
   <div class="wrap">
     <div class="sh fade-up">
       <span class="sh-label">Why AI Workbench</span>
-      <h2 class="sh-title">What makes it different?</h2>
-      <p class="sh-desc">There are plenty of AI tools out there — but most store your data on their servers.</p>
+      <h2 class="sh-title">More than a chatbot — a true AI workbench</h2>
+      <p class="sh-desc">Regular AI chatbots only answer questions; AI Workbench lets AI autonomously execute tasks — reading files, searching code, modifying projects — all data stays local.</p>
     </div>
 
     <div class="why-grid fade-up">
       <div class="why-card pain">
         <span class="why-flag pain">Common Pain Points</span>
         <span class="emoji">😰</span>
-        <h3>Problems with Web AI Tools</h3>
-        <p>Every word you say to AI is stored on someone else's server. Your work content, private thoughts, and business secrets are beyond your control.</p>
+        <h3>Problems with Regular AI Tools</h3>
+        <p>Most AI tools work one question at a time — you manually copy-paste file contents, and the AI can only give advice, never execute. Your data is stored on someone else's server.</p>
         <ul>
-          <li>Conversations stored on third-party servers</li>
-          <li>Service providers may access your data</li>
-          <li>Chat history disappears when services shut down</li>
-          <li>Price hikes and policy changes — no control</li>
+          <li>One Q&A at a time, no autonomous multi-step execution</li>
+          <li>Must manually copy file contents to the AI</li>
+          <li>AI can only suggest, not modify your code</li>
+          <li>Chat history stored on the provider's servers</li>
+          <li>No project context — AI repeatedly misunderstands your intent</li>
         </ul>
       </div>
       <div class="why-card value">
-        <span class="why-flag value">Our Solution</span>
+        <span class="why-flag value">The Solution</span>
         <span class="emoji">😌</span>
         <h3>How AI Workbench Does It</h3>
-        <p>All conversations live on your local machine. AI Workbench is just a bridge — it sends your messages to AI providers, shows you the replies, and stores nothing in between.</p>
+        <p>AI Agent autonomously browses your project, searches code, modifies files, and runs commands — you state the goal, the AI handles understanding through execution. 100% local data.</p>
         <ul>
-          <li>All conversations saved on your local computer</li>
-          <li>API key encrypted and stored locally</li>
-          <li>No intermediate servers, no account system</li>
-          <li>Back up anytime to USB or cloud drive</li>
+          <li>Agent Mode for autonomous multi-step task execution</li>
+          <li>AI browses directories and searches files — no manual work</li>
+          <li>AI directly modifies code and auto-verifies changes</li>
+          <li>All conversations stored in local SQLite database</li>
+          <li>Workspace Memory lets AI remember project conventions across chats</li>
         </ul>
       </div>
     </div>
@@ -1324,30 +1172,30 @@ body { transition: background .35s ease, color .35s ease; }
   <div class="wrap">
     <div class="sh fade-up">
       <span class="sh-label">Get Started in 3 Steps</span>
-      <h2 class="sh-title">From Install to First Chat</h2>
-      <p class="sh-desc">No technical background needed. Just follow the steps.</p>
+      <h2 class="sh-title">From install to Agent execution</h2>
+      <p class="sh-desc">No technical background required — just follow the steps.</p>
     </div>
 
     <div class="steps fade-up">
       <div class="step">
         <div class="step-num">1</div>
         <div>
-          <h3>Install the App</h3>
-          <p>Download the installer for your system — Windows: run the <strong>.exe</strong>; macOS: open the <strong>.dmg</strong> and drag to Applications; Linux: launch the <strong>.AppImage</strong>.</p>
+          <h3>Install &amp; Configure</h3>
+          <p>Download the installer, choose your AI provider (DeepSeek, ChatGPT, Claude, etc.), enter your <strong>API Key</strong>, and click "Test Connection" to confirm it works.</p>
         </div>
       </div>
       <div class="step">
         <div class="step-num">2</div>
         <div>
-          <h3>Configure an AI Model</h3>
-          <p>Click "Model Config" in the sidebar, pick your AI provider (DeepSeek, ChatGPT, etc.), enter your <strong>API Key</strong> from the provider's website, and click "Test Connection" to verify.</p>
+          <h3>Create a Workspace</h3>
+          <p>Set your project folder as a "Workspace". The AI automatically loads project context — README, package.json, Git status, etc. — no manual explanation needed.</p>
         </div>
       </div>
       <div class="step">
         <div class="step-num">3</div>
         <div>
-          <h3>Start Chatting</h3>
-          <p>Click "Chat" in the sidebar, type your message and press <strong>Enter</strong>. The AI's reply appears word by word. Click "+ New" anytime to start a fresh conversation.</p>
+          <h3>Switch to Craft Mode</h3>
+          <p>In Craft Mode, tell the AI what you want — <strong>"Fix the login page styling bug"</strong>. The AI autonomously browses the project, locates the issue, generates changes, and auto-verifies — fully transparent and controllable.</p>
         </div>
       </div>
     </div>
@@ -1356,114 +1204,295 @@ body { transition: background .35s ease, color .35s ease; }
 
 <div class="divider"></div>
 
-<!-- ============================================================ FEATURES (Tabbed) -->
-<section id="features">
+<!-- ============================================================ AGENT MODE -->
+<section id="agent" class="wide-section">
   <div class="wrap">
     <div class="sh fade-up">
-      <span class="sh-label">Features</span>
-      <h2 class="sh-title">More Than Just Chat</h2>
-      <p class="sh-desc">From everyday conversation to file reading and report generation — AI Workbench can do it all.</p>
+      <span class="sh-label">Agent Mode</span>
+      <h2 class="sh-title">AI doesn't just answer — it executes autonomously</h2>
+      <p class="sh-desc">Agent Mode turns the AI into an autonomous developer — chaining multiple tools in sequence, where each result informs the next decision, until the task is complete.</p>
     </div>
 
-    <div class="feat-tabs-wrap fade-up">
-      <div class="feat-tabs">
-        <button class="feat-tab active" data-tab="chat">💬 Chat</button>
-        <button class="feat-tab" data-tab="workspace">📁 Workspace</button>
-        <button class="feat-tab" data-tab="files">📂 Files &amp; Tools</button>
-        <button class="feat-tab" data-tab="ux">🎨 Experience</button>
+    <!-- Agent flow timeline -->
+    <div class="agent-flow fade-up">
+      <div class="agent-step">
+        <div class="agent-step-dot">💬</div>
+        <div class="agent-step-line"></div>
+        <div class="agent-step-body">
+          <div class="agent-step-num">Step 0</div>
+          <div class="agent-step-title">You Submit a Request</div>
+          <div class="agent-step-desc">Tell the AI what you want in the workspace chat — "Fix the login page styling bug". The system auto-classifies the request.</div>
+        </div>
       </div>
-    </div>
-
-    <div class="feat-grid fade-up" id="feat-chat">
-      <div class="feat-card">
-        <span class="feat-icon">⚡</span>
-        <div class="feat-title">Streaming Real-Time Replies</div>
-        <div class="feat-desc">AI responses appear word by word — no waiting for a wall of text. Hit "Stop" anytime during generation.</div>
+      <div class="agent-step">
+        <div class="agent-step-dot">📦</div>
+        <div class="agent-step-line"></div>
+        <div class="agent-step-body">
+          <div class="agent-step-num">Step 1</div>
+          <div class="agent-step-title">Load Workspace Context</div>
+          <div class="agent-step-desc">Automatically reads README.md, package.json, Git status, and workspace memory — the AI immediately understands your project.</div>
+        </div>
       </div>
-      <div class="feat-card">
-        <span class="feat-icon">💬</span>
-        <div class="feat-title">Multi-Conversation Management</div>
-        <div class="feat-desc">Keep multiple conversations simultaneously, grouped by date. Rename, delete, or switch back anytime.</div>
+      <div class="agent-step">
+        <div class="agent-step-dot">🔍</div>
+        <div class="agent-step-line"></div>
+        <div class="agent-step-body">
+          <div class="agent-step-num">Step 2</div>
+          <div class="agent-step-title">Autonomous Browsing &amp; Search</div>
+          <div class="agent-step-desc">The AI uses list_dir, read_file, search_files and other tools to explore the project structure and locate relevant files on its own.</div>
+        </div>
       </div>
-      <div class="feat-card">
-        <span class="feat-icon">✏️</span>
-        <div class="feat-title">Edit &amp; Regenerate Messages</div>
-        <div class="feat-desc">Wrong question? Hover and click "Edit" to revise and resubmit. Not happy with the reply? Click "Regenerate" to try again.</div>
+      <div class="agent-step">
+        <div class="agent-step-dot">🤔</div>
+        <div class="agent-step-line"></div>
+        <div class="agent-step-body">
+          <div class="agent-step-num">Step 3</div>
+          <div class="agent-step-title">Think &amp; Call Tools</div>
+          <div class="agent-step-desc">The LLM analyzes search results and decides the next move — maybe read more files, search more content, or start generating changes.</div>
+        </div>
       </div>
-    </div>
-
-    <div class="feat-grid fade-up" id="feat-workspace" style="display:none;">
-      <div class="feat-card">
-        <span class="feat-icon">📁</span>
-        <div class="feat-title">Organize Chats by Project Folder</div>
-        <div class="feat-desc">Bind a local folder as a "Workspace" to keep its conversations separate. Work on multiple projects without mixing context.</div>
+      <div class="agent-step">
+        <div class="agent-step-dot">✏️</div>
+        <div class="agent-step-line"></div>
+        <div class="agent-step-body">
+          <div class="agent-step-num">Step 4</div>
+          <div class="agent-step-title">Generate Changes &amp; Confirm</div>
+          <div class="agent-step-desc">The AI uses apply_patch to generate a unified diff — a confirmation dialog appears showing the change summary. You click "Allow" to apply.</div>
+        </div>
       </div>
-      <div class="feat-card">
-        <span class="feat-icon">🔀</span>
-        <div class="feat-title">One-Click Workspace Switching</div>
-        <div class="feat-desc">The current workspace name shows at the top of the chat view. Click to switch instantly — each workspace shows only its own conversations.</div>
-      </div>
-      <div class="feat-card">
-        <span class="feat-icon">🛡️</span>
-        <div class="feat-title">File Access Scoped to Workspace</div>
-        <div class="feat-desc">File reads and command execution default to the workspace root path, reducing path confusion. Alerts you automatically if the workspace folder moves or disappears.</div>
-      </div>
-    </div>
-
-    <div class="feat-grid fade-up" id="feat-files" style="display:none;">
-      <div class="feat-card">
-        <span class="feat-icon">📄</span>
-        <div class="feat-title">Read Your Local Files</div>
-        <div class="feat-desc">Select a .txt or .md file during chat — AI reads its content and responds accordingly. Perfect for "summarize this document for me."</div>
-      </div>
-      <div class="feat-card">
-        <span class="feat-icon">📥</span>
-        <div class="feat-title">Export Conversations as Markdown</div>
-        <div class="feat-desc">Export individual replies or full conversations as .md files, including a tool-call audit summary. Great for archiving or reuse.</div>
-      </div>
-      <div class="feat-card">
-        <span class="feat-icon">⚡</span>
-        <div class="feat-title">Command Runner (Advanced)</div>
-        <div class="feat-desc">Let AI run local commands inside your authorized workspace folder. Supports natural language triggers like "what's the Node version?" — multi-layer safety, off by default.</div>
+      <div class="agent-step">
+        <div class="agent-step-dot">✅</div>
+        <div class="agent-step-body">
+          <div class="agent-step-num">Step 5</div>
+          <div class="agent-step-title">Auto-Verify &amp; Report</div>
+          <div class="agent-step-desc">After applying changes, automatically runs npm test / npm build. The final AI reply includes a change summary, file list, and verification results.</div>
+        </div>
       </div>
     </div>
 
-    <div class="feat-grid fade-up" id="feat-ux" style="display:none;">
-      <div class="feat-card">
-        <span class="feat-icon">🎨</span>
-        <div class="feat-title">Dark / Light Themes</div>
-        <div class="feat-desc">Follow your system preference, or manually switch between dark and light. Easy on the eyes, comfortable to use.</div>
+    <!-- Ask vs Craft -->
+    <div class="sh fade-up" style="margin-top:48px; margin-bottom:36px;">
+      <span class="sh-label">Two Modes</span>
+      <h2 class="sh-title">Ask · Craft</h2>
+    </div>
+
+    <div class="agent-modes fade-up">
+      <div class="mode-card ask">
+        <span class="mode-emoji">💬</span>
+        <div class="mode-title">Ask Mode</div>
+        <div class="mode-desc">Traditional one-question-one-answer chat. Ideal for simple Q&A, code advice, and understanding concepts. The AI does not invoke tools — it only responds to your questions.</div>
+        <span class="mode-tag ask">Simple Q&A</span>
       </div>
-      <div class="feat-card">
-        <span class="feat-icon">📊</span>
-        <div class="feat-title">Markdown Rendering</div>
-        <div class="feat-desc">Code blocks, tables, lists, and headings all render correctly. Code blocks include a one-click copy button.</div>
-      </div>
-      <div class="feat-card">
-        <span class="feat-icon">⚙️</span>
-        <div class="feat-title">Flexible Layout</div>
-        <div class="feat-desc">Drag to resize the sidebar and chat area. Collapses into icon mode when narrow — adapts to your workflow.</div>
+      <div class="mode-card craft">
+        <span class="mode-emoji">🛠️</span>
+        <div class="mode-title">Craft Mode</div>
+        <div class="mode-desc">AI autonomous multi-step execution. Ideal for code changes, project analysis, and multi-step operations. The AI chains tools together — from browsing to modifying to verifying, fully automated.</div>
+        <span class="mode-tag craft">Autonomous Execution</span>
       </div>
     </div>
   </div>
 </section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ 14 BUILT-IN TOOLS -->
+<section id="tools" class="wide-section">
+  <div class="wrap">
+    <div class="sh fade-up">
+      <span class="sh-label">14 Built-in Tools</span>
+      <h2 class="sh-title">The AI's "hands," governed by risk levels</h2>
+      <p class="sh-desc">Each tool has a clear risk level and approval strategy — read-only operations have no barriers; write operations require your confirmation.</p>
+    </div>
+
+    <div class="tools-categories fade-up">
+      <!-- Read-Only Browsing -->
+      <div class="tools-group">
+        <div class="tools-group-header">
+          <span class="tools-group-icon">📂</span>
+          <span class="tools-group-title">Read-Only Browsing</span>
+        </div>
+        <div class="tools-list">
+          <div class="tool-item">
+            <span class="tool-name">list_dir</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">List workspace directory contents</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">read_file</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">Read text files within workspace</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">search_files</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">Search file paths (ripgrep)</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">search_text</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">Search file contents (regex + glob)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Read-Only Files -->
+      <div class="tools-group">
+        <div class="tools-group-header">
+          <span class="tools-group-icon">📄</span>
+          <span class="tools-group-title">Read-Only Files</span>
+        </div>
+        <div class="tools-list">
+          <div class="tool-item">
+            <span class="tool-name">txt_reader</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">Read user-selected .txt files</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">markdown_reader</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">Read user-selected .md files</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">git_status</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">View workspace git status</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">git_diff</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">View git working tree diff</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- File Creation & Modification -->
+      <div class="tools-group">
+        <div class="tools-group-header">
+          <span class="tools-group-icon">✏️</span>
+          <span class="tools-group-title">File Creation &amp; Modification</span>
+        </div>
+        <div class="tools-list">
+          <div class="tool-item">
+            <span class="tool-name">create_file</span>
+            <span class="risk-badge risk-medium">🟡 medium</span>
+            <span class="tool-desc-inline">Create new files (cannot overwrite existing)</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">create_directory</span>
+            <span class="risk-badge risk-medium">🟡 medium</span>
+            <span class="tool-desc-inline">Create new directories (requires confirmation)</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">apply_patch</span>
+            <span class="risk-badge risk-medium">🟡 medium</span>
+            <span class="tool-desc-inline">Apply unified diff to modify files</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- High-Risk Operations -->
+      <div class="tools-group">
+        <div class="tools-group-header">
+          <span class="tools-group-icon">⚡</span>
+          <span class="tools-group-title">High-Risk Operations</span>
+        </div>
+        <div class="tools-list">
+          <div class="tool-item">
+            <span class="tool-name">command_runner</span>
+            <span class="risk-badge risk-high">🔴 high</span>
+            <span class="tool-desc-inline">Execute shell commands in authorized directories</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">update_memory</span>
+            <span class="risk-badge risk-high">🔴 high</span>
+            <span class="tool-desc-inline">Update workspace persistent memory</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">load_skill</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">Lazy-load skill's full prompt</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Risk explainer -->
+    <div class="risk-explainer fade-up">
+      <h4>🛡️ Risk Level System</h4>
+      <div class="risk-row"><span class="risk-badge risk-safe" style="font-size:13px;padding:3px 10px;">🟢 safe</span> Pure read-only operations, no side effects — read files, list directories, search, view git</div>
+      <div class="risk-row"><span class="risk-badge risk-medium" style="font-size:13px;padding:3px 10px;">🟡 medium</span> Write to workspace files, limited side effects — create files/directories, apply patch (with checkpoint backup)</div>
+      <div class="risk-row"><span class="risk-badge risk-high" style="font-size:13px;padding:3px 10px;">🔴 high</span> Execute commands, write memory — a native confirmation dialog appears for each operation</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ WORKSPACE MEMORY -->
+<section id="memory">
+  <div class="wrap">
+    <div class="sh fade-up">
+      <span class="sh-label">Workspace Memory</span>
+      <h2 class="sh-title">AI remembers your project across conversations</h2>
+      <p class="sh-desc">Workspace Memory is persistent project knowledge — conventions and preferences the AI learns in one chat are remembered in the next.</p>
+    </div>
+
+    <div class="mem-grid fade-up">
+      <div class="mem-card">
+        <span class="mem-icon">🧠</span>
+        <div class="mem-title">Database Memory</div>
+        <div class="mem-desc">AI writes to the database via the update_memory tool. Persists until the workspace is deleted. Highest priority.</div>
+      </div>
+      <div class="mem-card">
+        <span class="mem-icon">📝</span>
+        <div class="mem-title">memory.md File</div>
+        <div class="mem-desc">Contents of the .ai-workbench/memory.md file in the workspace root. Suitable for manual editing or team sharing — can be committed to git.</div>
+      </div>
+      <div class="mem-card">
+        <span class="mem-icon">🔍</span>
+        <div class="mem-title">View in Chat</div>
+        <div class="mem-desc">A "Memory" button at the top of the chat page expands to show memory sources, summaries (up to 280 characters), and last update time.</div>
+      </div>
+    </div>
+
+    <div class="mem-explainer fade-up">
+      <h4>🤖 AI Memory Update Flow</h4>
+      <div class="mem-flow">
+        <span class="mem-flow-step">AI decides to remember</span>
+        <span class="mem-flow-arrow">→</span>
+        <span class="mem-flow-step">Calls update_memory</span>
+        <span class="mem-flow-arrow">→</span>
+        <span class="mem-flow-step">Confirmation dialog appears</span>
+        <span class="mem-flow-arrow">→</span>
+        <span class="mem-flow-step">You click "Allow Write"</span>
+        <span class="mem-flow-arrow">→</span>
+        <span class="mem-flow-step">Memory written to database</span>
+      </div>
+      <p style="margin-top:14px; font-size:14.5px; color:var(--text2); line-height:1.7;">
+        <strong>Safety checks:</strong> The system auto-rejects memories containing API Keys, Tokens, passwords, or chat-like content. Max 4,000 characters per memory entry.
+      </p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
 
 <!-- ============================================================ SKILLS -->
 <section id="skills">
   <div class="wrap">
     <div class="sh fade-up">
       <span class="sh-label">Skills</span>
-      <h2 class="sh-title">Make AI Respond Your Way</h2>
-      <p class="sh-desc">Skills are preset instruction templates. When activated, AI follows a specific style and format for your input.</p>
+      <h2 class="sh-title">Make the AI respond the way you want</h2>
+      <p class="sh-desc">Skills are preset prompt templates — when activated, the AI processes your input in a specific style and format. Supports lazy loading, customization, and import/export.</p>
     </div>
 
     <div class="skills-row fade-up">
       <div class="sk-card">
         <span class="sk-emoji">📝</span>
-        <div class="sk-title">Text Summarizer</div>
-        <div class="sk-desc">Condense long articles or documents into concise summaries, capturing the key points.</div>
+        <div class="sk-title">Text Summarization</div>
+        <div class="sk-desc">Condense a long passage or document into a concise summary, capturing the core points.</div>
         <div class="sk-kw">
-          <span class="kw">summarize</span><span class="kw">abstract</span><span class="kw">condense</span><span class="kw">tl;dr</span>
+          <span class="kw">summarize</span><span class="kw">abstract</span><span class="kw">condense</span><span class="kw">key points</span>
         </div>
       </div>
       <div class="sk-card">
@@ -1471,106 +1500,105 @@ body { transition: background .35s ease, color .35s ease; }
         <div class="sk-title">Daily Report Generator</div>
         <div class="sk-desc">Turn your scattered work notes into a well-formatted daily report in seconds.</div>
         <div class="sk-kw">
-          <span class="kw">daily report</span><span class="kw">standup</span><span class="kw">work log</span>
+          <span class="kw">daily report</span><span class="kw">work log</span><span class="kw">status update</span>
         </div>
       </div>
       <div class="sk-card">
         <span class="sk-emoji">✍️</span>
-        <div class="sk-title">Blog Post Rewriter</div>
-        <div class="sk-desc">Transform plain text into engaging blog or social media post style — smoother language, more impact.</div>
+        <div class="sk-title">Content Rewriting</div>
+        <div class="sk-desc">Rewrite plain text into a polished article style — more fluent, more engaging, suitable for blog posts and social media.</div>
         <div class="sk-kw">
-          <span class="kw">blog</span><span class="kw">rewrite</span><span class="kw">social post</span>
+          <span class="kw">rewrite</span><span class="kw">polish</span><span class="kw">blog post</span>
         </div>
       </div>
     </div>
 
     <div class="sk-explainer fade-up">
-      <h3>🤔 How to Use Skills?</h3>
+      <h3>🤔 How Do Skills Work?</h3>
       <ol>
-        <li><strong>Auto-Match:</strong> Enabled by default. When your message contains trigger keywords (e.g., "write a daily report"), the matching skill activates automatically.</li>
-        <li><strong>Manual Selection:</strong> Pick a skill from the dropdown menu next to the input box to force it for a specific message.</li>
-        <li><strong>Single-Use:</strong> Skills only affect your current message — it switches back to default after sending. No impact on the rest of the conversation.</li>
-        <li><strong>Create Your Own:</strong> Go to the "Skill" page, click "Add Skill," and describe in plain language how you want AI to respond. Your custom skill is ready instantly.</li>
+        <li><strong>Auto-match (Lazy Loading):</strong> When your message contains keywords, the AI first receives a skill summary card. If needed, it loads the full prompt via load_skill — reducing unnecessary context usage.</li>
+        <li><strong>Manual Selection:</strong> Pick a skill from the dropdown next to the input box — uses the full prompt directly. Highest priority.</li>
+        <li><strong>Single-Use:</strong> A skill only affects the current message and auto-resets to default after sending.</li>
+        <li><strong>Custom &amp; Import:</strong> Click "Add Skill" to create your own; also supports importing folders containing SKILL.md or Markdown files, with automatic YAML front matter parsing.</li>
       </ol>
     </div>
   </div>
 </section>
 
-<!-- ============================================================ TESTIMONIALS -->
-<section id="testimonials">
-  <div class="wrap">
-    <div class="sh fade-up">
-      <span class="sh-label">Testimonials</span>
-      <h2 class="sh-title">Trusted by Users Worldwide</h2>
-      <p class="sh-desc">Real feedback from real users across different industries.</p>
-    </div>
+<div class="divider"></div>
 
-    <div class="testi-grid fade-up">
-      <div class="testi-card">
-        <div class="stars">★★★★★</div>
-        <div class="quote">"I used to worry about client data leaking with web-based AI. Now all conversations stay local — finally I can discuss project plans with confidence."</div>
-        <div class="author">Ms. Zhang</div>
-        <div class="role">Business Consulting Firm</div>
-      </div>
-      <div class="testi-card">
-        <div class="stars">★★★★★</div>
-        <div class="quote">"Writing daily reports was my biggest headache. The daily report Skill gets it done in minutes, with consistent formatting. My colleagues say I'm way more efficient now."</div>
-        <div class="author">Li</div>
-        <div class="role">Intern, New Graduate</div>
-      </div>
-      <div class="testi-card">
-        <div class="stars">★★★★★</div>
-        <div class="quote">"Ollama local models paired with this tool are a perfect match — fully offline, no internet needed. The peace of mind is unbeatable."</div>
-        <div class="author">Ms. Chen</div>
-        <div class="role">Freelancer</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================ SAFETY -->
+<!-- ============================================================ SAFETY / SHIELD -->
 <section id="safety" class="wide-section">
   <div class="wrap">
     <div class="sh fade-up">
       <span class="sh-label">Security &amp; Privacy</span>
-      <h2 class="sh-title">Your Data, Your Rules</h2>
-      <p class="sh-desc">We put data security first — it's not an afterthought.</p>
+      <h2 class="sh-title">Command Runner — 5-Layer Defense</h2>
+      <p class="sh-desc">The command runner is the highest-risk tool — that's why we built the strictest 5-layer security shield around it. Disabled by default; enable on demand.</p>
     </div>
 
-    <div class="safety-grid fade-up">
-      <div class="safe-card">
-        <div class="safe-icon">🔐</div>
-        <div class="safe-body">
-          <h4>API Key Encrypted Storage</h4>
-          <p>Your API keys are encrypted before being saved locally. The UI shows only a masked format like <code>sk-****xxxx</code>. Not even you can see the full key in the UI — let alone anyone else.</p>
+    <div class="shield-layers fade-up">
+      <div class="shield-layer">
+        <div class="shield-num">1</div>
+        <div class="shield-text">
+          <h4>Manual Activation</h4>
+          <p>Toggle the command_runner switch on in Settings — disabled by default. No commands can execute until you enable it.</p>
         </div>
       </div>
-      <div class="safe-card">
-        <div class="safe-icon">💾</div>
-        <div class="safe-body">
-          <h4>Chat History Is Local Only</h4>
-          <p>All conversations are stored in a local database file (app.db). AI Workbench never uploads your chats to any server. There's no account system — because there's no need for one.</p>
+      <div class="shield-layer">
+        <div class="shield-num">2</div>
+        <div class="shield-text">
+          <h4>Authorized Directories</h4>
+          <p>Commands can only run within directories you've explicitly authorized — all other paths are rejected.</p>
         </div>
       </div>
-      <div class="safe-card">
-        <div class="safe-icon">📂</div>
-        <div class="safe-body">
-          <h4>File Access Requires Your Permission</h4>
-          <p>AI cannot automatically read any file on your computer. Only when you actively click "Select File" in the chat and pick a specific file can AI access it. Full file content is never stored — only a brief preview.</p>
+      <div class="shield-layer">
+        <div class="shield-num">3</div>
+        <div class="shield-text">
+          <h4>Dangerous Command Blocking</h4>
+          <p>Auto-rejects 14 dangerous patterns — rm -rf, del /s /q, sudo, format, shutdown, etc. — matched across both Shell and argv.</p>
         </div>
       </div>
-      <div class="safe-card">
-        <div class="safe-icon">⚠️</div>
-        <div class="safe-body">
-          <h4>Five-Layer Command Execution Protection</h4>
-          <p>The "Command Execution" feature is off by default. You must turn it on in settings and specify which folders are allowed. Every command requires confirmation before execution, and dangerous operations (like file deletion) are blocked automatically.</p>
+      <div class="shield-layer">
+        <div class="shield-num">4</div>
+        <div class="shield-text">
+          <h4>Execution Confirmation Dialog</h4>
+          <p>A native confirmation dialog appears before each execution, showing the full command and working directory — you must click "Allow" to proceed.</p>
         </div>
       </div>
-      <div class="safe-card">
-        <div class="safe-icon">🕵️</div>
-        <div class="safe-body">
-          <h4>Automatic Sensitive Data Redaction</h4>
-          <p>Tool logs are automatically scrubbed before being saved to your local database — API Keys, Tokens, passwords and similar secrets are replaced with <code>[REDACTED]</code>, so they are never stored in plain text.</p>
+      <div class="shield-layer">
+        <div class="shield-num">5</div>
+        <div class="shield-text">
+          <h4>Timeout &amp; Cancel</h4>
+          <p>Default 60-second timeout (configurable up to 300 seconds), with mid-execution cancellation. Output capped at 20,000 characters.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desensitization -->
+    <div class="desensitize-note fade-up">
+      <div class="desensitize-icon">🕵️</div>
+      <div class="desensitize-body">
+        <h4>Automatic Sensitive Data Redaction</h4>
+        <p>Before tool logs are written to the local database, sensitive information such as API Keys (<code>sk-*</code>), Bearer Tokens, and passwords are automatically replaced with <code>[REDACTED]</code>. Keys are never stored in plaintext on disk. File reads only store metadata and a 500-character preview.</p>
+      </div>
+    </div>
+
+    <!-- Other safety cards -->
+    <div style="margin-top:28px;" class="fade-up">
+      <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:16px;">
+        <div style="background:var(--bg3); border:1px solid var(--border); border-radius:var(--r); padding:28px; display:flex; gap:20px; align-items:flex-start; transition:all .3s;" onmouseover="this.style.borderColor='rgba(34,197,94,0.25)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="width:46px;height:46px;flex-shrink:0;border-radius:11px;background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.16);display:flex;align-items:center;justify-content:center;font-size:21px;">🔐</div>
+          <div>
+            <h4 style="font-size:15px;font-weight:600;margin-bottom:7px;">Encrypted API Key Storage</h4>
+            <p style="font-size:14.5px;color:var(--text2);line-height:1.7;">Uses Electron safeStorage or AES-256-GCM encryption. Displayed as masked format <code style="font-size:13px;background:rgba(255,255,255,0.05);padding:1px 6px;border-radius:4px;border:1px solid rgba(255,255,255,0.06);color:var(--text2);">sk-****xxxx</code> in the UI.</p>
+          </div>
+        </div>
+        <div style="background:var(--bg3); border:1px solid var(--border); border-radius:var(--r); padding:28px; display:flex; gap:20px; align-items:flex-start; transition:all .3s;" onmouseover="this.style.borderColor='rgba(34,197,94,0.25)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="width:46px;height:46px;flex-shrink:0;border-radius:11px;background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.16);display:flex;align-items:center;justify-content:center;font-size:21px;">💾</div>
+          <div>
+            <h4 style="font-size:15px;font-weight:600;margin-bottom:7px;">100% Local Data</h4>
+            <p style="font-size:14.5px;color:var(--text2);line-height:1.7;">All conversations are stored in a local SQLite database (app.db). No intermediary server, no account system. API Keys are encrypted and stored locally.</p>
+          </div>
         </div>
       </div>
     </div>
@@ -1582,14 +1610,14 @@ body { transition: background .35s ease, color .35s ease; }
   <div class="wrap">
     <div class="sh fade-up">
       <span class="sh-label">Supported AI Services</span>
-      <h2 class="sh-title">Bring Your Own AI Key</h2>
-      <p class="sh-desc">Already have an account with an AI provider? Just plug in your key. You can also connect to models running locally on your own machine.</p>
+      <h2 class="sh-title">Bring your own AI Key</h2>
+      <p class="sh-desc">Already have an account with an AI service? Just enter your Key and start using it. You can also connect locally running models on your own machine.</p>
     </div>
 
     <div class="models-grid fade-up">
       <div class="model-card">
         <div class="logo-text">DeepSeek</div>
-        <div class="tag">Powerful &amp; Affordable</div>
+        <div class="tag">Powerful Chinese model</div>
       </div>
       <div class="model-card">
         <div class="logo-text">ChatGPT</div>
@@ -1601,32 +1629,32 @@ body { transition: background .35s ease, color .35s ease; }
       </div>
       <div class="model-card">
         <div class="logo-text">Kimi</div>
-        <div class="tag">Moonshot</div>
+        <div class="tag">Moonshot AI</div>
       </div>
       <div class="model-card">
         <div class="logo-text">Kimi Code</div>
-        <div class="tag">Coding · Moonshot</div>
+        <div class="tag">Coding-focused</div>
       </div>
       <div class="model-card">
         <div class="logo-text">Qwen</div>
-        <div class="tag">Alibaba Cloud</div>
+        <div class="tag">Alibaba Cloud Bailian</div>
       </div>
       <div class="model-card local">
         <div class="logo-text">Ollama</div>
-        <div class="tag">Run Locally</div>
+        <div class="tag">Run models locally</div>
       </div>
       <div class="model-card local">
         <div class="logo-text">LM Studio</div>
-        <div class="tag">Run Locally</div>
+        <div class="tag">Run models locally</div>
       </div>
       <div class="model-card">
         <div class="logo-text">Custom</div>
-        <div class="tag">Any Compatible API</div>
+        <div class="tag">Any compatible endpoint</div>
       </div>
     </div>
 
     <p class="model-note fade-up">
-      🟢 Green labels indicate local model options — install the corresponding local service, and your data stays 100% on your machine.
+      🟢 Green labels mark services that support local model execution — install the corresponding local service and your data stays 100% on your machine.
     </p>
   </div>
 </section>
@@ -1637,8 +1665,8 @@ body { transition: background .35s ease, color .35s ease; }
 <section id="guide">
   <div class="wrap">
     <div class="sh fade-up">
-      <span class="sh-label">Frequently Asked Questions</span>
-      <h2 class="sh-title">Got Questions? We've Got Answers</h2>
+      <span class="sh-label">FAQ</span>
+      <h2 class="sh-title">Got questions? Answers are here</h2>
       <p class="sh-desc">Click a question to expand the answer.</p>
     </div>
 
@@ -1646,16 +1674,35 @@ body { transition: background .35s ease, color .35s ease; }
 
       <div class="qa-item">
         <button class="qa-q" onclick="toggleQA(this)">
-          What is a "Workspace" and why would I use it?
+          What is "Agent Mode"? How is it different from normal chat?
           <span class="qa-icon">▼</span>
         </button>
         <div class="qa-a">
           <div class="qa-a-inner">
-            A Workspace links one of your local folders to a group of AI conversations. Once set up:<br /><br />
-            · The conversation list shows only that workspace's chats — different projects stay separate<br />
-            · File reads and command execution default to that folder's path, reducing confusion<br />
-            · You can create one workspace per project and switch between them in a single click<br /><br />
-            If you just want to chat casually, you don't need a workspace at all — all conversations are saved normally without one.
+            Agent Mode is AI Workbench's advanced operating mode. Normal mode is one Q&A at a time — you select files for the AI, and the AI responds.<br /><br />
+            In Agent Mode, the AI autonomously executes multiple steps: browse project structure → search for relevant files → read content → generate changes → you confirm → apply changes → auto-verify.<br /><br />
+            Two sub-modes:<br />
+            · <strong>Ask</strong>: Traditional one Q&A, ideal for simple questions<br />
+            · <strong>Craft</strong>: Full Agent execution, ideal for code changes and project analysis<br /><br />
+            Agent Mode is enabled via the environment variable <code>AI_WORKBENCH_ENABLE_AGENT_MODE=1</code> and requires an app restart.
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <button class="qa-q" onclick="toggleQA(this)">
+          What is a "Workspace" and what is it for?
+          <span class="qa-icon">▼</span>
+        </button>
+        <div class="qa-a">
+          <div class="qa-a-inner">
+            Workspace = A local folder + its conversations + project memory.<br /><br />
+            After creating one:<br />
+            · The conversation list only shows chats for that workspace — different projects never interfere<br />
+            · Tool operations are scoped within the workspace root directory, making paths more accurate<br />
+            · Agent Mode automatically loads project context (README, package.json, Git status, etc.)<br />
+            · Workspace Memory lets the AI remember your project conventions across chats<br /><br />
+            If you're just chatting casually, you don't need to bind a workspace — that works perfectly fine too.
           </div>
         </div>
       </div>
@@ -1667,33 +1714,32 @@ body { transition: background .35s ease, color .35s ease; }
         </button>
         <div class="qa-a">
           <div class="qa-a-inner">
-            You need to sign up on an AI provider's website and request an API key. Common providers:
+            You'll need to register on an AI provider's website and apply for an API Key:
             <table>
-              <tr><th>Provider</th><th>Get Key At</th><th>Note</th></tr>
-              <tr><td>DeepSeek</td><td>platform.deepseek.com</td><td>Requires top-up</td></tr>
-              <tr><td>Kimi</td><td>platform.moonshot.cn</td><td>CN registration</td></tr>
-              <tr><td>OpenAI</td><td>platform.openai.com</td><td>Requires billing setup</td></tr>
-              <tr><td>Anthropic</td><td>console.anthropic.com</td><td>Requires billing setup</td></tr>
+              <tr><th>Provider</th><th>Registration URL</th><th>Notes</th></tr>
+              <tr><td>DeepSeek</td><td>platform.deepseek.com</td><td>China-based, requires top-up</td></tr>
+              <tr><td>Kimi</td><td>platform.moonshot.cn</td><td>China-based registration</td></tr>
+              <tr><td>Qwen</td><td>dashscope.aliyun.com</td><td>Requires Alibaba Cloud account</td></tr>
+              <tr><td>ChatGPT</td><td>platform.openai.com</td><td>Requires international payment method</td></tr>
             </table>
-            <br />To run models locally, install Ollama from ollama.com, then select "Ollama" as your provider in AI Workbench — no API key needed.
+            <br />To run models locally, try Ollama — download and install from ollama.com, then select "Ollama" as your provider. No API Key required.
           </div>
         </div>
       </div>
 
       <div class="qa-item">
         <button class="qa-q" onclick="toggleQA(this)">
-          "Test Connection" failed. What should I do?
+          "Test Connection" failed — what should I do?
           <span class="qa-icon">▼</span>
         </button>
         <div class="qa-a">
           <div class="qa-a-inner">
-            Most common causes and fixes:
             <table>
-              <tr><th>Error</th><th>Cause</th><th>Fix</th></tr>
-              <tr><td>401 / 403</td><td>Invalid or expired API key</td><td>Get a new key from the provider's website</td></tr>
-              <tr><td>404</td><td>Wrong endpoint URL</td><td>Double-check the API endpoint matches official docs</td></tr>
-              <tr><td>Timeout / fetch failed</td><td>Network issue</td><td>Check your internet; if using local model, ensure the service is running</td></tr>
-              <tr><td>model not found</td><td>Incorrect model name</td><td>Verify model name spelling, case, and version</td></tr>
+              <tr><th>Error Message</th><th>Cause</th><th>Solution</th></tr>
+              <tr><td>401 / 403</td><td>API Key is invalid or expired</td><td>Get a new Key from the provider's website</td></tr>
+              <tr><td>404</td><td>Incorrect request URL</td><td>Verify the "Request URL" matches the official documentation</td></tr>
+              <tr><td>Timeout / fetch failed</td><td>Network connectivity issue</td><td>Check your network; if using a local model, confirm the service is running</td></tr>
+              <tr><td>model not found</td><td>Incorrect model name</td><td>Check the model name casing and version number for accuracy</td></tr>
             </table>
           </div>
         </div>
@@ -1701,60 +1747,67 @@ body { transition: background .35s ease, color .35s ease; }
 
       <div class="qa-item">
         <button class="qa-q" onclick="toggleQA(this)">
-          AI didn't use the Skill I expected — why?
+          What safety limits does Agent Mode have?
           <span class="qa-icon">▼</span>
         </button>
         <div class="qa-a">
           <div class="qa-a-inner">
-            Auto-matching relies on trigger keywords. Check these:<br /><br />
-            1. Does your message contain the trigger word? (e.g., "Daily Report" needs "daily" or "report" in the message)<br />
-            2. Is the target Skill enabled? (Check the "Skill" page — is the switch on?)<br />
-            3. Is the input box selector set to "Auto-Match" mode?<br /><br />
-            If auto-matching is unreliable, manually pick the skill from the dropdown — manual selection always takes priority.
+            Agent execution has strict safety limits to prevent infinite loops:<br /><br />
+            · Wall-clock time limit: <strong>10 minutes</strong><br />
+            · Total step limit: <strong>12 steps</strong><br />
+            · Total tool call limit: <strong>40 calls</strong><br />
+            · Same-tool repeat call limit: <strong>3 times</strong> (with identical parameters)<br />
+            · Consecutive no-progress turns: <strong>3 turns</strong><br /><br />
+            High-risk tools also have replay protection — identical parameters called again will be rejected to prevent useless loops. apply_patch auto-creates a checkpoint (file backup) before each write.
           </div>
         </div>
       </div>
 
       <div class="qa-item">
         <button class="qa-q" onclick="toggleQA(this)">
-          Where is my chat history stored? Can I lose it?
+          Workspace memory writes fail — what's going on?
+          <span class="qa-icon">▼</span>
+        </button>
+        <div class="qa-a">
+          <div class="qa-a-inner">
+            Possible causes:<br /><br />
+            1. Not in a workspace conversation — update_memory requires workspace context<br />
+            2. Content contains sensitive information — memory cannot include API Keys, Tokens, or passwords<br />
+            3. Content looks like a chat transcript — the system rejects conversation-format content<br />
+            4. Content too long — max 4,000 characters per memory entry
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <button class="qa-q" onclick="toggleQA(this)">
+          Command Runner won't execute — how do I troubleshoot?
+          <span class="qa-icon">▼</span>
+        </button>
+        <div class="qa-a">
+          <div class="qa-a-inner">
+            Checklist:<br /><br />
+            1. Is the command_runner switch turned on in Settings?<br />
+            2. Has at least one authorized working directory been added?<br />
+            3. Is the command's cwd within an authorized directory?<br />
+            4. Did the command trigger a dangerous command block (14 patterns)?<br />
+            5. Did you click "Allow" in the confirmation dialog?
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <button class="qa-q" onclick="toggleQA(this)">
+          Where are my chat histories stored? Will I lose them?
           <span class="qa-icon">▼</span>
         </button>
         <div class="qa-a">
           <div class="qa-a-inner">
             Default storage locations:<br />
             · Windows: <code>%APPDATA%/ai-workbench/app.db</code><br />
-            · macOS: <code>~/Library/Application Support/ai-workbench/app.db</code><br /><br />
-            You can see the exact path in the Settings page. We recommend regularly copying this .db file to a USB drive or cloud storage as a backup. You can also change the storage location in Settings to point directly to your sync folder.
-          </div>
-        </div>
-      </div>
-
-      <div class="qa-item">
-        <button class="qa-q" onclick="toggleQA(this)">
-          "File Not Authorized" or "Read Failed" when trying to read a file?
-          <span class="qa-icon">▼</span>
-        </button>
-        <div class="qa-a">
-          <div class="qa-a-inner">
-            File reading has a few limitations:<br /><br />
-            1. You must use the "Select File" button in the chat — manual path entry won't work.<br />
-            2. Only .txt, .md, and .markdown formats are supported.<br />
-            3. Files must be under 5 MB.<br />
-            4. File authorization is cleared when the app closes — you'll need to re-select files after restarting.
-          </div>
-        </div>
-      </div>
-
-      <div class="qa-item">
-        <button class="qa-q" onclick="toggleQA(this)">
-          If I uninstall the app, will my data still be there?
-          <span class="qa-icon">▼</span>
-        </button>
-        <div class="qa-a">
-          <div class="qa-a-inner">
-            On Windows, the uninstaller will ask whether you want to also delete your local data (chat history, model configs, keys, etc.). You can choose to keep it — reinstall later and your data will still be there.<br /><br />
-            To be extra safe, manually locate and back up the app.db file before uninstalling, or use "Clear Session History" in Settings before uninstalling.
+            · macOS: <code>~/Library/Application Support/ai-workbench/app.db</code><br />
+            · Linux: <code>~/.config/ai-workbench/app.db</code><br /><br />
+            It's recommended to regularly back up the three files: app.db, app.db-wal, and app.db-shm. You can also change the storage location in Settings to point to a cloud-sync folder.
           </div>
         </div>
       </div>
@@ -1769,8 +1822,8 @@ body { transition: background .35s ease, color .35s ease; }
 <section class="cta-section">
   <div class="wrap">
     <div class="cta-box fade-up">
-      <h2>Start Using It Today</h2>
-      <p>Download the installer for your system, configure an AI service, and start chatting.</p>
+      <h2>Start Using It Now</h2>
+      <p>Download the installer for your system, configure an AI service, and you're ready to go. Supports Agent Mode for autonomous execution.</p>
 
       <div class="install-tabs">
         <a href="#" class="install-card">
@@ -1809,6 +1862,7 @@ body { transition: background .35s ease, color .35s ease; }
       <div class="footer-meta">
         <span>Local-First · Privacy First</span>
         <span>Windows · macOS · Linux</span>
+        <span>v0.1.0</span>
         <span style="color: var(--dim)">MIT License</span>
       </div>
     </div>
@@ -1901,7 +1955,8 @@ body { transition: background .35s ease, color .35s ease; }
   }, { threshold: 0.3 });
   var statsEls = document.querySelectorAll('.stats-grid');
   for (var j = 0; j < statsEls.length; j++) { countObserver.observe(statsEls[j]); }
-  // ======================================================== STAT SPARKLE after count-up
+
+  // ======================================================== STAT SPARKLE
   var sparkleObserver = new IntersectionObserver(function(entries) {
     entries.forEach(function(e) {
       if (!e.isIntersecting) return;
@@ -1922,13 +1977,11 @@ body { transition: background .35s ease, color .35s ease; }
   }, { threshold: 0.3 });
   for (var j = 0; j < statsEls.length; j++) { sparkleObserver.observe(statsEls[j]); }
 
-
   // ======================================================== FAQ ACCORDION
   window.toggleQA = function(btn) {
     var item = btn.closest('.qa-item');
     if (!item) return;
     var isOpen = item.classList.contains('open');
-    // close all
     var allOpen = document.querySelectorAll('.qa-item.open');
     for (var k = 0; k < allOpen.length; k++) {
       allOpen[k].classList.remove('open');
@@ -1940,36 +1993,6 @@ body { transition: background .35s ease, color .35s ease; }
       answer.style.maxHeight = answer.scrollHeight + 'px';
     }
   };
-
-  // ======================================================== FEATURE TABS
-  var tabs = document.querySelectorAll('.feat-tab');
-  for (var t = 0; t < tabs.length; t++) {
-    tabs[t].addEventListener('click', function() {
-      var active = document.querySelector('.feat-tab.active');
-      if (active) active.classList.remove('active');
-      this.classList.add('active');
-      var group = this.getAttribute('data-tab');
-      ['chat','workspace','files','ux'].forEach(function(g) {
-        var el = document.getElementById('feat-' + g);
-        if (!el) return;
-        if (g === group) {
-          el.style.display = '';
-          el.style.opacity = '0';
-          el.style.transform = 'translateY(12px)';
-          requestAnimationFrame(function() {
-            el.style.transition = 'opacity .3s ease, transform .3s ease';
-            el.style.opacity = '1';
-            el.style.transform = 'translateY(0)';
-          });
-        } else {
-          el.style.display = 'none';
-          el.style.opacity = '';
-          el.style.transform = '';
-          el.style.transition = '';
-        }
-      });
-    });
-  }
 
   // ======================================================== CANVAS PARTICLES
   var canvas = document.getElementById('particles');
@@ -2022,7 +2045,6 @@ body { transition: background .35s ease, color .35s ease; }
         particles[i].update();
         particles[i].draw();
       }
-      // connections
       for (var i = 0; i < particles.length; i++) {
         for (var j = i + 1; j < particles.length; j++) {
           var dx = particles[i].x - particles[j].x;
@@ -2045,15 +2067,17 @@ body { transition: background .35s ease, color .35s ease; }
 
   // ======================================================== TYPING TERMINAL
   var messages = [
-    { user: 'Write a daily work report for me', ai: "Here's your daily report:\n\n📋 Daily Work Summary\n1. Finished client requirements analysis\n2. Followed up on Project A — Phase 3 progress\n3. Organized this week's meeting notes\n\n💡 Tomorrow: Kick off Project B design." },
-    { user: 'Summarize the key points of this article', ai: "Here are the key takeaways:\n\n1. Local AI is the future — users care more about data privacy than ever\n2. Desktop apps outperform web apps in both speed and user experience\n3. Multi-model support is essential — different tasks need different AI tools" },
-    { user: 'Can you rewrite this in a blog post style?', ai: "Absolutely! Here's the rewritten version:\n\n💡 Have you ever wondered —\nEverything you say to an AI could be stored on someone else's server?\n\nToday, we have the answer. An AI assistant that truly belongs to you — every conversation stays right on your own computer 👇" }
+    { user: 'Fix the login page styling bug', ai: 'Sure, let me check the login page styles...', tool: '🔍 search_text → "login.css"' },
+    { user: 'Write today\'s work report for me', ai: 'Here\'s your daily report:\n\n📋 Daily Work Report\n1. Completed client requirements analysis report\n2. Followed up on Project A Phase 3 progress\n3. Organized this week\'s meeting notes\n\n💡 Tomorrow\'s plan: Kick off Project B design proposal.' },
+    { user: 'Check if Redis is used anywhere in the project', ai: 'Search complete. Here are the Redis-related files:\n\n📄 config/database.yml\n📄 src/cache/redis-client.ts\n📄 README.md (mentioned on line 42)', tool: '🔍 search_text → "redis"' }
   ];
   var msgIndex = 0;
   var typingLine = document.getElementById('typing-line');
   var typingCursor = document.getElementById('typing-cursor');
   var aiReplyLine = document.getElementById('ai-reply-line');
   var aiText = document.getElementById('ai-text');
+  var toolLine = document.getElementById('tool-line');
+  var toolText = document.getElementById('tool-text');
 
   function typeMessage() {
     if (!typingLine || !aiReplyLine || !aiText) return;
@@ -2061,6 +2085,7 @@ body { transition: background .35s ease, color .35s ease; }
     typingLine.textContent = '';
     aiReplyLine.style.display = 'none';
     aiText.textContent = '';
+    if (toolLine) { toolLine.style.display = 'none'; toolText.textContent = ''; }
     if (typingCursor) typingCursor.style.display = 'inline-block';
 
     var i = 0;
@@ -2069,28 +2094,47 @@ body { transition: background .35s ease, color .35s ease; }
         clearInterval(typeUser);
         if (typingCursor) typingCursor.style.display = 'none';
 
-        setTimeout(function() {
-          aiReplyLine.style.display = 'block';
-          var j = 0;
-          var typeAI = setInterval(function() {
-            if (j >= msg.ai.length) {
-              clearInterval(typeAI);
-              msgIndex = (msgIndex + 1) % messages.length;
-              setTimeout(typeMessage, 3500);
-              return;
+        // Show tool call if present
+        if (msg.tool && toolLine && toolText) {
+          toolLine.style.display = 'block';
+          var t = 0;
+          var typeTool = setInterval(function() {
+            if (t >= msg.tool.length) {
+              clearInterval(typeTool);
+              // Then show AI reply
+              setTimeout(function() { showAiReply(msg); }, 400);
+            } else {
+              toolText.textContent = msg.tool.substring(0, t + 1);
+              t++;
             }
-            aiText.textContent += msg.ai[j];
-            j++;
-          }, 16);
-        }, 600);
-        return;
+          }, 28);
+        } else {
+          setTimeout(function() { showAiReply(msg); }, 500);
+        }
+      } else {
+        typingLine.textContent = msg.user.substring(0, i + 1);
+        i++;
       }
-      typingLine.textContent += msg.user[i];
-      i++;
-    }, 38);
+    }, 45);
   }
 
-  if (typingLine) { typeMessage(); }
+  function showAiReply(msg) {
+    aiReplyLine.style.display = 'block';
+    aiText.textContent = '';
+    var k = 0;
+    var typeAi = setInterval(function() {
+      if (k >= msg.ai.length) {
+        clearInterval(typeAi);
+        msgIndex = (msgIndex + 1) % messages.length;
+        setTimeout(typeMessage, 3500);
+      } else {
+        aiText.textContent = msg.ai.substring(0, k + 1);
+        k++;
+      }
+    }, 22);
+  }
+
+  typeMessage();
 })();
 </script>
 </body>

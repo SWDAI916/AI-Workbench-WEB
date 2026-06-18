@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>AI Workbench — 你的私人 AI 助手，数据只在你手里</title>
+<title>AI Workbench — 本地优先的 AI Agent 工作台</title>
 <style>
 /* ============================================================ RESET */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -97,6 +97,13 @@ body.light .btn-dl:hover, body.green .btn-dl:hover { background: var(--bg3); }
 body.light .safe-card, body.green .safe-card { background: var(--bg); }
 body.light .why-flag.pain, body.green .why-flag.pain { background: rgba(224,64,64,0.08); color: #c53030; }
 body.light .why-flag.value, body.green .why-flag.value { background: rgba(60,128,40,0.1); color: #2d6620; }
+body.light .risk-safe, body.green .risk-safe { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.25); color: var(--green); }
+body.light .risk-medium, body.green .risk-medium { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.25); color: var(--amber); }
+body.light .risk-high, body.green .risk-high { background: rgba(248,113,113,0.12); border-color: rgba(248,113,113,0.25); color: var(--red); }
+body.light .agent-step-line, body.green .agent-step-line { background: rgba(77,130,47,0.2); }
+body.light .agent-step-dot, body.green .agent-step-dot { background: var(--accent); }
+body.light .shield-layer, body.green .shield-layer { background: var(--bg); border-color: var(--border2); }
+body.light .mem-card, body.green .mem-card { background: var(--bg); }
 
 html { scroll-behavior: smooth; }
 
@@ -154,7 +161,7 @@ nav.scrolled { box-shadow: 0 1px 30px rgba(0,0,0,0.4); }
 }
 @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
 
-.nav-links { display: flex; gap: 34px; list-style: none; }
+.nav-links { display: flex; gap: 28px; list-style: none; }
 .nav-links a {
   color: var(--muted); text-decoration: none; font-size: 14.5px; font-weight: 500;
   transition: color .2s;
@@ -167,7 +174,6 @@ nav.scrolled { box-shadow: 0 1px 30px rgba(0,0,0,0.4); }
   border: 1px solid rgba(34,197,94,0.22); font-weight: 500;
 }
 
-/* ---------- NAV DROPDOWN SELECTS ---------- */
 .nav-select {
   background: var(--bg3); color: var(--text); border: 1px solid var(--border);
   border-radius: 6px; padding: 5px 24px 5px 10px; font-size: 12.5px; font-weight: 500;
@@ -234,8 +240,12 @@ section.wide-section { padding: 90px 0; }
   padding: 6px 16px; border-radius: 99px; margin-bottom: 32px;
   letter-spacing: .5px; font-weight: 500;
 }
+.hero-badge::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green); box-shadow: 0 0 8px var(--green);
+  animation: pulse 2.4s infinite;
+}
 
-/* ---------- HERO ICON ---------- */
 .hero-icon-wrap {
   margin-bottom: 36px;
   display: flex; justify-content: center; align-items: center;
@@ -261,11 +271,6 @@ section.wide-section { padding: 90px 0; }
 @keyframes iconGlow {
   0%,100% { opacity: .6; transform: translate(-50%, -50%) scale(1); }
   50% { opacity: 1; transform: translate(-50%, -50%) scale(1.12); }
-}
-.hero-badge::before {
-  content: ''; width: 6px; height: 6px; border-radius: 50%;
-  background: var(--green); box-shadow: 0 0 8px var(--green);
-  animation: pulse 2.4s infinite;
 }
 
 .hero h1 {
@@ -328,7 +333,21 @@ section.wide-section { padding: 90px 0; }
   background: rgba(17,24,39,0.9); border: 1px solid var(--border2);
   border-radius: 14px; overflow: hidden;
   box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+  position: relative;
 }
+.terminal-wrap::after {
+  content: ''; position: absolute; left: 0; right: 0; height: 2px;
+  background: rgba(59,130,246,0.12);
+  animation: scanLine 3.5s linear infinite;
+  pointer-events: none; z-index: 5; border-radius: 1px;
+}
+@keyframes scanLine {
+  0% { top: 0; opacity: 0; }
+  8% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
 .term-bar {
   display: flex; align-items: center; gap: 7px; padding: 11px 15px;
   background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border);
@@ -347,6 +366,7 @@ section.wide-section { padding: 90px 0; }
 }
 .term-user { color: var(--accent); }
 .term-ai { color: var(--green); }
+.term-tool { color: var(--amber); }
 .term-text { color: var(--text); }
 .term-cursor {
   display: inline-block; width: 8px; height: 16px; background: var(--accent);
@@ -376,16 +396,18 @@ section.wide-section { padding: 90px 0; }
 }
 .stat-card {
   background: var(--bg2); padding: 34px 20px; text-align: center;
-  transition: background .25s; border-right: 1px solid var(--border);
+  transition: background .25s, transform .25s; border-right: 1px solid var(--border);
 }
 .stat-card:last-child { border-right: none; }
-.stat-card:hover { background: var(--bg3); }
+.stat-card:hover { background: var(--bg3); transform: translateY(-3px); }
 .stat-num {
   font-size: 2.6rem; font-weight: 800; letter-spacing: -1.5px;
   background: linear-gradient(135deg, var(--accent), var(--accent3));
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent;
+  transition: filter .25s;
 }
+.stat-card:hover .stat-num { filter: drop-shadow(0 0 10px rgba(59,130,246,0.4)); }
 .stat-label { font-size: 14px; color: var(--muted); margin-top: 6px; font-weight: 500; }
 
 /* ============================================================ WHY */
@@ -420,7 +442,7 @@ section.wide-section { padding: 90px 0; }
 .why-card.value li::before { background: var(--green); }
 
 /* ============================================================ HOW IT WORKS */
-#how, #skills, #safety, #guide { background: var(--bg2); }
+#how, #agent, #tools, #memory, #skills, #safety, #guide { background: var(--bg2); }
 
 .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; position: relative; }
 .steps::before {
@@ -444,51 +466,191 @@ section.wide-section { padding: 90px 0; }
 .step h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
 .step p  { font-size: 15px; color: var(--text2); line-height: 1.75; }
 
-/* ============================================================ FEATURES TABBED */
-.feat-tabs {
-  display: inline-flex; justify-content: center; gap: 4px; margin-bottom: 36px;
-  background: var(--bg3); border: 1px solid var(--border); border-radius: 99px;
-  padding: 4px;
+/* ============================================================ AGENT MODE */
+.agent-flow {
+  display: flex; flex-direction: column; gap: 0;
+  position: relative; max-width: 680px; margin: 0 auto;
 }
-.feat-tabs-wrap { text-align: center; }
 
-.feat-tab {
-  padding: 9px 22px; border-radius: 99px; border: none; cursor: pointer;
-  font-size: 14.5px; color: var(--muted); font-weight: 500;
-  background: transparent; transition: all .25s; white-space: nowrap;
-  font-family: inherit;
+.agent-step {
+  display: flex; gap: 20px; align-items: flex-start;
+  padding: 18px 0; position: relative;
 }
-.feat-tab.active { background: var(--accent); color: #fff; box-shadow: 0 4px 16px rgba(59,130,246,0.3); }
 
-.feat-grid {
+.agent-step-line {
+  position: absolute; left: 23px; top: 46px; bottom: -18px;
+  width: 2px; background: rgba(59,130,246,0.15);
+}
+
+.agent-step:last-child .agent-step-line { display: none; }
+
+.agent-step-dot {
+  width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+  background: var(--bg3); border: 2px solid var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; z-index: 1;
+  box-shadow: 0 0 16px rgba(59,130,246,0.15);
+  transition: transform .3s, box-shadow .3s;
+}
+
+.agent-step:hover .agent-step-dot {
+  transform: scale(1.1);
+  box-shadow: 0 0 24px rgba(59,130,246,0.3);
+}
+
+.agent-step-body {
+  flex: 1; padding-top: 4px;
+}
+
+.agent-step-num {
+  font-size: 12px; color: var(--accent); font-weight: 600;
+  letter-spacing: 1.5px; margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.agent-step-title {
+  font-size: 16px; font-weight: 700; margin-bottom: 6px;
+}
+
+.agent-step-desc {
+  font-size: 14.5px; color: var(--text2); line-height: 1.7;
+}
+
+.agent-modes {
   display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+  margin-top: 36px;
 }
 
-.feat-card {
+.mode-card {
   background: var(--bg3); border: 1px solid var(--border);
   border-radius: var(--r); padding: 28px;
-  position: relative; transition: all .3s; overflow: hidden;
+  transition: all .3s;
+  position: relative; overflow: hidden;
 }
-.feat-card:hover {
-  border-color: rgba(59,130,246,0.3);
+.mode-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 14px 44px rgba(0,0,0,0.3);
 }
-.feat-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
-.feat-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, var(--accent), var(--accent3));
-  opacity: 0; transition: opacity .3s;
-}
-.feat-card:hover::before { opacity: 1; }
 
-.feat-icon { font-size: 28px; margin-bottom: 16px; display: block; }
-.feat-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
-.feat-desc { font-size: 14.5px; color: var(--text2); line-height: 1.75; }
+.mode-card.ask { border-top: 3px solid var(--accent3); }
+.mode-card.craft { border-top: 3px solid var(--accent); }
+
+.mode-emoji { font-size: 32px; margin-bottom: 12px; display: block; }
+.mode-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+.mode-desc { font-size: 14.5px; color: var(--text2); line-height: 1.7; }
+.mode-tag {
+  display: inline-block; margin-top: 14px;
+  font-size: 12px; padding: 4px 12px; border-radius: 99px;
+  font-weight: 600; letter-spacing: .5px;
+}
+.mode-tag.ask { background: rgba(6,182,212,0.1); color: var(--accent3); border: 1px solid rgba(6,182,212,0.2); }
+.mode-tag.craft { background: rgba(59,130,246,0.1); color: var(--accent); border: 1px solid rgba(59,130,246,0.2); }
+
+/* ============================================================ TOOLS */
+.tools-categories {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;
+}
+
+.tools-group {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 28px;
+  transition: all .3s;
+}
+.tools-group:hover {
+  border-color: var(--border2);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 44px rgba(0,0,0,0.3);
+}
+
+.tools-group-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 18px;
+}
+.tools-group-icon { font-size: 24px; }
+.tools-group-title { font-size: 17px; font-weight: 700; }
+
+.tools-list { display: flex; flex-direction: column; gap: 10px; }
+
+.tool-item {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 14px; color: var(--text2);
+  padding: 6px 0;
+  transition: color .2s;
+}
+.tool-item:hover { color: var(--text); }
+
+.tool-name {
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 13.5px; font-weight: 600; color: var(--text);
+  background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px;
+}
+
+.risk-badge {
+  font-size: 12px; padding: 2px 8px; border-radius: 4px;
+  font-weight: 600; flex-shrink: 0;
+}
+
+.risk-safe   { background: rgba(34,197,94,0.1);  border: 1px solid rgba(34,197,94,0.2);  color: var(--green); }
+.risk-medium { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); color: var(--amber); }
+.risk-high   { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.2); color: var(--red); }
+
+.tool-desc-inline { font-size: 13.5px; color: var(--muted); }
+
+.risk-explainer {
+  margin-top: 28px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 24px 28px;
+}
+.risk-explainer h4 { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+.risk-row {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 14px; color: var(--text2); padding: 5px 0;
+}
+.risk-row .risk-badge { font-size: 13px; padding: 3px 10px; }
+
+/* ============================================================ WORKSPACE MEMORY */
+.mem-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+.mem-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 28px;
+  transition: all .3s; text-align: center;
+  position: relative; overflow: hidden;
+}
+.mem-card:hover {
+  border-color: rgba(168,85,247,0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 44px rgba(0,0,0,0.3);
+}
+.mem-card::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 50% at 50% 110%, rgba(168,85,247,0.1) 0%, transparent 70%);
+  opacity: 0; transition: opacity .3s; pointer-events: none;
+}
+.mem-card:hover::after { opacity: 1; }
+
+.mem-icon { font-size: 32px; margin-bottom: 14px; display: block; }
+.mem-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.mem-desc { font-size: 14.5px; color: var(--text2); line-height: 1.7; }
+
+.mem-explainer {
+  margin-top: 28px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 28px;
+}
+.mem-explainer h4 { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+.mem-flow {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  font-size: 14px; color: var(--text2);
+}
+.mem-flow-step {
+  background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.2);
+  padding: 4px 14px; border-radius: 6px; color: var(--purple); font-weight: 600;
+  font-size: 13px;
+}
+.mem-flow-arrow { color: var(--muted); font-size: 16px; }
 
 /* ============================================================ SKILLS */
-#skills { background: var(--bg2); }
-
 .skills-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 36px; }
 
 .sk-card {
@@ -496,11 +658,14 @@ section.wide-section { padding: 90px 0; }
   padding: 30px; transition: all .3s; position: relative; overflow: hidden;
 }
 .sk-card:hover { border-color: rgba(99,102,241,0.35); transform: translateY(-3px); box-shadow: 0 14px 44px rgba(99,102,241,0.07); }
-.sk-card::after {
-  content: ''; position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(99,102,241,0.04) 0%, transparent 50%);
-  pointer-events: none;
+.sk-card::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit;
+  background: radial-gradient(ellipse 60% 45% at 50% 110%, rgba(99,102,241,0.13) 0%, transparent 70%);
+  opacity: 0; transition: opacity .35s ease; pointer-events: none; z-index: 0;
 }
+.sk-card:hover::before { opacity: 1; }
+.sk-card > * { position: relative; z-index: 1; }
+
 .sk-emoji { font-size: 32px; margin-bottom: 14px; display: block; }
 .sk-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
 .sk-desc  { font-size: 14.5px; color: var(--text2); line-height: 1.7; }
@@ -509,6 +674,11 @@ section.wide-section { padding: 90px 0; }
   font-size: 12px; padding: 3px 10px; border-radius: 5px;
   background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2);
   color: var(--accent2); font-weight: 500;
+  transition: transform .2s cubic-bezier(.34,1.56,.64,1), background .2s, border-color .2s, color .2s;
+}
+.kw:hover {
+  transform: scale(1.1) translateY(-2px);
+  background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.45); color: var(--text);
 }
 
 .sk-explainer {
@@ -520,41 +690,65 @@ section.wide-section { padding: 90px 0; }
 .sk-explainer li { font-size: 15px; color: var(--text2); line-height: 1.85; margin-bottom: 7px; }
 .sk-explainer li strong { color: var(--text); }
 
-/* ============================================================ TESTIMONIALS */
-.testi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-.testi-grid .testi-card:last-child { grid-column: 1 / -1; max-width: 520px; margin: 0 auto; }
-
-.testi-card {
-  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r);
-  padding: 28px; transition: all .3s;
+/* ============================================================ SAFETY / SHIELD */
+.shield-layers {
+  display: flex; flex-direction: column; gap: 0;
+  max-width: 580px; margin: 0 auto;
 }
-.testi-card:hover { border-color: var(--border2); transform: translateY(-2px); }
-.testi-card .stars { color: var(--amber); font-size: 13px; margin-bottom: 12px; letter-spacing: 1px; }
-.testi-card .quote {
-  font-size: 15px; color: var(--text2); line-height: 1.8; margin-bottom: 18px;
-  font-style: italic; padding-left: 12px;
-  border-left: 3px solid rgba(59,130,246,0.2);
-}
-.testi-card .author { font-size: 14px; font-weight: 600; color: var(--text); }
-.testi-card .role { font-size: 13px; color: var(--muted); margin-top: 2px; }
 
-/* ============================================================ SAFETY */
-.safety-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-
-.safe-card {
-  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r);
-  padding: 28px; display: flex; gap: 20px; align-items: flex-start;
+.shield-layer {
+  display: flex; align-items: center; gap: 18px;
+  padding: 20px 28px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r);
   transition: all .3s;
+  position: relative;
 }
-.safe-card:hover { border-color: rgba(34,197,94,0.25); box-shadow: 0 8px 28px rgba(34,197,94,0.03); }
-.safe-icon {
-  width: 46px; height: 46px; flex-shrink: 0; border-radius: 11px;
+.shield-layer:hover {
+  border-color: rgba(34,197,94,0.25);
+  box-shadow: 0 8px 28px rgba(34,197,94,0.06);
+  transform: translateX(4px);
+}
+
+.shield-layer:first-child { border-radius: var(--r) var(--r) 6px 6px; }
+.shield-layer:last-child  { border-radius: 6px 6px var(--r) var(--r); }
+.shield-layer:not(:first-child):not(:last-child) { border-radius: 6px; }
+
+.shield-num {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
   background: rgba(34,197,94,0.07); border: 1px solid rgba(34,197,94,0.16);
-  display: flex; align-items: center; justify-content: center; font-size: 21px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800; color: var(--green);
+  animation: safeBreathe 3.3s ease-in-out infinite;
 }
-.safe-body h4 { font-size: 15px; font-weight: 600; margin-bottom: 7px; }
-.safe-body p  { font-size: 14.5px; color: var(--text2); line-height: 1.7; }
-.safe-body code {
+
+.shield-text h4 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.shield-text p  { font-size: 14px; color: var(--text2); line-height: 1.65; }
+
+@keyframes safeBreathe {
+  0%,100% { transform: scale(1); box-shadow: none; }
+  50% { transform: scale(1.08); box-shadow: 0 0 12px rgba(34,197,94,0.15); }
+}
+.shield-layer:hover .shield-num {
+  animation: none;
+  transform: rotate(12deg) scale(1.12);
+  box-shadow: 0 0 16px rgba(34,197,94,0.22);
+}
+
+.desensitize-note {
+  margin-top: 28px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 24px 28px;
+  display: flex; align-items: flex-start; gap: 16px;
+}
+.desensitize-icon {
+  width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0;
+  background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.16);
+  display: flex; align-items: center; justify-content: center; font-size: 20px;
+}
+.desensitize-body h4 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.desensitize-body p { font-size: 14.5px; color: var(--text2); line-height: 1.7; }
+.desensitize-body code {
   font-size: 13px; background: rgba(255,255,255,0.05); padding: 1px 6px; border-radius: 4px;
   border: 1px solid rgba(255,255,255,0.06); color: var(--text2);
 }
@@ -621,13 +815,26 @@ section.wide-section { padding: 90px 0; }
 
 /* ============================================================ CTA */
 .cta-box {
-  background: var(--bg3); border: 1px solid var(--border2);
+  background: var(--bg3); border: 1px solid transparent;
+  background-clip: padding-box;
   border-radius: 20px; padding: 68px; text-align: center;
   position: relative; overflow: hidden;
 }
 .cta-box::before {
   content: ''; position: absolute; inset: 0; pointer-events: none;
   background: radial-gradient(ellipse 65% 55% at 50% 0%, rgba(59,130,246,0.07) 0%, transparent 65%);
+}
+.cta-box::after {
+  content: ''; position: absolute; inset: -1px; border-radius: 21px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3), var(--purple), var(--accent));
+  background-size: 300% 300%;
+  animation: borderFlow 6s ease infinite;
+  z-index: -1; opacity: .5;
+}
+@keyframes borderFlow {
+  0%   { background-position: 0%   50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0%   50%; }
 }
 .cta-box h2 { font-size: 2rem; font-weight: 800; letter-spacing: -1.5px; margin-bottom: 14px; position: relative; }
 .cta-box p  { color: var(--text2); max-width: 460px; margin: 0 auto 40px; line-height: 1.8; font-size: 16px; position: relative; }
@@ -644,7 +851,17 @@ section.wide-section { padding: 90px 0; }
   transform: translateY(-3px);
   box-shadow: 0 10px 36px rgba(0,0,0,0.28);
 }
-.install-card .plat-icon { font-size: 30px; margin-bottom: 10px; display: block; }
+.install-card .plat-icon { font-size: 30px; margin-bottom: 10px; display: inline-block; animation: platBounce 2.5s ease-in-out infinite; }
+.install-card:nth-child(1) .plat-icon { animation-delay: 0s; }
+.install-card:nth-child(2) .plat-icon { animation-delay: 0.8s; }
+.install-card:nth-child(3) .plat-icon { animation-delay: 1.6s; }
+@keyframes platBounce {
+  0%,100% { transform: translateY(0); }
+  30% { transform: translateY(-10px); }
+  50% { transform: translateY(0); }
+  70% { transform: translateY(-5px); }
+  85% { transform: translateY(0); }
+}
 .install-card .plat-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
 .install-card .plat-fmt { font-size: 13px; color: var(--muted); }
 .install-card .plat-btn {
@@ -685,35 +902,35 @@ footer {
 .fade-up { opacity: 0; transform: translateY(24px); transition: opacity .55s ease, transform .55s ease; }
 .fade-up.visible { opacity: 1; transform: translateY(0); }
 
-/* ---------- STAGGERED CHILDREN ---------- */
-.fade-up.visible > .feat-card:nth-child(1),
-.fade-up.visible > .safe-card:nth-child(1),
-.fade-up.visible > .sk-card:nth-child(1),
-.fade-up.visible > .testi-card:nth-child(1),
-.fade-up.visible > .model-card:nth-child(1) { animation: cardReveal .5s ease both; }
-.fade-up.visible > .feat-card:nth-child(2),
-.fade-up.visible > .safe-card:nth-child(2),
-.fade-up.visible > .sk-card:nth-child(2),
-.fade-up.visible > .testi-card:nth-child(2),
-.fade-up.visible > .model-card:nth-child(2) { animation: cardReveal .5s .08s ease both; }
-.fade-up.visible > .feat-card:nth-child(3),
-.fade-up.visible > .safe-card:nth-child(3),
-.fade-up.visible > .sk-card:nth-child(3),
-.fade-up.visible > .testi-card:nth-child(3),
-.fade-up.visible > .model-card:nth-child(3) { animation: cardReveal .5s .16s ease both; }
-.fade-up.visible > .feat-card:nth-child(4),
-.fade-up.visible > .safe-card:nth-child(4),
-.fade-up.visible > .sk-card:nth-child(4),
-.fade-up.visible > .testi-card:nth-child(4),
-.fade-up.visible > .model-card:nth-child(4) { animation: cardReveal .5s .24s ease both; }
-.fade-up.visible > .model-card:nth-child(5)  { animation: cardReveal .5s .32s ease both; }
-.fade-up.visible > .model-card:nth-child(6)  { animation: cardReveal .5s .40s ease both; }
-.fade-up.visible > .model-card:nth-child(7)  { animation: cardReveal .5s .48s ease both; }
-.fade-up.visible > .model-card:nth-child(8)  { animation: cardReveal .5s .56s ease both; }
-.fade-up.visible > .model-card:nth-child(n+9){ animation: cardReveal .5s .64s ease both; }
+.fade-up.visible > .stat-card:nth-child(n),
+.fade-up.visible > .why-card:nth-child(n),
+.fade-up.visible > .step:nth-child(n),
+.fade-up.visible > .agent-step:nth-child(n),
+.fade-up.visible > .mode-card:nth-child(n),
+.fade-up.visible > .tools-group:nth-child(n),
+.fade-up.visible > .mem-card:nth-child(n),
+.fade-up.visible > .sk-card:nth-child(n),
+.fade-up.visible > .shield-layer:nth-child(n),
+.fade-up.visible > .model-card:nth-child(n) { animation: cardReveal .5s ease both; }
+
+.fade-up.visible > *:nth-child(1) { animation-delay: 0s; }
+.fade-up.visible > *:nth-child(2) { animation-delay: .08s; }
+.fade-up.visible > *:nth-child(3) { animation-delay: .16s; }
+.fade-up.visible > *:nth-child(4) { animation-delay: .24s; }
+.fade-up.visible > *:nth-child(5) { animation-delay: .32s; }
+.fade-up.visible > *:nth-child(6) { animation-delay: .40s; }
+.fade-up.visible > *:nth-child(7) { animation-delay: .48s; }
+.fade-up.visible > *:nth-child(8) { animation-delay: .56s; }
+.fade-up.visible > *:nth-child(n+9) { animation-delay: .64s; }
+
 @keyframes cardReveal {
   from { opacity: 0; transform: translateY(18px) scale(0.97); }
   to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+@keyframes statSparkle {
+  0%,100% { filter: brightness(1); }
+  50% { filter: brightness(1.3) drop-shadow(0 0 6px rgba(59,130,246,0.5)); }
 }
 
 /* ---------- STEPS STAGGER ---------- */
@@ -723,84 +940,6 @@ footer {
 @keyframes stepIn {
   from { opacity: 0; transform: translateY(22px); }
   to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ---------- BODY TRANSITION (THEME SWITCH) ---------- */
-body { transition: background .35s ease, color .35s ease; }
-
-/* ---------- NAV LINK UNDERLINE SLIDE ---------- */
-.nav-links a { position: relative; }
-.nav-links a::after {
-  content: ''; position: absolute; left: 0; bottom: -3px;
-  width: 0; height: 2px; border-radius: 2px;
-  background: var(--accent); transition: width .25s ease;
-}
-.nav-links a:hover::after { width: 100%; }
-
-/* ---------- CARD GLOW ON HOVER ---------- */
-.feat-card::after {
-  content: ''; position: absolute; inset: 0; border-radius: inherit;
-  background: radial-gradient(ellipse 70% 50% at 50% 110%, rgba(59,130,246,0.12) 0%, transparent 70%);
-  opacity: 0; transition: opacity .35s ease; pointer-events: none;
-}
-.feat-card:hover::after { opacity: 1; }
-
-.sk-card::before {
-  content: ''; position: absolute; inset: 0; border-radius: inherit;
-  background: radial-gradient(ellipse 60% 45% at 50% 110%, rgba(99,102,241,0.13) 0%, transparent 70%);
-  opacity: 0; transition: opacity .35s ease; pointer-events: none; z-index: 0;
-}
-.sk-card:hover::before { opacity: 1; }
-.sk-card > * { position: relative; z-index: 1; }
-
-/* ---------- SAFE-ICON HOVER SPIN + GLOW ---------- */
-.safe-card { transition: all .3s, transform .3s; }
-.safe-card:hover { transform: translateY(-3px); }
-.safe-icon { transition: transform .4s cubic-bezier(.34,1.56,.64,1), box-shadow .3s; }
-.safe-card:hover .safe-icon {
-  transform: rotate(12deg) scale(1.12);
-  box-shadow: 0 0 16px rgba(34,197,94,0.22);
-}
-
-/* ---------- KEYWORD TAG BOUNCE ---------- */
-.kw { transition: transform .2s cubic-bezier(.34,1.56,.64,1), background .2s, border-color .2s, color .2s; }
-.kw:hover {
-  transform: scale(1.1) translateY(-2px);
-  background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.45); color: var(--text);
-}
-
-/* ---------- STAT CARD GLOW ON HOVER ---------- */
-.stat-card { transition: background .25s, transform .25s; }
-.stat-card:hover { transform: translateY(-3px); }
-.stat-num { transition: filter .25s; }
-.stat-card:hover .stat-num { filter: drop-shadow(0 0 10px rgba(59,130,246,0.4)); }
-
-/* ---------- TESTI CARD HOVER ---------- */
-.testi-card { transition: all .3s; }
-.testi-card:hover {
-  border-color: rgba(59,130,246,0.25);
-  transform: translateY(-3px);
-  box-shadow: 0 12px 36px rgba(0,0,0,0.18);
-}
-
-/* ---------- CTA ANIMATED BORDER LIGHT ---------- */
-@keyframes borderFlow {
-  0%   { background-position: 0%   50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0%   50%; }
-}
-.cta-box {
-  background: var(--bg3);
-  border: 1px solid transparent;
-  background-clip: padding-box;
-  position: relative;
-}
-.cta-box::after {
-  content: ''; position: absolute; inset: -1px; border-radius: 21px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3), var(--purple), var(--accent));
-  background-size: 300% 300%;
-  animation: borderFlow 6s ease infinite;
-  z-index: -1; opacity: .5;
 }
 
 /* ---------- HERO ENTRANCE STAGGER ---------- */
@@ -816,311 +955,17 @@ body { transition: background .35s ease, color .35s ease; }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ---------- LOGO DOT EXTRA GLOW PULSE ---------- */
-.logo-dot {
-  animation: pulse 2.4s infinite, dotGlow 2.4s infinite;
-}
-@keyframes dotGlow {
-  0%,100% { box-shadow: 0 0 14px var(--accent), 0 0 30px rgba(59,130,246,0.35); }
-  50%      { box-shadow: 0 0 22px var(--accent), 0 0 50px rgba(59,130,246,0.55); }
-}
+/* ---------- BODY TRANSITION (THEME SWITCH) ---------- */
+body { transition: background .35s ease, color .35s ease; }
 
-/* ---------- SCROLL PROGRESS GLOW ---------- */
-#scroll-progress {
-  filter: drop-shadow(0 0 4px rgba(59,130,246,0.5));
+/* ---------- NAV LINK UNDERLINE SLIDE ---------- */
+.nav-links a { position: relative; }
+.nav-links a::after {
+  content: ''; position: absolute; left: 0; bottom: -3px;
+  width: 0; height: 2px; border-radius: 2px;
+  background: var(--accent); transition: width .25s ease;
 }
-
-/* ---------- FAQ ITEM HOVER LIFT ---------- */
-.qa-item { transition: border-color .25s, transform .25s, box-shadow .25s; }
-.qa-item:hover {
-  transform: translateX(3px);
-  box-shadow: -3px 0 0 var(--accent);
-  border-color: rgba(59,130,246,0.25);
-}
-
-/* ---------- INSTALL CARD SHIMMER ---------- */
-.install-card { overflow: hidden; }
-.install-card::after {
-  content: ''; position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
-  background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%);
-  transition: left .45s ease; pointer-events: none;
-}
-.install-card:hover::after { left: 140%; }
-
-/* ---------- MODEL CARD GLOW ON HOVER ---------- */
-.model-card::before {
-  content: ''; position: absolute; inset: 0; border-radius: inherit;
-  background: radial-gradient(ellipse 80% 60% at 50% 120%, rgba(59,130,246,0.1) 0%, transparent 70%);
-  opacity: 0; transition: opacity .3s; pointer-events: none;
-}
-.model-card:hover::before { opacity: 1; }
-
-/* ---------- WHY CARD HOVER LIGHT ---------- */
-.why-card::before {
-  content: ''; position: absolute; inset: 0; border-radius: inherit;
-  background: radial-gradient(ellipse 70% 50% at 50% 110%, rgba(59,130,246,0.07) 0%, transparent 70%);
-  opacity: 0; transition: opacity .35s; pointer-events: none;
-}
-.why-card.pain::before {
-  background: radial-gradient(ellipse 70% 50% at 50% 110%, rgba(248,113,113,0.07) 0%, transparent 70%);
-}
-.why-card.value::before {
-  background: radial-gradient(ellipse 70% 50% at 50% 110%, rgba(34,197,94,0.07) 0%, transparent 70%);
-}
-.why-card:hover::before { opacity: 1; }
-
-
-/* ============================================================ NEW ANIMATIONS v2 --- AMBIENT & AUTO */
-
-/* ---------- 1. HERO FLOATING ORBS ---------- */
-.hero::before, .hero::after {
-  content: ''; position: absolute; border-radius: 50%; pointer-events: none;
-  opacity: 0.55; filter: blur(70px); z-index: 0;
-}
-.hero::before {
-  width: 300px; height: 300px;
-  background: radial-gradient(circle, rgba(99,102,241,0.22), transparent);
-  top: 10%; left: 3%;
-  animation: floatOrb1 11s ease-in-out infinite;
-}
-.hero::after {
-  width: 260px; height: 260px;
-  background: radial-gradient(circle, rgba(6,182,212,0.18), transparent);
-  bottom: 18%; right: 5%;
-  animation: floatOrb2 9s ease-in-out infinite;
-}
-@keyframes floatOrb1 {
-  0%,100% { transform: translate(0,0) scale(1); }
-  25% { transform: translate(50px,-40px) scale(1.2); }
-  50% { transform: translate(-30px,-70px) scale(0.88); }
-  75% { transform: translate(-60px,30px) scale(1.1); }
-}
-@keyframes floatOrb2 {
-  0%,100% { transform: translate(0,0) scale(1); }
-  33% { transform: translate(-40px,-50px) scale(1.25); }
-  66% { transform: translate(30px,40px) scale(0.82); }
-}
-
-/* ---------- 2. SECOND HERO GLOW DRIFT ---------- */
-.hero-glow-2 {
-  animation: glow2Drift 12s ease-in-out infinite;
-}
-@keyframes glow2Drift {
-  0%,100% { transform: translate(0,0); }
-  25% { transform: translate(40px,-30px); }
-  50% { transform: translate(-30px,40px); }
-  75% { transform: translate(-50px,-15px); }
-}
-
-/* ---------- 3. STARS TWINKLE (TESTIMONIALS) ---------- */
-.testi-card .stars {
-  animation: starTwinkle 2.2s ease-in-out infinite;
-}
-.testi-card:nth-child(1) .stars { animation-delay: 0s; }
-.testi-card:nth-child(2) .stars { animation-delay: 0.7s; }
-.testi-card:nth-child(3) .stars { animation-delay: 1.4s; }
-@keyframes starTwinkle {
-  0%,100% { opacity: 1; transform: scale(1); }
-  40% { opacity: 0.55; transform: scale(0.92); }
-  80% { opacity: 0.9; transform: scale(1.03); }
-}
-
-/* ---------- 4. SKILL EMOJI FLOAT ---------- */
-.sk-emoji {
-  animation: emojiFloat 3.8s ease-in-out infinite;
-}
-.sk-card:nth-child(1) .sk-emoji { animation-delay: 0s; }
-.sk-card:nth-child(2) .sk-emoji { animation-delay: 1.1s; }
-.sk-card:nth-child(3) .sk-emoji { animation-delay: 2.2s; }
-@keyframes emojiFloat {
-  0%,100% { transform: translateY(0); }
-  50% { transform: translateY(-9px); }
-}
-
-/* ---------- 5. MODEL CARD AUTO SHIMMER ---------- */
-.model-card { overflow: hidden; }
-.model-card::after {
-  content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-  background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.025) 45%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.025) 55%, transparent 60%);
-  animation: modelShimmer 5s linear infinite; pointer-events: none; z-index: 1;
-}
-.model-card:nth-child(even)::after { animation-delay: 2.5s; }
-@keyframes modelShimmer {
-  0% { transform: translate(-50%, -50%) rotate(0deg); }
-  100% { transform: translate(50%, 50%) rotate(360deg); }
-}
-.model-card > * { position: relative; z-index: 2; }
-.model-card::before { z-index: 1; }
-
-/* ---------- 6. CTA HEARTBEAT ---------- */
-.cta-box h2 {
-  animation: heartbeat 2.8s ease-in-out infinite;
-}
-@keyframes heartbeat {
-  0%,100% { transform: scale(1); }
-  6% { transform: scale(1.04); }
-  12% { transform: scale(1); }
-  18% { transform: scale(1.04); }
-  24% { transform: scale(1); }
-}
-
-/* ---------- 7. FAQ ICON GENTLE DRIFT ---------- */
-.qa-icon {
-  animation: qaDrift 3.5s ease-in-out infinite;
-}
-.qa-item:nth-child(odd) .qa-icon { animation-delay: 0s; }
-.qa-item:nth-child(even) .qa-icon { animation-delay: 1.7s; }
-@keyframes qaDrift {
-  0%,100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
-}
-.qa-item.open .qa-icon {
-  animation: none;
-  transform: rotate(180deg);
-}
-
-/* ---------- 8. DIVIDER GRADIENT FLOW ---------- */
-.divider {
-  background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), var(--accent3), var(--accent), transparent);
-  background-size: 300% 100%;
-  animation: dividerFlow 10s linear infinite;
-}
-@keyframes dividerFlow {
-  0% { background-position: 300% 0; }
-  100% { background-position: -300% 0; }
-}
-
-/* ---------- 9. STEP NUMBER PULSING RING ---------- */
-.step-num::after {
-  content: ''; position: absolute; inset: -7px; border-radius: 50%;
-  border: 2px solid rgba(59,130,246,0.25);
-  animation: stepRing 2.4s ease-in-out infinite;
-}
-.step:nth-child(2) .step-num::after { animation-delay: 0.8s; }
-.step:nth-child(3) .step-num::after { animation-delay: 1.6s; }
-@keyframes stepRing {
-  0%,100% { transform: scale(1); opacity: 0.4; }
-  50% { transform: scale(1.18); opacity: 0; }
-}
-
-/* ---------- 10. WHY-FLAG GENTLE PULSE ---------- */
-.why-flag {
-  animation: flagPulse 3.2s ease-in-out infinite;
-}
-.why-flag.pain { animation-delay: 0s; }
-.why-flag.value { animation-delay: 1.6s; }
-@keyframes flagPulse {
-  0%,100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-
-/* ---------- 11. BACK-TO-TOP ORBITING GLOW ---------- */
-#back-top::before {
-  content: ''; position: absolute; inset: -5px; border-radius: 50%;
-  border: 2px solid rgba(59,130,246,0.25);
-  animation: orbitSpin 4.5s linear infinite;
-  opacity: 0; transition: opacity .4s;
-}
-#back-top.visible::before { opacity: 1; }
-@keyframes orbitSpin {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(1.2); }
-  100% { transform: rotate(360deg) scale(1); }
-}
-
-/* ---------- 12. SECTION HEADER ANIMATED ACCENT LINE ---------- */
-.sh::after {
-  content: ''; display: block; width: 44px; height: 3px;
-  border-radius: 2px; margin: 18px auto 0;
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
-  transform: scaleX(0); transition: transform .7s cubic-bezier(.16,1,.3,1);
-}
-.sh.fade-up.visible::after {
-  transform: scaleX(1);
-}
-
-/* ---------- 13. FEATURE ICON GENTLE TILT ---------- */
-.feat-icon {
-  animation: iconTilt 5s ease-in-out infinite;
-  display: inline-block;
-}
-.feat-card:nth-child(1) .feat-icon { animation-delay: 0s; }
-.feat-card:nth-child(2) .feat-icon { animation-delay: 1.6s; }
-.feat-card:nth-child(3) .feat-icon { animation-delay: 3.2s; }
-@keyframes iconTilt {
-  0%,100% { transform: rotate(0); }
-  25% { transform: rotate(6deg); }
-  75% { transform: rotate(-6deg); }
-}
-
-/* ---------- 14. TRUST STRIP ITEMS WAVE ---------- */
-.trust-item {
-  animation: trustWave 5.5s ease-in-out infinite;
-}
-.trust-item:nth-child(1) { animation-delay: 0s; }
-.trust-item:nth-child(2) { animation-delay: 0.5s; }
-.trust-item:nth-child(3) { animation-delay: 1.0s; }
-.trust-item:nth-child(4) { animation-delay: 1.5s; }
-@keyframes trustWave {
-  0%,100% { transform: translateY(0); }
-  25% { transform: translateY(-6px); }
-  75% { transform: translateY(-2px); }
-}
-
-/* ---------- 15. TERMINAL SCAN LINE ---------- */
-.terminal-wrap::after {
-  content: ''; position: absolute; left: 0; right: 0; height: 2px;
-  background: rgba(59,130,246,0.12);
-  animation: scanLine 3.5s linear infinite;
-  pointer-events: none; z-index: 5; border-radius: 1px;
-}
-@keyframes scanLine {
-  0% { top: 0; opacity: 0; }
-  8% { opacity: 1; }
-  85% { opacity: 1; }
-  100% { top: 100%; opacity: 0; }
-}
-
-/* ---------- 16. STAT NUMBER SPARKLE ---------- */
-@keyframes statSparkle {
-  0%,100% { filter: brightness(1); }
-  50% { filter: brightness(1.3) drop-shadow(0 0 6px rgba(59,130,246,0.5)); }
-}
-
-/* ---------- 17. INSTALL CARD PLATFORM ICON BOUNCE ---------- */
-.install-card .plat-icon {
-  display: inline-block;
-  animation: platBounce 2.5s ease-in-out infinite;
-}
-.install-card:nth-child(1) .plat-icon { animation-delay: 0s; }
-.install-card:nth-child(2) .plat-icon { animation-delay: 0.8s; }
-.install-card:nth-child(3) .plat-icon { animation-delay: 1.6s; }
-@keyframes platBounce {
-  0%,100% { transform: translateY(0); }
-  30% { transform: translateY(-10px); }
-  50% { transform: translateY(0); }
-  70% { transform: translateY(-5px); }
-  85% { transform: translateY(0); }
-}
-
-/* ---------- 18. SAFE-ICON AUTO BREATHE ---------- */
-.safe-icon {
-  animation: safeBreathe 3.3s ease-in-out infinite;
-}
-.safe-card:nth-child(1) .safe-icon { animation-delay: 0s; }
-.safe-card:nth-child(2) .safe-icon { animation-delay: 0.6s; }
-.safe-card:nth-child(3) .safe-icon { animation-delay: 1.2s; }
-.safe-card:nth-child(4) .safe-icon { animation-delay: 1.8s; }
-.safe-card:nth-child(5) .safe-icon { animation-delay: 2.4s; }
-@keyframes safeBreathe {
-  0%,100% { transform: scale(1); box-shadow: none; }
-  50% { transform: scale(1.08); box-shadow: 0 0 12px rgba(34,197,94,0.15); }
-}
-.safe-card:hover .safe-icon {
-  animation: none;
-  transform: rotate(12deg) scale(1.12);
-  box-shadow: 0 0 16px rgba(34,197,94,0.22);
-}
+.nav-links a:hover::after { width: 100%; }
 
 /* ============================================================ RESPONSIVE */
 @media (max-width: 900px) {
@@ -1136,23 +981,20 @@ body { transition: background .35s ease, color .35s ease; }
   .steps::before { display: none; }
   .step { padding: 0; text-align: left; display: flex; gap: 18px; align-items: flex-start; }
   .step-num { flex-shrink: 0; margin: 0; width: 48px; height: 48px; font-size: 17px; }
-  .feat-grid { grid-template-columns: 1fr; }
-  .feat-card:last-child:nth-child(odd) { grid-column: auto; }
-  .feat-tabs { padding: 3px; gap: 2px; }
-  .feat-tab { padding: 7px 14px; font-size: 12.5px; }
+  .agent-modes { grid-template-columns: 1fr; }
+  .tools-categories { grid-template-columns: 1fr; }
+  .mem-grid { grid-template-columns: 1fr; }
   .skills-row { grid-template-columns: 1fr; }
-  .testi-grid { grid-template-columns: 1fr; }
-  .safety-grid { grid-template-columns: 1fr; }
   .models-grid { grid-template-columns: repeat(2, 1fr); }
   .install-tabs { grid-template-columns: 1fr; }
   .cta-box { padding: 40px 20px; }
   .terminal-wrap { max-width: 100%; }
   .trust-strip { gap: 24px; }
+  .shield-layers { max-width: 100%; }
+  .agent-flow { max-width: 100%; }
 }
 @media (max-width: 580px) {
   .models-grid { grid-template-columns: repeat(2, 1fr); }
-  .testi-grid { grid-template-columns: 1fr; }
-  .testi-grid .testi-card:last-child { grid-column: auto; max-width: none; margin: 0; }
   .hero-icon { width: 120px; height: 120px; border-radius: 26px; }
   .hero-icon-glow { width: 180px; height: 180px; }
   .stats-grid { grid-template-columns: 1fr 1fr; }
@@ -1178,14 +1020,15 @@ body { transition: background .35s ease, color .35s ease; }
     AI Workbench
   </div>
   <ul class="nav-links">
-    <li><a href="#why">痛点</a></li>
+    <li><a href="#why">为什么</a></li>
     <li><a href="#how">上手</a></li>
-    <li><a href="#features">功能</a></li>
-    <li><a href="#testimonials">口碑</a></li>
+    <li><a href="#agent">Agent</a></li>
+    <li><a href="#tools">工具</a></li>
+    <li><a href="#memory">记忆</a></li>
     <li><a href="#safety">安全</a></li>
     <li><a href="#guide">FAQ</a></li>
   </ul>
-  <span class="nav-pill">本地优先</span>
+  <span class="nav-pill">v0.1.0</span>
   <select class="nav-select" onchange="switchLang(this.value)" aria-label="选择语言">
     <option value="index.html" selected>简体中文</option>
     <option value="index_en.html">English</option>
@@ -1212,12 +1055,12 @@ body { transition: background .35s ease, color .35s ease; }
         <img src="icon.png" alt="AI Workbench 图标" class="hero-icon" />
       </div>
 
-      <div class="hero-badge fade-up">你的 AI 对话记录，永远只在你自己的电脑上</div>
+      <div class="hero-badge fade-up">本地优先 · 数据从不离开你的电脑</div>
 
-      <h1 class="fade-up">像聊天一样使用 AI，<br /><span class="grad">数据从不离开你的电脑</span></h1>
+      <h1 class="fade-up">不只是聊天，<br /><span class="grad">是你的 AI Agent 工作台</span></h1>
 
       <p class="hero-sub fade-up">
-        AI Workbench 是一款安装在电脑上的 AI 助手。你用自己的 API Key 连接 DeepSeek、ChatGPT、Claude 等大模型，所有对话、配置都保存在本地，不经过任何中间服务器。
+        AI Workbench 是一款本地优先的桌面 AI Agent 工作台。14 个内置工具让 AI 自主浏览项目、搜索代码、修改文件、执行命令——所有对话和配置只保存在你的电脑上。
       </p>
 
       <div class="hero-btns fade-up">
@@ -1225,9 +1068,9 @@ body { transition: background .35s ease, color .35s ease; }
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
           查看使用教程
         </a>
-        <a href="#features" class="btn btn-ghost">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-          了解所有功能
+        <a href="#agent" class="btn btn-ghost">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          了解 Agent 模式
         </a>
       </div>
 
@@ -1237,21 +1080,24 @@ body { transition: background .35s ease, color .35s ease; }
           <span class="term-dot r"></span>
           <span class="term-dot y"></span>
           <span class="term-dot g"></span>
-          <span class="term-title">AI Workbench — 新对话</span>
+          <span class="term-title">AI Workbench — Agent 模式</span>
         </div>
         <div class="term-body">
           <div><span class="term-user">▸ 你：</span><span class="term-text" id="typing-line"></span><span class="term-cursor" id="typing-cursor"></span></div>
           <div style="margin-top:12px;display:none;" id="ai-reply-line">
             <span class="term-ai">◇ AI：</span><span class="term-text" id="ai-text"></span>
           </div>
+          <div style="margin-top:8px;display:none;" id="tool-line">
+            <span class="term-tool">⟳ 工具：</span><span class="term-text" id="tool-text"></span>
+          </div>
         </div>
       </div>
 
       <div class="trust-strip fade-up">
-        <div class="trust-item"><span class="trust-icon">🔒</span>数据 100% 本地存储</div>
-        <div class="trust-item"><span class="trust-icon">🧩</span>支持 8+ 主流 AI 服务</div>
-        <div class="trust-item"><span class="trust-icon">💻</span>Windows / Mac / Linux</div>
-        <div class="trust-item"><span class="trust-icon">🆓</span>无订阅费，用你自己的 Key</div>
+        <div class="trust-item"><span class="trust-icon">🤖</span>Agent 自主执行</div>
+        <div class="trust-item"><span class="trust-icon">🧰</span>14 内置工具</div>
+        <div class="trust-item"><span class="trust-icon">🔒</span>数据 100% 本地</div>
+        <div class="trust-item"><span class="trust-icon">🆓</span>用你自己的 Key</div>
       </div>
     </div>
   </div>
@@ -1261,20 +1107,20 @@ body { transition: background .35s ease, color .35s ease; }
 <section id="stats" class="tight">
   <div class="stats-grid">
     <div class="stat-card fade-up">
-      <div class="stat-num"><span data-count="8">8</span>+</div>
-      <div class="stat-label">支持的 AI 服务</div>
+      <div class="stat-num"><span data-count="14">14</span></div>
+      <div class="stat-label">内置工具</div>
     </div>
     <div class="stat-card fade-up">
-      <div class="stat-num"><span data-count="3">3</span></div>
-      <div class="stat-label">覆盖操作系统</div>
+      <div class="stat-num">Agent</div>
+      <div class="stat-label">自主执行模式</div>
     </div>
     <div class="stat-card fade-up">
-      <div class="stat-num"><span data-count="100">100</span>%</div>
-      <div class="stat-label">数据在本地</div>
+      <div class="stat-num"><span data-count="5">5</span> 层</div>
+      <div class="stat-label">安全防护</div>
     </div>
     <div class="stat-card fade-up">
-      <div class="stat-num"><span data-count="5">0</span></div>
-      <div class="stat-label">层安全保护</div>
+      <div class="stat-num"><span data-count="9">9</span>+</div>
+      <div class="stat-label">AI 服务支持</div>
     </div>
   </div>
 </section>
@@ -1286,33 +1132,35 @@ body { transition: background .35s ease, color .35s ease; }
   <div class="wrap">
     <div class="sh fade-up">
       <span class="sh-label">为什么选择 AI Workbench</span>
-      <h2 class="sh-title">不一样在哪里？</h2>
-      <p class="sh-desc">市面上 AI 工具很多，但大多数都把你的数据存在他们的服务器上。</p>
+      <h2 class="sh-title">不只是聊天工具，是真正的 AI 工作台</h2>
+      <p class="sh-desc">普通 AI 只能回答问题；AI Workbench 让 AI 自主执行任务——读文件、搜代码、修改项目，全程数据留在本地。</p>
     </div>
 
     <div class="why-grid fade-up">
       <div class="why-card pain">
         <span class="why-flag pain">常见痛点</span>
         <span class="emoji">😰</span>
-        <h3>普通 AI 网页工具的问题</h3>
-        <p>你和 AI 说的每一句话，都被存储在别人的服务器上。你的工作内容、私人想法、商业机密——都不在你的掌控之内。</p>
+        <h3>普通 AI 工具的问题</h3>
+        <p>大多数 AI 工具只能一问一答，你需要手动复制粘贴文件内容，然后 AI 只能给你建议，不能帮你执行。数据还被存在别人的服务器上。</p>
         <ul>
-          <li>聊天记录存在服务商服务器</li>
-          <li>服务商可能查看你的数据</li>
-          <li>服务关闭后聊天记录消失</li>
-          <li>涨价或政策变动你无法控制</li>
+          <li>只能一问一答，不能自主执行多步骤</li>
+          <li>需要手动复制文件内容给 AI</li>
+          <li>AI 只能建议，不能帮你修改代码</li>
+          <li>聊天记录存在服务商服务器上</li>
+          <li>没有项目上下文，AI 反复误解你的意图</li>
         </ul>
       </div>
       <div class="why-card value">
         <span class="why-flag value">解决方案</span>
         <span class="emoji">😌</span>
         <h3>AI Workbench 的做法</h3>
-        <p>所有对话存在你电脑本地。AI Workbench 只是一个「中间桥梁」——它把你的消息发给 AI 服务商，把回复显示给你，全程不存储、不转发。</p>
+        <p>AI Agent 自主浏览项目、搜索代码、修改文件、执行命令——你只说需求，AI 从理解到执行全自动。所有数据 100% 保存在本地。</p>
         <ul>
-          <li>所有对话保存在你的本地电脑</li>
-          <li>API Key 加密存储在本地</li>
-          <li>没有中间服务器、没有账号系统</li>
-          <li>你可以随时备份到 U 盘或网盘</li>
+          <li>Agent 模式自主多步骤执行任务</li>
+          <li>AI 自己浏览目录、搜索文件，无需手动</li>
+          <li>AI 可以直接修改代码并自动验证</li>
+          <li>所有对话保存在本地 SQLite 数据库</li>
+          <li>工作区记忆让 AI 跨对话记住项目约定</li>
         </ul>
       </div>
     </div>
@@ -1324,7 +1172,7 @@ body { transition: background .35s ease, color .35s ease; }
   <div class="wrap">
     <div class="sh fade-up">
       <span class="sh-label">三步上手</span>
-      <h2 class="sh-title">从安装到第一次对话</h2>
+      <h2 class="sh-title">从安装到 Agent 执行</h2>
       <p class="sh-desc">不需要任何技术背景，按照步骤来就行。</p>
     </div>
 
@@ -1332,22 +1180,22 @@ body { transition: background .35s ease, color .35s ease; }
       <div class="step">
         <div class="step-num">1</div>
         <div>
-          <h3>安装应用</h3>
-          <p>下载对应你电脑系统的安装包——Windows 双击 <strong>.exe</strong> 按向导安装；macOS 打开 <strong>.dmg</strong> 拖入应用文件夹；Linux 直接运行 <strong>.AppImage</strong>。</p>
+          <h3>安装并配置</h3>
+          <p>下载安装包，选择你用的 AI 服务商（DeepSeek、ChatGPT、Claude 等），填入 <strong>API Key</strong>，点击「测试连接」确认可用。</p>
         </div>
       </div>
       <div class="step">
         <div class="step-num">2</div>
         <div>
-          <h3>配置一个 AI 模型</h3>
-          <p>点击左侧「模型配置」，选择你用的 AI 服务商（如 DeepSeek、ChatGPT），填入你从服务商官网申请的 <strong>API Key</strong>，点击「测试连接」确认可用。</p>
+          <h3>创建工作区</h3>
+          <p>将你的项目文件夹设为「工作区」。AI 会自动加载项目上下文——README、package.json、Git 状态等，无需手动说明。</p>
         </div>
       </div>
       <div class="step">
         <div class="step-num">3</div>
         <div>
-          <h3>开始聊天</h3>
-          <p>点击左侧「Chat」，在底部输入框输入内容，按 <strong>Enter</strong> 发送。AI 的回复会像打字一样逐字出现。点「+ 新建」可以随时开启新对话。</p>
+          <h3>切换到 Craft 模式</h3>
+          <p>在 Craft 模式下告诉 AI 你想做什么——<strong>"修复登录页的样式 bug"</strong>。AI 自主浏览项目、定位问题、生成修改、自动验证，全程透明可控。</p>
         </div>
       </div>
     </div>
@@ -1356,97 +1204,278 @@ body { transition: background .35s ease, color .35s ease; }
 
 <div class="divider"></div>
 
-<!-- ============================================================ FEATURES (Tabbed) -->
-<section id="features">
+<!-- ============================================================ AGENT MODE -->
+<section id="agent" class="wide-section">
   <div class="wrap">
     <div class="sh fade-up">
-      <span class="sh-label">主要功能</span>
-      <h2 class="sh-title">不只是聊天</h2>
-      <p class="sh-desc">从日常对话到读取文件、生成报告，AI Workbench 都能帮你做到。</p>
+      <span class="sh-label">Agent 模式</span>
+      <h2 class="sh-title">AI 不只是回答，还能自主执行</h2>
+      <p class="sh-desc">Agent 模式让 AI 像一位自主的开发者——连续调用多个工具，每步结果影响下一步决策，直到任务完成。</p>
     </div>
 
-    <div class="feat-tabs-wrap fade-up">
-      <div class="feat-tabs">
-        <button class="feat-tab active" data-tab="chat">💬 对话</button>
-        <button class="feat-tab" data-tab="workspace">📁 工作区</button>
-        <button class="feat-tab" data-tab="files">📂 文件 &amp; 工具</button>
-        <button class="feat-tab" data-tab="ux">🎨 体验</button>
+    <!-- Agent flow timeline -->
+    <div class="agent-flow fade-up">
+      <div class="agent-step">
+        <div class="agent-step-dot">💬</div>
+        <div class="agent-step-line"></div>
+        <div class="agent-step-body">
+          <div class="agent-step-num">Step 0</div>
+          <div class="agent-step-title">你发送需求</div>
+          <div class="agent-step-desc">在工作区对话中告诉 AI 你想做什么——"修复登录页样式 bug"。系统自动对请求分类。</div>
+        </div>
       </div>
-    </div>
-
-    <div class="feat-grid fade-up" id="feat-chat">
-      <div class="feat-card">
-        <span class="feat-icon">⚡</span>
-        <div class="feat-title">流式实时回复</div>
-        <div class="feat-desc">AI 的回答逐字显示，不用干等一大段文字突然出现。生成中随时可以点「停止」。</div>
+      <div class="agent-step">
+        <div class="agent-step-dot">📦</div>
+        <div class="agent-step-line"></div>
+        <div class="agent-step-body">
+          <div class="agent-step-num">Step 1</div>
+          <div class="agent-step-title">加载工作区上下文</div>
+          <div class="agent-step-desc">自动读取 README.md、package.json、Git 状态、工作区记忆，AI 立刻了解你的项目。</div>
+        </div>
       </div>
-      <div class="feat-card">
-        <span class="feat-icon">💬</span>
-        <div class="feat-title">多对话管理</div>
-        <div class="feat-desc">可以同时保留多个对话，按日期分组显示。支持重命名、删除，随时切换回来继续聊。</div>
+      <div class="agent-step">
+        <div class="agent-step-dot">🔍</div>
+        <div class="agent-step-line"></div>
+        <div class="agent-step-body">
+          <div class="agent-step-num">Step 2</div>
+          <div class="agent-step-title">自主浏览与搜索</div>
+          <div class="agent-step-desc">AI 用 list_dir、read_file、search_files 等工具自己浏览项目结构、定位相关文件。</div>
+        </div>
       </div>
-      <div class="feat-card">
-        <span class="feat-icon">✏️</span>
-        <div class="feat-title">消息编辑与重新生成</div>
-        <div class="feat-desc">发现问法不对？悬停在消息上点「编辑」修改后重新提交。对 AI 的回复不满意，点「重新生成」让它再答一次。</div>
+      <div class="agent-step">
+        <div class="agent-step-dot">🤔</div>
+        <div class="agent-step-line"></div>
+        <div class="agent-step-body">
+          <div class="agent-step-num">Step 3</div>
+          <div class="agent-step-title">思考并调用工具</div>
+          <div class="agent-step-desc">LLM 分析搜索结果，决定下一步——可能读取更多文件、搜索更多内容，或开始生成修改。</div>
+        </div>
       </div>
-    </div>
-
-    <div class="feat-grid fade-up" id="feat-workspace" style="display:none;">
-      <div class="feat-card">
-        <span class="feat-icon">📁</span>
-        <div class="feat-title">按项目文件夹整理对话</div>
-        <div class="feat-desc">将本地文件夹设为「工作区」，该工作区下的对话独立管理。处理多个项目时再也不会混淆上下文。</div>
+      <div class="agent-step">
+        <div class="agent-step-dot">✏️</div>
+        <div class="agent-step-line"></div>
+        <div class="agent-step-body">
+          <div class="agent-step-num">Step 4</div>
+          <div class="agent-step-title">生成修改并确认</div>
+          <div class="agent-step-desc">AI 用 apply_patch 生成 unified diff——弹出确认对话框显示修改摘要，你点击「允许」后才写入。</div>
+        </div>
       </div>
-      <div class="feat-card">
-        <span class="feat-icon">🔀</span>
-        <div class="feat-title">一键切换工作区</div>
-        <div class="feat-desc">聊天页顶部显示当前工作区名称，点击即可快速切换。每个工作区只展示自己的对话，保持上下文清晰。</div>
-      </div>
-      <div class="feat-card">
-        <span class="feat-icon">🛡️</span>
-        <div class="feat-title">文件操作以工作区为基准</div>
-        <div class="feat-desc">读取文件、执行命令时默认从工作区根路径出发，减少路径混淆。工作区路径失效时会自动提示。</div>
-      </div>
-    </div>
-
-    <div class="feat-grid fade-up" id="feat-files" style="display:none;">
-      <div class="feat-card">
-        <span class="feat-icon">📄</span>
-        <div class="feat-title">读取你的本地文件</div>
-        <div class="feat-desc">在聊天时选择一个 .txt 或 .md 文件，AI 会读取文件内容并据此回答你的问题——比如"帮我总结这份文档"。</div>
-      </div>
-      <div class="feat-card">
-        <span class="feat-icon">📥</span>
-        <div class="feat-title">导出对话为 Markdown</div>
-        <div class="feat-desc">单条 AI 回复或整个对话都可导出为 .md 文件，包含完整对话记录和工具调用摘要，方便存档或二次使用。</div>
-      </div>
-      <div class="feat-card">
-        <span class="feat-icon">⚡</span>
-        <div class="feat-title">命令执行器（高级）</div>
-        <div class="feat-desc">在授权的工作区文件夹内让 AI 执行本地命令。支持自然语言触发（如"查一下 Node 版本"），多层安全保护默认关闭，按需开启。</div>
+      <div class="agent-step">
+        <div class="agent-step-dot">✅</div>
+        <div class="agent-step-body">
+          <div class="agent-step-num">Step 5</div>
+          <div class="agent-step-title">自动验证与报告</div>
+          <div class="agent-step-desc">写入后自动运行 npm test / npm build 验证。AI 最终回复包含修改摘要、文件列表、验证结果。</div>
+        </div>
       </div>
     </div>
 
-    <div class="feat-grid fade-up" id="feat-ux" style="display:none;">
-      <div class="feat-card">
-        <span class="feat-icon">🎨</span>
-        <div class="feat-title">深色 / 浅色主题</div>
-        <div class="feat-desc">支持跟随系统、手动浅色、手动深色。看起来护眼，用起来舒服。</div>
+    <!-- Ask vs Craft -->
+    <div class="sh fade-up" style="margin-top:48px; margin-bottom:36px;">
+      <span class="sh-label">两种模式</span>
+      <h2 class="sh-title">Ask 询问 · Craft 构建</h2>
+    </div>
+
+    <div class="agent-modes fade-up">
+      <div class="mode-card ask">
+        <span class="mode-emoji">💬</span>
+        <div class="mode-title">Ask 模式</div>
+        <div class="mode-desc">一问一答的传统聊天方式。适合简单问答、代码咨询、理解概念。AI 不调用工具，只回答你的问题。</div>
+        <span class="mode-tag ask">简单问答</span>
       </div>
-      <div class="feat-card">
-        <span class="feat-icon">📊</span>
-        <div class="feat-title">Markdown 渲染</div>
-        <div class="feat-desc">AI 回复的代码块、表格、列表、标题都能正确显示，代码块还有一键复制按钮。</div>
-      </div>
-      <div class="feat-card">
-        <span class="feat-icon">⚙️</span>
-        <div class="feat-title">灵活的界面布局</div>
-        <div class="feat-desc">侧边栏和聊天区域都可以拖动调整宽度，完全按你的习惯来。宽度缩小后自动变成图标模式。</div>
+      <div class="mode-card craft">
+        <span class="mode-emoji">🛠️</span>
+        <div class="mode-title">Craft 模式</div>
+        <div class="mode-desc">AI 自主多步骤执行。适合代码修改、项目分析、多步操作。AI 连续调用工具，从浏览到修改到验证全自动。</div>
+        <span class="mode-tag craft">自主执行</span>
       </div>
     </div>
   </div>
 </section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ 14 BUILT-IN TOOLS -->
+<section id="tools" class="wide-section">
+  <div class="wrap">
+    <div class="sh fade-up">
+      <span class="sh-label">14 内置工具</span>
+      <h2 class="sh-title">AI 的「双手」，按风险分级管控</h2>
+      <p class="sh-desc">每个工具有明确的风险等级和审批策略——只读操作无门槛，写入操作需你确认。</p>
+    </div>
+
+    <div class="tools-categories fade-up">
+      <!-- 只读浏览 -->
+      <div class="tools-group">
+        <div class="tools-group-header">
+          <span class="tools-group-icon">📂</span>
+          <span class="tools-group-title">只读浏览</span>
+        </div>
+        <div class="tools-list">
+          <div class="tool-item">
+            <span class="tool-name">list_dir</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">列出工作区目录内容</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">read_file</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">读取工作区内文本文件</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">search_files</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">搜索文件路径（ripgrep）</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">search_text</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">搜索文件内容（正则+glob）</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 只读文件 -->
+      <div class="tools-group">
+        <div class="tools-group-header">
+          <span class="tools-group-icon">📄</span>
+          <span class="tools-group-title">只读文件</span>
+        </div>
+        <div class="tools-list">
+          <div class="tool-item">
+            <span class="tool-name">txt_reader</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">读取用户选择的 .txt 文件</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">markdown_reader</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">读取用户选择的 .md 文件</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">git_status</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">查看工作区 git 状态</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">git_diff</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">查看 git 工作区差异</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 文件创建 & 修改 -->
+      <div class="tools-group">
+        <div class="tools-group-header">
+          <span class="tools-group-icon">✏️</span>
+          <span class="tools-group-title">文件创建 & 修改</span>
+        </div>
+        <div class="tools-list">
+          <div class="tool-item">
+            <span class="tool-name">create_file</span>
+            <span class="risk-badge risk-medium">🟡 medium</span>
+            <span class="tool-desc-inline">创建新文件（不可覆盖已有）</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">create_directory</span>
+            <span class="risk-badge risk-medium">🟡 medium</span>
+            <span class="tool-desc-inline">创建新目录（需确认）</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">apply_patch</span>
+            <span class="risk-badge risk-medium">🟡 medium</span>
+            <span class="tool-desc-inline">应用 unified diff 修改文件</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 高风险操作 -->
+      <div class="tools-group">
+        <div class="tools-group-header">
+          <span class="tools-group-icon">⚡</span>
+          <span class="tools-group-title">高风险操作</span>
+        </div>
+        <div class="tools-list">
+          <div class="tool-item">
+            <span class="tool-name">command_runner</span>
+            <span class="risk-badge risk-high">🔴 high</span>
+            <span class="tool-desc-inline">执行授权目录内的 shell 命令</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">update_memory</span>
+            <span class="risk-badge risk-high">🔴 high</span>
+            <span class="tool-desc-inline">更新工作区持久化记忆</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-name">load_skill</span>
+            <span class="risk-badge risk-safe">🟢 safe</span>
+            <span class="tool-desc-inline">懒加载 Skill 完整 prompt</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Risk explainer -->
+    <div class="risk-explainer fade-up">
+      <h4>🛡️ 风险等级体系</h4>
+      <div class="risk-row"><span class="risk-badge risk-safe" style="font-size:13px;padding:3px 10px;">🟢 safe</span> 纯只读操作，无副作用——读文件、列目录、搜索、查看 git</div>
+      <div class="risk-row"><span class="risk-badge risk-medium" style="font-size:13px;padding:3px 10px;">🟡 medium</span> 写工作区内文件，有限副作用——创建文件/目录、应用 patch（含检查点备份）</div>
+      <div class="risk-row"><span class="risk-badge risk-high" style="font-size:13px;padding:3px 10px;">🔴 high</span> 执行命令、写入记忆——每次操作弹出原生确认对话框</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ WORKSPACE MEMORY -->
+<section id="memory">
+  <div class="wrap">
+    <div class="sh fade-up">
+      <span class="sh-label">工作区记忆</span>
+      <h2 class="sh-title">AI 跨对话记住你的项目</h2>
+      <p class="sh-desc">工作区记忆是持久化的项目知识——AI 在一次对话中学到的约定和偏好，下次对话还能记住。</p>
+    </div>
+
+    <div class="mem-grid fade-up">
+      <div class="mem-card">
+        <span class="mem-icon">🧠</span>
+        <div class="mem-title">数据库记忆</div>
+        <div class="mem-desc">AI 通过 update_memory 工具写入数据库。持续有效直到工作区被删除。优先级最高。</div>
+      </div>
+      <div class="mem-card">
+        <span class="mem-icon">📝</span>
+        <div class="mem-title">memory.md 文件</div>
+        <div class="mem-desc">工作区根目录下 .ai-workbench/memory.md 文件的内容。适合手动编辑或团队共享，可提交到 git。</div>
+      </div>
+      <div class="mem-card">
+        <span class="mem-icon">🔍</span>
+        <div class="mem-title">聊天中查看</div>
+        <div class="mem-desc">聊天页面顶部有「Memory」按钮，点击展开查看记忆来源、摘要（最多 280 字）、最后更新时间。</div>
+      </div>
+    </div>
+
+    <div class="mem-explainer fade-up">
+      <h4>🤖 AI 更新记忆的流程</h4>
+      <div class="mem-flow">
+        <span class="mem-flow-step">AI 判断需要记住</span>
+        <span class="mem-flow-arrow">→</span>
+        <span class="mem-flow-step">调用 update_memory</span>
+        <span class="mem-flow-arrow">→</span>
+        <span class="mem-flow-step">弹出确认对话框</span>
+        <span class="mem-flow-arrow">→</span>
+        <span class="mem-flow-step">你点击「允许写入」</span>
+        <span class="mem-flow-arrow">→</span>
+        <span class="mem-flow-step">记忆写入数据库</span>
+      </div>
+      <p style="margin-top:14px; font-size:14.5px; color:var(--text2); line-height:1.7;">
+        <strong>安全检查：</strong>系统自动拒绝包含 API Key、Token、密码等敏感信息的记忆，也拒绝看起来像聊天记录的内容。单条记忆最多 4000 字符。
+      </p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
 
 <!-- ============================================================ SKILLS -->
 <section id="skills">
@@ -1454,7 +1483,7 @@ body { transition: background .35s ease, color .35s ease; }
     <div class="sh fade-up">
       <span class="sh-label">技能（Skills）</span>
       <h2 class="sh-title">让 AI 按你想要的方式回答</h2>
-      <p class="sh-desc">技能是预设的「指令模板」，激活后 AI 会按照特定的风格和格式来处理你的输入。</p>
+      <p class="sh-desc">技能是预设的 Prompt 模板——激活后 AI 按特定风格和格式处理你的输入。支持懒加载、自定义、导入导出。</p>
     </div>
 
     <div class="skills-row fade-up">
@@ -1487,90 +1516,89 @@ body { transition: background .35s ease, color .35s ease; }
     <div class="sk-explainer fade-up">
       <h3>🤔 技能怎么用？</h3>
       <ol>
-        <li><strong>自动匹配：</strong>默认开启。你的消息里包含关键词（如"帮我写日报"），对应技能会自动激活。</li>
-        <li><strong>手动选择：</strong>也可以在输入框旁边的下拉菜单里手动选择某个技能，强制使用它。</li>
-        <li><strong>单次生效：</strong>技能只影响你当前这条消息，发送后自动回到默认状态，不会影响整个对话。</li>
-        <li><strong>可以自定义：</strong>在「Skill」页面点击「添加 Skill」，用自然语言写下你想要 AI 扮演的角色和回答方式，就能创建专属技能。</li>
+        <li><strong>自动匹配（懒加载）：</strong>消息里包含关键词时，AI 先收到 Skill 概要卡片，判断需要时再通过 load_skill 加载完整 prompt——减少不必要的上下文消耗。</li>
+        <li><strong>手动选择：</strong>输入框旁的下拉菜单里手动选技能，直接使用完整 prompt，优先级最高。</li>
+        <li><strong>单次生效：</strong>技能只影响当前这条消息，发送后自动回到默认状态。</li>
+        <li><strong>自定义 & 导入：</strong>点击「添加 Skill」创建专属技能；也可导入包含 SKILL.md 的文件夹或 Markdown 文件，自动解析 YAML 头信息。</li>
       </ol>
     </div>
   </div>
 </section>
 
-<!-- ============================================================ TESTIMONIALS -->
-<section id="testimonials">
-  <div class="wrap">
-    <div class="sh fade-up">
-      <span class="sh-label">用户口碑</span>
-      <h2 class="sh-title">他们都在用</h2>
-      <p class="sh-desc">来自不同行业的真实用户反馈。</p>
-    </div>
+<div class="divider"></div>
 
-    <div class="testi-grid fade-up">
-      <div class="testi-card">
-        <div class="stars">★★★★★</div>
-        <div class="quote">"以前用网页版 AI 总担心客户数据泄露，现在所有对话都在本地，终于敢放心地和 AI 讨论项目方案了。"</div>
-        <div class="author">张经理</div>
-        <div class="role">商务咨询公司</div>
-      </div>
-      <div class="testi-card">
-        <div class="stars">★★★★★</div>
-        <div class="quote">"写日报是我每天最头疼的事。用了这个工具的日报 Skill，几分钟就搞定，格式统一规范，同事都说我效率变高了。"</div>
-        <div class="author">李同学</div>
-        <div class="role">应届实习生</div>
-      </div>
-      <div class="testi-card">
-        <div class="stars">★★★★★</div>
-        <div class="quote">"Ollama 本地模型配合这个工具简直是绝配——完全离线运行，不需要联网，安全感拉满。"</div>
-        <div class="author">陈老师</div>
-        <div class="role">自由职业者</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================ SAFETY -->
+<!-- ============================================================ SAFETY / SHIELD -->
 <section id="safety" class="wide-section">
   <div class="wrap">
     <div class="sh fade-up">
       <span class="sh-label">安全与隐私</span>
-      <h2 class="sh-title">你的数据，你说了算</h2>
-      <p class="sh-desc">我们把「数据安全」放在第一位，而不是当作附加功能。</p>
+      <h2 class="sh-title">Command Runner 五层防护</h2>
+      <p class="sh-desc">命令执行器是风险最高的工具——因此我们为它设计了最严密的五层安全防护，默认关闭，按需开启。</p>
     </div>
 
-    <div class="safety-grid fade-up">
-      <div class="safe-card">
-        <div class="safe-icon">🔐</div>
-        <div class="safe-body">
-          <h4>API Key 加密保存</h4>
-          <p>你填入的 API Key 在保存前会经过加密处理，以密文形式存储在本地。应用界面显示的是 <code>sk-****xxxx</code> 格式的掩码，你自己也看不到原文，别人更看不到。</p>
+    <div class="shield-layers fade-up">
+      <div class="shield-layer">
+        <div class="shield-num">1</div>
+        <div class="shield-text">
+          <h4>手动启用</h4>
+          <p>在设置页面手动打开 command_runner 开关——默认关闭，不开启就无法执行任何命令。</p>
         </div>
       </div>
-      <div class="safe-card">
-        <div class="safe-icon">💾</div>
-        <div class="safe-body">
-          <h4>聊天记录只在本地</h4>
-          <p>所有对话都保存在你电脑上的数据库文件（app.db）里。AI Workbench 不会把你的聊天内容上传到任何服务器，也没有账号系统——本来就用不到。</p>
+      <div class="shield-layer">
+        <div class="shield-num">2</div>
+        <div class="shield-text">
+          <h4>授权目录</h4>
+          <p>只能在你明确添加的授权工作目录内执行命令——其他路径一律拒绝。</p>
         </div>
       </div>
-      <div class="safe-card">
-        <div class="safe-icon">📂</div>
-        <div class="safe-body">
-          <h4>文件读取需要你主动授权</h4>
-          <p>AI 不能自动读取你电脑上的任何文件。只有你在聊天页面点击「选择文件」按钮、主动选择了某个文件，AI 才能读取它。应用也不会保存文件的完整内容，只存简短预览。</p>
+      <div class="shield-layer">
+        <div class="shield-num">3</div>
+        <div class="shield-text">
+          <h4>危险命令拦截</h4>
+          <p>自动拒绝 14 种危险模式——rm -rf、del /s /q、sudo、format、shutdown 等，Shell 和 argv 双模式覆盖。</p>
         </div>
       </div>
-      <div class="safe-card">
-        <div class="safe-icon">⚠️</div>
-        <div class="safe-body">
-          <h4>命令执行有五层保护</h4>
-          <p>「命令执行」功能默认是关闭的，需要你在设置里手动开启，并指定允许操作的文件夹。每次执行命令前还会弹出确认窗口，危险操作（如删除文件）会被自动拦截。</p>
+      <div class="shield-layer">
+        <div class="shield-num">4</div>
+        <div class="shield-text">
+          <h4>执行确认弹窗</h4>
+          <p>每次执行前弹出原生确认对话框，显示完整命令和工作目录——你必须点击「允许」才执行。</p>
         </div>
       </div>
-      <div class="safe-card">
-        <div class="safe-icon">🕵️</div>
-        <div class="safe-body">
-          <h4>敏感信息自动脱敏</h4>
-          <p>工具执行产生的日志在写入本地数据库之前，会自动将 API Key、Token、密码等敏感信息替换为 <code>[REDACTED]</code>，确保密钥不以明文形式留存在任何记录中。</p>
+      <div class="shield-layer">
+        <div class="shield-num">5</div>
+        <div class="shield-text">
+          <h4>超时与取消</h4>
+          <p>默认 60 秒超时（可调整到最大 300 秒），支持中途取消。输出上限 20,000 字符。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desensitization -->
+    <div class="desensitize-note fade-up">
+      <div class="desensitize-icon">🕵️</div>
+      <div class="desensitize-body">
+        <h4>敏感信息自动脱敏</h4>
+        <p>工具日志在写入本地数据库前，自动将 API Key（<code>sk-*</code>）、Bearer Token、密码等敏感信息替换为 <code>[REDACTED]</code>。密钥不以明文落盘。文件读取只保存元数据和 500 字预览。</p>
+      </div>
+    </div>
+
+    <!-- Other safety cards -->
+    <div style="margin-top:28px;" class="fade-up">
+      <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:16px;">
+        <div style="background:var(--bg3); border:1px solid var(--border); border-radius:var(--r); padding:28px; display:flex; gap:20px; align-items:flex-start; transition:all .3s;" onmouseover="this.style.borderColor='rgba(34,197,94,0.25)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="width:46px;height:46px;flex-shrink:0;border-radius:11px;background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.16);display:flex;align-items:center;justify-content:center;font-size:21px;">🔐</div>
+          <div>
+            <h4 style="font-size:15px;font-weight:600;margin-bottom:7px;">API Key 加密保存</h4>
+            <p style="font-size:14.5px;color:var(--text2);line-height:1.7;">使用 Electron safeStorage 或 AES-256-GCM 加密。界面显示 <code style="font-size:13px;background:rgba(255,255,255,0.05);padding:1px 6px;border-radius:4px;border:1px solid rgba(255,255,255,0.06);color:var(--text2);">sk-****xxxx</code> 格式掩码。</p>
+          </div>
+        </div>
+        <div style="background:var(--bg3); border:1px solid var(--border); border-radius:var(--r); padding:28px; display:flex; gap:20px; align-items:flex-start; transition:all .3s;" onmouseover="this.style.borderColor='rgba(34,197,94,0.25)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="width:46px;height:46px;flex-shrink:0;border-radius:11px;background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.16);display:flex;align-items:center;justify-content:center;font-size:21px;">💾</div>
+          <div>
+            <h4 style="font-size:15px;font-weight:600;margin-bottom:7px;">数据 100% 本地</h4>
+            <p style="font-size:14.5px;color:var(--text2);line-height:1.7;">所有对话保存在本地 SQLite 数据库（app.db）。没有中间服务器，没有账号系统。API Key 加密存储在本地。</p>
+          </div>
         </div>
       </div>
     </div>
@@ -1609,7 +1637,7 @@ body { transition: background .35s ease, color .35s ease; }
       </div>
       <div class="model-card">
         <div class="logo-text">通义千问</div>
-        <div class="tag">阿里云 · 国产</div>
+        <div class="tag">阿里云百炼</div>
       </div>
       <div class="model-card local">
         <div class="logo-text">Ollama</div>
@@ -1646,16 +1674,35 @@ body { transition: background .35s ease, color .35s ease; }
 
       <div class="qa-item">
         <button class="qa-q" onclick="toggleQA(this)">
+          什么是「Agent 模式」？和普通聊天有什么区别？
+          <span class="qa-icon">▼</span>
+        </button>
+        <div class="qa-a">
+          <div class="qa-a-inner">
+            Agent 模式是 AI Workbench 的高级工作方式。普通模式一问一答，你选文件给 AI，AI 回答。<br /><br />
+            Agent 模式下，AI 自主多步骤执行：自己浏览项目结构 → 搜索相关文件 → 读取内容 → 生成修改 → 你确认 → 应用修改 → 自动验证。<br /><br />
+            两种子模式：<br />
+            ・<strong>Ask（询问）</strong>：传统一问一答，适合简单问答<br />
+            ・<strong>Craft（构建）</strong>：完整 Agent 执行，适合代码修改、项目分析<br /><br />
+            Agent 模式通过环境变量 <code>AI_WORKBENCH_ENABLE_AGENT_MODE=1</code> 启用，需重启应用。
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <button class="qa-q" onclick="toggleQA(this)">
           什么是「工作区」？有什么用？
           <span class="qa-icon">▼</span>
         </button>
         <div class="qa-a">
           <div class="qa-a-inner">
-            工作区就是把你电脑上的一个文件夹和你的 AI 对话绑定在一起。创建后：<br /><br />
+            工作区 = 一个本地文件夹 + 属于它的对话 + 项目记忆。<br /><br />
+            创建后：<br />
             ・对话列表只展示该工作区的对话，不同项目互不干扰<br />
-            ・读取文件或执行命令时默认从该文件夹出发，路径更准确<br />
-            ・可以为每个项目单独创建工作区，切换时一键搞定<br /><br />
-            如果你只是随手聊，不绑定工作区也完全没问题，所有对话照常保存。
+            ・工具操作限定在工作区根目录内，路径更准确<br />
+            ・Agent 模式自动加载项目上下文（README、package.json、Git 状态等）<br />
+            ・工作区记忆让 AI 跨对话记住你的项目约定<br /><br />
+            如果你只是随手聊，不绑定工作区也完全没问题。
           </div>
         </div>
       </div>
@@ -1667,7 +1714,7 @@ body { transition: background .35s ease, color .35s ease; }
         </button>
         <div class="qa-a">
           <div class="qa-a-inner">
-            需要先去 AI 服务商官网注册账号并申请 API Key。常见服务商获取地址：
+            需要先去 AI 服务商官网注册账号并申请 API Key：
             <table>
               <tr><th>服务商</th><th>获取地址</th><th>备注</th></tr>
               <tr><td>DeepSeek</td><td>platform.deepseek.com</td><td>国内注册，需充值</td></tr>
@@ -1675,7 +1722,7 @@ body { transition: background .35s ease, color .35s ease; }
               <tr><td>通义千问</td><td>dashscope.aliyun.com</td><td>需阿里云账号</td></tr>
               <tr><td>ChatGPT</td><td>platform.openai.com</td><td>需海外支付方式</td></tr>
             </table>
-            <br />如果想在本地运行模型，可以试试 Ollama，去 ollama.com 下载安装后，在 AI Workbench 选择「Ollama」供应商即可，无需 API Key。
+            <br />如果想在本地运行模型，可以试试 Ollama，去 ollama.com 下载安装后选择「Ollama」供应商即可，无需 API Key。
           </div>
         </div>
       </div>
@@ -1687,7 +1734,6 @@ body { transition: background .35s ease, color .35s ease; }
         </button>
         <div class="qa-a">
           <div class="qa-a-inner">
-            最常见的几个原因和解决方法：
             <table>
               <tr><th>错误提示</th><th>原因</th><th>解决方法</th></tr>
               <tr><td>401 / 403</td><td>API Key 无效或过期</td><td>重新去服务商官网获取新的 Key</td></tr>
@@ -1701,16 +1747,51 @@ body { transition: background .35s ease, color .35s ease; }
 
       <div class="qa-item">
         <button class="qa-q" onclick="toggleQA(this)">
-          AI 没有自动使用我想要的技能，为什么？
+          Agent 模式有什么安全限制？
           <span class="qa-icon">▼</span>
         </button>
         <div class="qa-a">
           <div class="qa-a-inner">
-            自动匹配依赖「关键词」触发。检查以下几点：<br /><br />
-            1. 你的消息里是否包含了触发词？（比如"日报生成"需要消息里含有「日报」）<br />
-            2. 对应的技能是否已经打开（在「Skill」页面确认开关是开启状态）？<br />
-            3. 输入框旁的选择器是否处于「自动匹配」模式？<br /><br />
-            如果自动匹配不稳定，可以直接在选择器里手动选技能，优先级最高。
+            Agent 运行有严格的安全限制，防止无限循环：<br /><br />
+            ・墙钟时间上限：<strong>10 分钟</strong><br />
+            ・总步骤数上限：<strong>12 步</strong><br />
+            ・总工具调用上限：<strong>40 次</strong><br />
+            ・同一工具重复调用上限：<strong>3 次</strong>（相同参数）<br />
+            ・连续无进展轮次：<strong>3 轮</strong><br /><br />
+            高风险工具还有重放防护——完全相同的参数再次调用会被拒绝，防止无效循环。apply_patch 每次写入前自动创建 checkpoint（文件备份）。
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <button class="qa-q" onclick="toggleQA(this)">
+          工作区记忆写入失败怎么办？
+          <span class="qa-icon">▼</span>
+        </button>
+        <div class="qa-a">
+          <div class="qa-a-inner">
+            可能的原因：<br /><br />
+            1. 不在工作区对话中——update_memory 需要工作区上下文<br />
+            2. 内容包含敏感信息——记忆不能包含 API Key、Token、密码<br />
+            3. 内容看起来像聊天记录——系统拒绝保存对话格式的内容<br />
+            4. 内容过长——单条记忆不超过 4000 字符
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <button class="qa-q" onclick="toggleQA(this)">
+          Command Runner 无法执行，怎么排查？
+          <span class="qa-icon">▼</span>
+        </button>
+        <div class="qa-a">
+          <div class="qa-a-inner">
+            检查清单：<br /><br />
+            1. 设置页面中是否已打开 command_runner 开关？<br />
+            2. 是否已添加至少一个授权工作目录？<br />
+            3. 命令的 cwd 是否在授权目录范围内？<br />
+            4. 命令是否触发了危险命令拦截（14 种模式）？<br />
+            5. 是否在确认弹窗中点击了「允许」？
           </div>
         </div>
       </div>
@@ -1724,37 +1805,9 @@ body { transition: background .35s ease, color .35s ease; }
           <div class="qa-a-inner">
             默认存储位置：<br />
             ・Windows：<code>%APPDATA%/ai-workbench/app.db</code><br />
-            ・macOS：<code>~/Library/Application Support/ai-workbench/app.db</code><br /><br />
-            你可以在「设置」页面看到具体路径。建议定期把这个 .db 文件复制到 U 盘或网盘作备份，防止电脑损坏时丢失。也可以在设置里更改存储位置，直接指向你的网盘同步文件夹。
-          </div>
-        </div>
-      </div>
-
-      <div class="qa-item">
-        <button class="qa-q" onclick="toggleQA(this)">
-          读取文件时提示「文件未授权」或「读取失败」怎么办？
-          <span class="qa-icon">▼</span>
-        </button>
-        <div class="qa-a">
-          <div class="qa-a-inner">
-            文件读取有几个限制：<br /><br />
-            1. 必须通过聊天页面的「选择文件」按钮来选择文件，不能手动输入路径。<br />
-            2. 只支持 .txt、.md、.markdown 三种格式。<br />
-            3. 文件大小不能超过 5MB。<br />
-            4. 文件授权信息在应用关闭后会清除，重新打开应用后需要重新选择文件。
-          </div>
-        </div>
-      </div>
-
-      <div class="qa-item">
-        <button class="qa-q" onclick="toggleQA(this)">
-          卸载应用之后，我的数据还在吗？
-          <span class="qa-icon">▼</span>
-        </button>
-        <div class="qa-a">
-          <div class="qa-a-inner">
-            在 Windows 上卸载时，安装程序会询问你是否同时删除本地数据（聊天记录、模型配置、密钥等）。你可以选择保留，之后重新安装后数据依然在。<br /><br />
-            如果你担心数据安全，建议卸载前先手动找到 app.db 文件备份，或在设置里点「清理会话历史」再卸载。
+            ・macOS：<code>~/Library/Application Support/ai-workbench/app.db</code><br />
+            ・Linux：<code>~/.config/ai-workbench/app.db</code><br /><br />
+            建议定期备份 app.db、app.db-wal、app.db-shm 三个文件。也可以在设置里更改存储位置，指向网盘同步文件夹。
           </div>
         </div>
       </div>
@@ -1770,7 +1823,7 @@ body { transition: background .35s ease, color .35s ease; }
   <div class="wrap">
     <div class="cta-box fade-up">
       <h2>现在就开始用</h2>
-      <p>下载对应你系统的安装包，安装后配置一个 AI 服务即可开始聊天。</p>
+      <p>下载对应你系统的安装包，安装后配置一个 AI 服务即可开始。支持 Agent 模式自主执行。</p>
 
       <div class="install-tabs">
         <a href="#" class="install-card">
@@ -1809,6 +1862,7 @@ body { transition: background .35s ease, color .35s ease; }
       <div class="footer-meta">
         <span>本地优先 · 隐私第一</span>
         <span>Windows · macOS · Linux</span>
+        <span>v0.1.0</span>
         <span style="color: var(--dim)">MIT License</span>
       </div>
     </div>
@@ -1820,7 +1874,6 @@ body { transition: background .35s ease, color .35s ease; }
   // ======================================================== THEME & LANGUAGE
   var THEME_KEY = 'awb-theme';
   var themes = ['dark', 'light', 'green'];
-  var labels = { dark: '暗色', light: '亮色', green: '护眼' };
   var themeSelect = document.getElementById('theme-select');
 
   function applyTheme(name) {
@@ -1902,7 +1955,8 @@ body { transition: background .35s ease, color .35s ease; }
   }, { threshold: 0.3 });
   var statsEls = document.querySelectorAll('.stats-grid');
   for (var j = 0; j < statsEls.length; j++) { countObserver.observe(statsEls[j]); }
-  // ======================================================== STAT SPARKLE after count-up
+
+  // ======================================================== STAT SPARKLE
   var sparkleObserver = new IntersectionObserver(function(entries) {
     entries.forEach(function(e) {
       if (!e.isIntersecting) return;
@@ -1923,13 +1977,11 @@ body { transition: background .35s ease, color .35s ease; }
   }, { threshold: 0.3 });
   for (var j = 0; j < statsEls.length; j++) { sparkleObserver.observe(statsEls[j]); }
 
-
   // ======================================================== FAQ ACCORDION
   window.toggleQA = function(btn) {
     var item = btn.closest('.qa-item');
     if (!item) return;
     var isOpen = item.classList.contains('open');
-    // close all
     var allOpen = document.querySelectorAll('.qa-item.open');
     for (var k = 0; k < allOpen.length; k++) {
       allOpen[k].classList.remove('open');
@@ -1941,36 +1993,6 @@ body { transition: background .35s ease, color .35s ease; }
       answer.style.maxHeight = answer.scrollHeight + 'px';
     }
   };
-
-  // ======================================================== FEATURE TABS
-  var tabs = document.querySelectorAll('.feat-tab');
-  for (var t = 0; t < tabs.length; t++) {
-    tabs[t].addEventListener('click', function() {
-      var active = document.querySelector('.feat-tab.active');
-      if (active) active.classList.remove('active');
-      this.classList.add('active');
-      var group = this.getAttribute('data-tab');
-      ['chat','workspace','files','ux'].forEach(function(g) {
-        var el = document.getElementById('feat-' + g);
-        if (!el) return;
-        if (g === group) {
-          el.style.display = '';
-          el.style.opacity = '0';
-          el.style.transform = 'translateY(12px)';
-          requestAnimationFrame(function() {
-            el.style.transition = 'opacity .3s ease, transform .3s ease';
-            el.style.opacity = '1';
-            el.style.transform = 'translateY(0)';
-          });
-        } else {
-          el.style.display = 'none';
-          el.style.opacity = '';
-          el.style.transform = '';
-          el.style.transition = '';
-        }
-      });
-    });
-  }
 
   // ======================================================== CANVAS PARTICLES
   var canvas = document.getElementById('particles');
@@ -2023,7 +2045,6 @@ body { transition: background .35s ease, color .35s ease; }
         particles[i].update();
         particles[i].draw();
       }
-      // connections
       for (var i = 0; i < particles.length; i++) {
         for (var j = i + 1; j < particles.length; j++) {
           var dx = particles[i].x - particles[j].x;
@@ -2046,15 +2067,17 @@ body { transition: background .35s ease, color .35s ease; }
 
   // ======================================================== TYPING TERMINAL
   var messages = [
+    { user: '修复登录页面的样式 bug', ai: '好的，我来检查登录页面的样式问题...', tool: '🔍 search_text → "login.css"' },
     { user: '帮我写一份今日工作日报', ai: '好的，以下是你今天的日报：\n\n📋 今日工作日报\n1. 完成客户需求分析报告\n2. 跟进项目A第3阶段进度\n3. 整理了本周会议纪要\n\n💡 明日计划：启动项目B方案设计。' },
-    { user: '请帮我总结这篇文章的核心要点', ai: '这篇文章的核心要点如下：\n\n1. 本地化AI是未来的趋势——用户数据隐私越来越被重视\n2. 桌面应用相比Web应用在性能和体验上更有优势\n3. 多模型支持是刚需——不同场景需要不同的AI' },
-    { user: '能帮我改写这段文字成公众号风格吗？', ai: '当然可以！以下是改写后的版本：\n\n💡 你有没有想过——\n每天和AI聊天时，你说的每一句话，都可能被存在别人的服务器上？\n\n今天，我们带来了答案。一个真正属于你的AI助手，让所有对话都只留在你的电脑里👇' }
+    { user: '查一下项目里有没有使用 Redis', ai: '搜索完成，以下是与 Redis 相关的文件：\n\n📄 config/database.yml\n📄 src/cache/redis-client.ts\n📄 README.md（第 42 行提及）', tool: '🔍 search_text → "redis"' }
   ];
   var msgIndex = 0;
   var typingLine = document.getElementById('typing-line');
   var typingCursor = document.getElementById('typing-cursor');
   var aiReplyLine = document.getElementById('ai-reply-line');
   var aiText = document.getElementById('ai-text');
+  var toolLine = document.getElementById('tool-line');
+  var toolText = document.getElementById('tool-text');
 
   function typeMessage() {
     if (!typingLine || !aiReplyLine || !aiText) return;
@@ -2062,6 +2085,7 @@ body { transition: background .35s ease, color .35s ease; }
     typingLine.textContent = '';
     aiReplyLine.style.display = 'none';
     aiText.textContent = '';
+    if (toolLine) { toolLine.style.display = 'none'; toolText.textContent = ''; }
     if (typingCursor) typingCursor.style.display = 'inline-block';
 
     var i = 0;
@@ -2070,28 +2094,47 @@ body { transition: background .35s ease, color .35s ease; }
         clearInterval(typeUser);
         if (typingCursor) typingCursor.style.display = 'none';
 
-        setTimeout(function() {
-          aiReplyLine.style.display = 'block';
-          var j = 0;
-          var typeAI = setInterval(function() {
-            if (j >= msg.ai.length) {
-              clearInterval(typeAI);
-              msgIndex = (msgIndex + 1) % messages.length;
-              setTimeout(typeMessage, 3500);
-              return;
+        // Show tool call if present
+        if (msg.tool && toolLine && toolText) {
+          toolLine.style.display = 'block';
+          var t = 0;
+          var typeTool = setInterval(function() {
+            if (t >= msg.tool.length) {
+              clearInterval(typeTool);
+              // Then show AI reply
+              setTimeout(function() { showAiReply(msg); }, 400);
+            } else {
+              toolText.textContent = msg.tool.substring(0, t + 1);
+              t++;
             }
-            aiText.textContent += msg.ai[j];
-            j++;
-          }, 16);
-        }, 600);
-        return;
+          }, 28);
+        } else {
+          setTimeout(function() { showAiReply(msg); }, 500);
+        }
+      } else {
+        typingLine.textContent = msg.user.substring(0, i + 1);
+        i++;
       }
-      typingLine.textContent += msg.user[i];
-      i++;
-    }, 38);
+    }, 45);
   }
 
-  if (typingLine) { typeMessage(); }
+  function showAiReply(msg) {
+    aiReplyLine.style.display = 'block';
+    aiText.textContent = '';
+    var k = 0;
+    var typeAi = setInterval(function() {
+      if (k >= msg.ai.length) {
+        clearInterval(typeAi);
+        msgIndex = (msgIndex + 1) % messages.length;
+        setTimeout(typeMessage, 3500);
+      } else {
+        aiText.textContent = msg.ai.substring(0, k + 1);
+        k++;
+      }
+    }, 22);
+  }
+
+  typeMessage();
 })();
 </script>
 </body>
